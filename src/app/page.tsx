@@ -57,9 +57,6 @@ export default function LoginPage() {
           <CardTitle className="text-center text-2xl font-semibold">
             n3q
           </CardTitle>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
-            Hacker house hub. Sign in with your email to join the feed.
-          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -87,7 +84,7 @@ export default function LoginPage() {
                   "text-sm",
                   status === "error"
                     ? "text-destructive"
-                    : "text-muted-foreground",
+                    : "text-muted-foreground"
                 )}
               >
                 {message}
@@ -109,4 +106,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
