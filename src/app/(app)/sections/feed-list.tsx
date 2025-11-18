@@ -47,6 +47,7 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
   const [minRatingFilter, setMinRatingFilter] = useState<number>(0);
 
   useEffect(() => {
+    // Initialize comments open state for new items on the client
     setOpenComments((prev) => {
       const next = { ...prev };
       items.forEach((item) => {
@@ -54,6 +55,7 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
       });
       return next;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
   }, [items]);
 
   const handleInteraction = (params: {
@@ -323,7 +325,7 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
                 </button>
               </div>
 
-              <div className="mt-1 space-y-2 border border-border/60 bg-background px-2 py-2">
+              <div className="mt-1 space-y-2 border border-border/60 bg-background/60 pt-2.5 pb-3 px-3">
                 <CommentInput
                   initialComment={item.my_comment ?? ""}
                   onSubmit={(comment) =>
@@ -334,7 +336,7 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
                   }
                   disabled={isPending}
                 />
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-1 text-[11px] text-muted-foreground" />
                   <div className="flex items-center gap-2">
                     <RatingStars
@@ -399,7 +401,7 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
               {openComments[item.id] &&
                 item.comments &&
                 item.comments.length > 0 && (
-                  <div className="mt-2 space-y-2 bg-background px-3 py-2 text-[11px] text-muted-foreground">
+                  <div className="mt-2 space-y-2 text-[11px] text-muted-foreground">
                     {item.comments.map((c) => {
                       const initials = (c.author_name || "M")
                         .split(" ")
@@ -410,7 +412,7 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
                       return (
                         <div
                           key={c.id}
-                          className="flex gap-2 border border-border/60 bg-background px-2 py-1"
+                          className="flex gap-2 border border-border/60 bg-background/60 px-3 py-3"
                         >
                           <Avatar className="h-7 w-7">
                             {c.author_avatar_url ? (
@@ -500,6 +502,7 @@ function CommentInput({
 
   useEffect(() => {
     setValue(initialComment ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
   }, [initialComment]);
 
   const handleSubmit = () => {

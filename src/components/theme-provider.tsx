@@ -16,9 +16,7 @@ interface ThemeContextValue {
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue | undefined>(
-  undefined,
-);
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function applyThemeClass(theme: Theme) {
   if (typeof document === "undefined") return;
@@ -29,17 +27,11 @@ function applyThemeClass(theme: Theme) {
   }
 }
 
-export function ThemeProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("n3q-theme") as
-      | Theme
-      | null;
+    const stored = window.localStorage.getItem("n3q-theme") as Theme | null;
 
     if (stored === "light" || stored === "dark") {
       applyThemeClass(stored);
@@ -48,11 +40,12 @@ export function ThemeProvider({
     }
 
     const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
+      "(prefers-color-scheme: dark)"
     ).matches;
     const initial: Theme = prefersDark ? "dark" : "light";
     applyThemeClass(initial);
     setTheme(initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
   }, []);
 
   useEffect(() => {
@@ -71,14 +64,10 @@ export function ThemeProvider({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (
-        (event.metaKey || event.ctrlKey) &&
-        event.key.toLowerCase() === "j"
-      ) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "j") {
         event.preventDefault();
         setTheme((prev) => {
-          const next: Theme =
-            prev === "dark" ? "light" : "dark";
+          const next: Theme = prev === "dark" ? "light" : "dark";
           applyThemeClass(next);
           window.localStorage.setItem("n3q-theme", next);
           return next;
@@ -105,9 +94,7 @@ export function ThemeProvider({
   };
 
   return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
 
@@ -138,5 +125,3 @@ export function ThemeToggle() {
     </button>
   );
 }
-
-
