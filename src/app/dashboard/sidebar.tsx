@@ -28,8 +28,8 @@ export function Sidebar({ displayName, avatarUrl, initials, walletAddress, token
   };
 
   const isActive = (href: string) => {
-    if (href === "/app") {
-      return pathname === "/app" || pathname === "/app/";
+    if (href === "/dashboard") {
+      return pathname === "/dashboard" || pathname === "/dashboard/";
     }
     return pathname.startsWith(href);
   };
@@ -51,14 +51,14 @@ export function Sidebar({ displayName, avatarUrl, initials, walletAddress, token
   return (
     <aside className="hidden w-72 flex-col border-r border-border/60 bg-card/80 px-4 py-5 sm:flex sticky top-0 h-screen overflow-y-auto">
       <div className="flex items-center justify-between gap-2">
-        <Link href="/app" className="text-sm font-semibold tracking-tight">
+        <Link href="/dashboard" className="text-sm font-semibold tracking-tight">
           n3q
         </Link>
         <ThemeToggle />
       </div>
       <div className="mt-6 space-y-3 text-sm text-muted-foreground">
-        <Link href="/app" className={itemClasses("/app")}>
-          <div className={iconClasses("/app")}>
+        <Link href="/dashboard" className={itemClasses("/dashboard")}>
+          <div className={iconClasses("/dashboard")}>
             <BookOpen className="h-5 w-5" />
           </div>
           <div className="space-y-1">
@@ -68,8 +68,8 @@ export function Sidebar({ displayName, avatarUrl, initials, walletAddress, token
             </p>
           </div>
         </Link>
-        <Link href="/app/directory" className={itemClasses("/app/directory")}>
-          <div className={iconClasses("/app/directory")}>
+        <Link href="/dashboard/directory" className={itemClasses("/dashboard/directory")}>
+          <div className={iconClasses("/dashboard/directory")}>
             <Users className="h-5 w-5" />
           </div>
           <div className="space-y-1">
@@ -79,8 +79,8 @@ export function Sidebar({ displayName, avatarUrl, initials, walletAddress, token
             </p>
           </div>
         </Link>
-        <Link href="/app/projects" className={itemClasses("/app/projects")}>
-          <div className={iconClasses("/app/projects")}>
+        <Link href="/dashboard/projects" className={itemClasses("/dashboard/projects")}>
+          <div className={iconClasses("/dashboard/projects")}>
             <Rocket className="h-5 w-5" />
           </div>
           <div className="space-y-1">
@@ -90,8 +90,8 @@ export function Sidebar({ displayName, avatarUrl, initials, walletAddress, token
             </p>
           </div>
         </Link>
-        <Link href="/app/events" className={itemClasses("/app/events")}>
-          <div className={iconClasses("/app/events")}>
+        <Link href="/dashboard/events" className={itemClasses("/dashboard/events")}>
+          <div className={iconClasses("/dashboard/events")}>
             <CalendarDays className="h-5 w-5" />
           </div>
           <div className="space-y-1">
@@ -115,10 +115,10 @@ export function Sidebar({ displayName, avatarUrl, initials, walletAddress, token
       
       <div className="mt-auto flex items-center justify-between gap-2 pt-6 text-xs text-muted-foreground">
         <Link
-          href="/app/profile"
+          href="/dashboard/profile"
           className={cn(
             "flex items-center gap-2 px-2 py-1.5 min-w-0 flex-1",
-            isActive("/app/profile")
+            isActive("/dashboard/profile")
               ? "bg-sidebar-accent text-sidebar-foreground"
               : "hover:bg-muted hover:text-foreground"
           )}

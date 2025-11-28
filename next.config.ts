@@ -11,7 +11,25 @@ const nextConfig: NextConfig = {
   },
   webpack: (config) => {
     config.externals.push("pino-pretty", "lokijs", "encoding");
-    config.resolve.fallback = { fs: false, net: false, tls: false };
+    config.resolve.fallback = {
+      fs: false,
+      net: false,
+      tls: false,
+      crypto: false,
+      stream: false,
+      http: false,
+      https: false,
+      zlib: false,
+      path: false,
+      os: false,
+    };
+
+    // Ignore missing optional dependencies
+    config.ignoreWarnings = [
+      { module: /node_modules\/@react-native-async-storage/ },
+      { module: /node_modules\/@walletconnect/ },
+    ];
+
     return config;
   },
 };

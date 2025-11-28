@@ -13,7 +13,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isConnected && isMember && !isLoading) {
-      router.push("/app");
+      router.push("/dashboard");
     }
   }, [isConnected, isMember, isLoading, router]);
 
@@ -21,7 +21,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center px-4 bg-background">
       {/* Subtle grid background */}
       <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
-      
+
       <div className="relative w-full max-w-sm">
         {/* Corner frame */}
         <div className="absolute -inset-4">
@@ -52,7 +52,7 @@ export default function LoginPage() {
             <p className="text-center text-sm text-muted-foreground font-mono">
               Connect wallet to authenticate
             </p>
-            
+
             {/* Custom wrapper for ConnectButton */}
             <div className="flex justify-center">
               <div className="relative group">
