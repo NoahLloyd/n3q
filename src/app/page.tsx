@@ -57,57 +57,36 @@ export default function LoginPage() {
             <div className="flex justify-center">
               <div className="relative group">
                 {/* Corner accents for button */}
-                <div className="absolute -inset-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute -inset-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                   <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-emerald-400" />
                   <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-emerald-400" />
                   <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-emerald-400" />
                   <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-emerald-400" />
                 </div>
                 <ConnectButton.Custom>
-                  {({
-                    account,
-                    chain,
-                    openConnectModal,
-                    openAccountModal,
-                    mounted,
-                  }) => {
-                    const connected = mounted && account && chain;
+                  {({ account, chain, openConnectModal, openAccountModal }) => {
+                    const connected = account && chain;
+
+                    if (!connected) {
+                      return (
+                        <button
+                          onClick={openConnectModal}
+                          type="button"
+                          className="px-8 py-3 bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 font-mono text-sm uppercase tracking-wider hover:bg-emerald-500/20 hover:border-emerald-400 transition-all duration-200"
+                        >
+                          Connect Wallet
+                        </button>
+                      );
+                    }
 
                     return (
-                      <div
-                        {...(!mounted && {
-                          "aria-hidden": true,
-                          style: {
-                            opacity: 0,
-                            pointerEvents: "none",
-                            userSelect: "none",
-                          },
-                        })}
+                      <button
+                        onClick={openAccountModal}
+                        type="button"
+                        className="px-8 py-3 bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 font-mono text-sm tracking-wider hover:bg-emerald-500/20 transition-all duration-200"
                       >
-                        {(() => {
-                          if (!connected) {
-                            return (
-                              <button
-                                onClick={openConnectModal}
-                                type="button"
-                                className="px-8 py-3 bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 font-mono text-sm uppercase tracking-wider hover:bg-emerald-500/20 hover:border-emerald-400 transition-all duration-200"
-                              >
-                                Connect Wallet
-                              </button>
-                            );
-                          }
-
-                          return (
-                            <button
-                              onClick={openAccountModal}
-                              type="button"
-                              className="px-8 py-3 bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 font-mono text-sm tracking-wider hover:bg-emerald-500/20 transition-all duration-200"
-                            >
-                              {account.displayName}
-                            </button>
-                          );
-                        })()}
-                      </div>
+                        {account.displayName}
+                      </button>
                     );
                   }}
                 </ConnectButton.Custom>
