@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { BookOpen, CalendarDays, Rocket, Users } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { BookOpen, CalendarDays, Rocket, Users, LogOut } from "lucide-react";
+import { useDisconnect } from "wagmi";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,10 +13,19 @@ interface SidebarProps {
   displayName: string;
   avatarUrl?: string;
   initials: string;
+  walletAddress?: string;
+  tokenId?: number;
 }
 
-export function Sidebar({ displayName, avatarUrl, initials }: SidebarProps) {
+export function Sidebar({ displayName, avatarUrl, initials, walletAddress, tokenId }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { disconnect } = useDisconnect();
+
+  const handleDisconnect = () => {
+    disconnect();
+    router.push("/");
+  };
 
   const isActive = (href: string) => {
     if (href === "/app") {
@@ -65,7 +75,7 @@ export function Sidebar({ displayName, avatarUrl, initials }: SidebarProps) {
           <div className="space-y-1">
             <div className="text-sm font-medium text-foreground">Directory</div>
             <p className="text-xs text-muted-foreground">
-              People in the house and what they’re working on
+              People in the house and what they're working on
             </p>
           </div>
         </Link>
@@ -92,32 +102,42 @@ export function Sidebar({ displayName, avatarUrl, initials }: SidebarProps) {
           </div>
         </Link>
       </div>
+      
+      {/* Membership badge */}
+      {tokenId !== undefined && (
+        <div className="mt-6 rounded border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="text-xs font-medium text-emerald-500">Member #{tokenId}</span>
+          </div>
+        </div>
+      )}
+      
       <div className="mt-auto flex items-center justify-between gap-2 pt-6 text-xs text-muted-foreground">
         <Link
           href="/app/profile"
           className={cn(
-            "flex items-center gap-2 px-2 py-1.5",
+            "flex items-center gap-2 px-2 py-1.5 min-w-0 flex-1",
             isActive("/app/profile")
               ? "bg-sidebar-accent text-sidebar-foreground"
               : "hover:bg-muted hover:text-foreground"
           )}
         >
-          <Avatar className="h-7 w-7">
+          <Avatar className="h-7 w-7 shrink-0">
             <AvatarImage src={avatarUrl} alt={displayName} />
             <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
           </Avatar>
           <span className="truncate">{displayName}</span>
         </Link>
-        <form action="/auth/sign-out" method="post">
-          <Button
-            type="submit"
-            variant="outline"
-            size="icon"
-            className="h-7 w-7 text-[10px]"
-          >
-            ⏻
-          </Button>
-        </form>
+        <Button
+          onClick={handleDisconnect}
+          variant="outline"
+          size="icon"
+          className="h-7 w-7 shrink-0"
+          title="Disconnect wallet"
+        >
+          <LogOut className="h-3 w-3" />
+        </Button>
       </div>
     </aside>
   );

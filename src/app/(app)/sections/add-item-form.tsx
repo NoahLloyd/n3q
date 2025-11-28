@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +16,12 @@ import { cn } from "@/lib/utils";
 
 const supabase = createSupabaseBrowserClient();
 
-export function AddItemForm() {
-  const router = useRouter();
+interface AddItemFormProps {
+  userId: string;
+  onSuccess?: () => void;
+}
+
+export function AddItemForm({ userId, onSuccess }: AddItemFormProps) {
   const [type, setType] = useState<ContentType>("article");
   const [urlOrTitle, setUrlOrTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,21 +31,17 @@ export function AddItemForm() {
     e.preventDefault();
     setError(null);
 
+    if (!userId) {
+      setError("You need to be connected.");
+      return;
+    }
+
     startTransition(async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        setError("You need to be logged in.");
-        return;
-      }
-
       // Ensure a profile row exists for this user so content_items inserts
       // don't violate the foreign key to profiles.id.
       await supabase.from("profiles").upsert(
         {
-          id: user.id,
+          id: userId,
         },
         { onConflict: "id" }
       );
@@ -56,7 +55,7 @@ export function AddItemForm() {
       const { error: insertError } = await supabase
         .from("content_items")
         .insert({
-          creator_id: user.id,
+          creator_id: userId,
           type,
           title,
           url,
@@ -69,7 +68,7 @@ export function AddItemForm() {
       }
 
       setUrlOrTitle("");
-      router.refresh();
+      onSuccess?.();
     });
   };
 

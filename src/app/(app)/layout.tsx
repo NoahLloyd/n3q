@@ -1,48 +1,62 @@
+"use client";
+
 import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useAccount } from "wagmi";
+import { useMembership } from "@/lib/web3/hooks";
 import { Sidebar } from "./sidebar";
 
-export default async function AppLayout({ children }: { children: ReactNode }) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default function AppLayout({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const { isConnected, address } = useAccount();
+  const { isMember, isLoading, tokenId } = useMembership();
 
-  if (!user) {
-    redirect("/");
+  useEffect(() => {
+    // If not connected, redirect to login
+    if (!isConnected) {
+      router.push("/");
+      return;
+    }
+
+    // If connected but not a member (and done loading), redirect to login
+    if (!isLoading && !isMember) {
+      router.push("/");
+    }
+  }, [isConnected, isMember, isLoading, router]);
+
+  // Show loading while checking membership
+  if (!isConnected || isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
+          <p className="text-sm text-muted-foreground">Verifying membership...</p>
+        </div>
+      </div>
+    );
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, avatar_url")
-    .eq("id", user.id)
-    .maybeSingle();
+  // If not a member, don't render anything (will redirect)
+  if (!isMember) {
+    return null;
+  }
 
-  const displayName =
-    profile?.display_name ??
-    (user.user_metadata?.display_name as string | undefined) ??
-    "Member";
+  // Format display name from address
+  const displayName = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : "Member";
 
-  const avatarUrl =
-    profile?.avatar_url ??
-    (user.user_metadata?.avatar_url as string | undefined) ??
-    undefined;
-
-  const initials =
-    (displayName || "")
-      .split(" ")
-      .map((part: string) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "N3";
+  const initials = "N3";
 
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar
         displayName={displayName}
-        avatarUrl={avatarUrl}
+        avatarUrl={undefined}
         initials={initials}
+        walletAddress={address}
+        tokenId={tokenId}
       />
       <main className="flex-1 px-4 py-4 sm:px-6 sm:py-6">
         <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">

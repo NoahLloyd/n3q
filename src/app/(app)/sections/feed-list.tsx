@@ -33,9 +33,10 @@ const supabase = createSupabaseBrowserClient();
 interface FeedListProps {
   items: FeedItem[];
   currentUserId: string;
+  onRefresh?: () => void;
 }
 
-export function FeedList({ items, currentUserId }: FeedListProps) {
+export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [sort, setSort] = useState<"hot" | "new" | "top">("hot");
@@ -105,7 +106,7 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
         return;
       }
 
-      router.refresh();
+      onRefresh?.() ?? router.refresh();
     });
   };
 
@@ -126,7 +127,7 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
         return;
       }
 
-      router.refresh();
+      onRefresh?.() ?? router.refresh();
     });
   };
 
@@ -266,6 +267,8 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
         const href = item.url ?? undefined;
         const byline =
           item.creator?.display_name ?? item.creator_id.slice(0, 6);
+        const typeLabel =
+          item.type.charAt(0).toUpperCase() + item.type.slice(1);
 
         return (
           <Card key={item.id} className="border-border/70 rounded-none">
@@ -292,9 +295,9 @@ export function FeedList({ items, currentUserId }: FeedListProps) {
                   <User className="h-3 w-3" />
                   <span>{byline}</span>
                 </span>
-                <span className="inline-flex items-center gap-1 border border-border/60 bg-card px-2 py-0.5 uppercase">
+                <span className="inline-flex items-center gap-1 border border-border/60 bg-card px-2 py-0.5">
                   <Tag className="h-3 w-3" />
-                  <span>{item.type}</span>
+                  <span>{typeLabel}</span>
                 </span>
                 <span className="inline-flex items-center gap-1 border border-border/60 bg-card px-2 py-0.5">
                   <Bookmark className="h-3 w-3" />
