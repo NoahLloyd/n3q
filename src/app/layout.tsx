@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "n3q",
-  description: "n3q hacker house hub",
+  description: "Nine Three Quarters",
 };
 
 export default function RootLayout({

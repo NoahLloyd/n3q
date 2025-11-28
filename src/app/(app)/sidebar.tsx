@@ -49,7 +49,7 @@ export function Sidebar({ displayName, avatarUrl, initials, walletAddress, token
     );
 
   return (
-    <aside className="hidden w-72 flex-col border-r border-border/60 bg-card/80 px-4 py-5 sm:flex">
+    <aside className="hidden w-72 flex-col border-r border-border/60 bg-card/80 px-4 py-5 sm:flex sticky top-0 h-screen overflow-y-auto">
       <div className="flex items-center justify-between gap-2">
         <Link href="/app" className="text-sm font-semibold tracking-tight">
           n3q
@@ -75,7 +75,7 @@ export function Sidebar({ displayName, avatarUrl, initials, walletAddress, token
           <div className="space-y-1">
             <div className="text-sm font-medium text-foreground">Directory</div>
             <p className="text-xs text-muted-foreground">
-              People in the house and what they're working on
+              Members and what they&apos;re working on
             </p>
           </div>
         </Link>
