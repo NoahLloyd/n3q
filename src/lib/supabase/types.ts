@@ -41,4 +41,60 @@ export interface ContentInteraction {
   created_at: string;
 }
 
+// Voting types
+export type PollType = "yes_no_abstain" | "multiple_choice";
+export type PollStatus = "active" | "closed";
+export type YesNoAbstainVote = "yes" | "no" | "abstain";
+
+export interface Poll {
+  id: string;
+  creator_id: string;
+  title: string;
+  description: string | null;
+  type: PollType;
+  status: PollStatus;
+  yes_count: number;
+  no_count: number;
+  abstain_count: number;
+  winning_option: string | null;
+  closed_at: string | null;
+  created_at: string;
+  creator?: Profile;
+  options?: PollOption[];
+  vote_count?: number;
+  user_has_voted?: boolean;
+}
+
+export interface PollOption {
+  id: string;
+  poll_id: string;
+  label: string;
+  vote_count: number;
+  position: number;
+}
+
+export interface Vote {
+  id: string;
+  poll_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface PollComment {
+  id: string;
+  poll_id: string;
+  user_id: string;
+  content: string;
+  upvote_count: number;
+  created_at: string;
+  user?: Profile;
+  user_has_upvoted?: boolean;
+}
+
+export interface CommentUpvote {
+  comment_id: string;
+  user_id: string;
+  created_at: string;
+}
+
 

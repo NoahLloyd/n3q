@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { FeedItem } from "@/lib/feed";
+import type { Profile } from "@/lib/supabase/types";
 import {
   Card,
   CardContent,
@@ -16,57 +17,60 @@ import { HistoryList } from "./sections/history-list";
 
 const supabase = createSupabaseBrowserClient();
 
-// Client-side feed fetching (adapted from server-side getFeed)
+async function getProfile(userId: string): Promise<Profile | null> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+  return data;
+}
+
+// Client-side feed fetching (adapted for text IDs without foreign keys)
 async function fetchFeed(userId: string): Promise<FeedItem[]> {
-  const { data, error } = await supabase
+  // Fetch content items
+  const { data: items, error } = await supabase
     .from("content_items")
-    .select(
-      `
-        id,
-        creator_id,
-        type,
-        url,
-        title,
-        created_at,
-        profiles (
-          id,
-          display_name,
-          avatar_url
-        ),
-        content_interactions (
-          id,
-          user_id,
-          status,
-          rating,
-          comment,
-          created_at,
-          profiles (
-            id,
-            display_name,
-            avatar_url
-          )
-        )
-      `
-    )
+    .select("*")
     .order("created_at", { ascending: false });
 
-  if (error || !data) {
+  if (error || !items) {
+    console.error("Error fetching content items:", error);
     return [];
+  }
+
+  // Fetch all interactions for these items
+  const itemIds = items.map(item => item.id);
+  const { data: interactions } = await supabase
+    .from("content_interactions")
+    .select("*")
+    .in("item_id", itemIds);
+
+  // Get unique user IDs for profiles
+  const creatorIds = [...new Set(items.map(item => item.creator_id))];
+  const interactionUserIds = [...new Set((interactions || []).map(i => i.user_id))];
+  const allUserIds = [...new Set([...creatorIds, ...interactionUserIds])];
+
+  // Fetch profiles
+  const profiles: Record<string, Profile> = {};
+  for (const id of allUserIds) {
+    const profile = await getProfile(id);
+    if (profile) profiles[id] = profile;
   }
 
   const now = Date.now();
 
-  return data.map((row: any) => {
-    const interactions = row.content_interactions ?? [];
-    const myInteraction = interactions.find((i: any) => i.user_id === userId);
-    const savesCount = interactions.filter((i: any) => i.status === "saved").length;
-    const doneCount = interactions.filter((i: any) => i.status === "done").length;
-    const ratings = interactions
-      .map((i: any) => i.rating)
-      .filter((r: any): r is number => typeof r === "number");
+  return items.map((row) => {
+    const itemInteractions = (interactions || []).filter(i => i.item_id === row.id);
+    const myInteraction = itemInteractions.find(i => i.user_id === userId);
+    const savesCount = itemInteractions.filter(i => i.status === "saved").length;
+    const doneCount = itemInteractions.filter(i => i.status === "done").length;
+    const ratings = itemInteractions
+      .map(i => i.rating)
+      .filter((r): r is number => typeof r === "number");
     const avgRating =
       ratings.length > 0
-        ? ratings.reduce((acc: number, r: number) => acc + r, 0) / ratings.length
+        ? ratings.reduce((acc, r) => acc + r, 0) / ratings.length
         : null;
 
     const ageHours = (now - new Date(row.created_at).getTime()) / (1000 * 60 * 60);
@@ -74,16 +78,18 @@ async function fetchFeed(userId: string): Promise<FeedItem[]> {
     const decayFactor = 1 / (1 + ageHours / 24);
     const score = baseScore * decayFactor;
 
-    const comments = interactions
-      .filter((i: any) => typeof i.comment === "string" && i.comment.trim().length > 0)
-      .map((i: any) => ({
+    const comments = itemInteractions
+      .filter(i => typeof i.comment === "string" && i.comment.trim().length > 0)
+      .map(i => ({
         id: i.id,
         comment: i.comment as string,
         created_at: i.created_at,
         author_id: i.user_id,
-        author_name: i.profiles?.display_name ?? null,
-        author_avatar_url: i.profiles?.avatar_url ?? null,
+        author_name: profiles[i.user_id]?.display_name ?? null,
+        author_avatar_url: profiles[i.user_id]?.avatar_url ?? null,
       }));
+
+    const creator = profiles[row.creator_id];
 
     return {
       id: row.id,
@@ -92,14 +98,14 @@ async function fetchFeed(userId: string): Promise<FeedItem[]> {
       url: row.url,
       title: row.title,
       created_at: row.created_at,
-      creator: row.profiles
+      creator: creator
         ? {
-            id: row.profiles.id,
-            display_name: row.profiles.display_name,
-            avatar_url: row.profiles.avatar_url,
-            bio: null,
-            created_at: "",
-            updated_at: "",
+            id: creator.id,
+            display_name: creator.display_name,
+            avatar_url: creator.avatar_url,
+            bio: creator.bio,
+            created_at: creator.created_at,
+            updated_at: creator.updated_at,
           }
         : undefined,
       saves_count: savesCount,
@@ -115,34 +121,33 @@ async function fetchFeed(userId: string): Promise<FeedItem[]> {
 }
 
 async function fetchHistory(userId: string) {
-  const { data, error } = await supabase
+  // Fetch user's interactions
+  const { data: interactions, error } = await supabase
     .from("content_interactions")
-    .select(
-      `
-        id,
-        status,
-        rating,
-        comment,
-        created_at,
-        item:content_items (
-          id,
-          title,
-          type,
-          url,
-          created_at
-        )
-      `
-    )
+    .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
-  if (error || !data) {
+  if (error || !interactions) {
+    console.error("Error fetching history:", error);
     return [];
   }
 
-  return data.map((row: any) => ({
-    ...row,
-    item: Array.isArray(row.item) ? row.item[0] ?? null : row.item,
+  // Fetch the content items for these interactions
+  const itemIds = [...new Set(interactions.map(i => i.item_id))];
+  const { data: items } = await supabase
+    .from("content_items")
+    .select("*")
+    .in("id", itemIds);
+
+  const itemsMap: Record<string, typeof items[0]> = {};
+  (items || []).forEach(item => {
+    itemsMap[item.id] = item;
+  });
+
+  return interactions.map(interaction => ({
+    ...interaction,
+    item: itemsMap[interaction.item_id] || null,
   }));
 }
 
@@ -234,4 +239,3 @@ export function KnowledgeFeed() {
     </div>
   );
 }
-

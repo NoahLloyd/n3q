@@ -93,4 +93,143 @@ create policy "Users can delete their own interactions"
   for delete
   using (auth.uid() = user_id);
 
+-- POLLS
+create table if not exists public.polls (
+  id uuid primary key default gen_random_uuid(),
+  creator_id uuid not null references public.profiles(id) on delete cascade,
+  title text not null,
+  description text,
+  type text not null check (type in ('yes_no_abstain', 'multiple_choice')),
+  status text not null default 'active' check (status in ('active', 'closed')),
+  yes_count integer not null default 0,
+  no_count integer not null default 0,
+  abstain_count integer not null default 0,
+  winning_option text,
+  closed_at timestamptz,
+  created_at timestamptz default now()
+);
+
+alter table public.polls enable row level security;
+
+create policy "Polls are viewable by authenticated users"
+  on public.polls
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Users can create polls"
+  on public.polls
+  for insert
+  with check (auth.uid() = creator_id);
+
+create policy "Users can update their own polls"
+  on public.polls
+  for update
+  using (auth.uid() = creator_id);
+
+create policy "Users can delete their own polls"
+  on public.polls
+  for delete
+  using (auth.uid() = creator_id);
+
+-- POLL OPTIONS (for multiple choice polls)
+create table if not exists public.poll_options (
+  id uuid primary key default gen_random_uuid(),
+  poll_id uuid not null references public.polls(id) on delete cascade,
+  label text not null,
+  vote_count integer not null default 0,
+  position integer not null default 0
+);
+
+alter table public.poll_options enable row level security;
+
+create policy "Poll options are viewable by authenticated users"
+  on public.poll_options
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Poll creators can insert options"
+  on public.poll_options
+  for insert
+  with check (
+    auth.uid() = (select creator_id from public.polls where id = poll_id)
+  );
+
+-- VOTES (records who voted, not what they voted for - maintains anonymity)
+create table if not exists public.votes (
+  id uuid primary key default gen_random_uuid(),
+  poll_id uuid not null references public.polls(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz default now(),
+  unique(poll_id, user_id)
+);
+
+alter table public.votes enable row level security;
+
+create policy "Votes are viewable by authenticated users"
+  on public.votes
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Users can insert their own votes"
+  on public.votes
+  for insert
+  with check (auth.uid() = user_id);
+
+-- POLL COMMENTS
+create table if not exists public.poll_comments (
+  id uuid primary key default gen_random_uuid(),
+  poll_id uuid not null references public.polls(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  content text not null,
+  upvote_count integer not null default 0,
+  created_at timestamptz default now()
+);
+
+alter table public.poll_comments enable row level security;
+
+create policy "Poll comments are viewable by authenticated users"
+  on public.poll_comments
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Users can insert their own comments"
+  on public.poll_comments
+  for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update their own comments"
+  on public.poll_comments
+  for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete their own comments"
+  on public.poll_comments
+  for delete
+  using (auth.uid() = user_id);
+
+-- COMMENT UPVOTES (one per user per comment)
+create table if not exists public.comment_upvotes (
+  comment_id uuid not null references public.poll_comments(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key (comment_id, user_id)
+);
+
+alter table public.comment_upvotes enable row level security;
+
+create policy "Comment upvotes are viewable by authenticated users"
+  on public.comment_upvotes
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Users can insert their own upvotes"
+  on public.comment_upvotes
+  for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can delete their own upvotes"
+  on public.comment_upvotes
+  for delete
+  using (auth.uid() = user_id);
+
 

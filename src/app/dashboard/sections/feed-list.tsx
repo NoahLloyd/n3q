@@ -291,8 +291,17 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
               <div className="flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1 border border-border/60 bg-card px-2 py-0.5">
-                  <User className="h-3 w-3" />
+                <span className="inline-flex items-center gap-1.5 border border-border/60 bg-card px-2 py-0.5">
+                  {item.creator?.avatar_url ? (
+                    <Avatar className="h-4 w-4">
+                      <AvatarImage src={item.creator.avatar_url} alt={byline} />
+                      <AvatarFallback className="text-[8px]">
+                        {(item.creator?.display_name || "M").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <User className="h-3 w-3" />
+                  )}
                   <span>{byline}</span>
                 </span>
                 <span className="inline-flex items-center gap-1 border border-border/60 bg-card px-2 py-0.5">
