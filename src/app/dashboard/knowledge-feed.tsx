@@ -5,12 +5,7 @@ import { useAccount } from "wagmi";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { FeedItem } from "@/lib/feed";
 import type { Profile } from "@/lib/supabase/types";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddItemForm } from "./sections/add-item-form";
 import { FeedList } from "./sections/feed-list";
 import { HistoryList } from "./sections/history-list";
@@ -40,15 +35,17 @@ async function fetchFeed(userId: string): Promise<FeedItem[]> {
   }
 
   // Fetch all interactions for these items
-  const itemIds = items.map(item => item.id);
+  const itemIds = items.map((item) => item.id);
   const { data: interactions } = await supabase
     .from("content_interactions")
     .select("*")
     .in("item_id", itemIds);
 
   // Get unique user IDs for profiles
-  const creatorIds = [...new Set(items.map(item => item.creator_id))];
-  const interactionUserIds = [...new Set((interactions || []).map(i => i.user_id))];
+  const creatorIds = [...new Set(items.map((item) => item.creator_id))];
+  const interactionUserIds = [
+    ...new Set((interactions || []).map((i) => i.user_id)),
+  ];
   const allUserIds = [...new Set([...creatorIds, ...interactionUserIds])];
 
   // Fetch profiles
@@ -61,26 +58,35 @@ async function fetchFeed(userId: string): Promise<FeedItem[]> {
   const now = Date.now();
 
   return items.map((row) => {
-    const itemInteractions = (interactions || []).filter(i => i.item_id === row.id);
-    const myInteraction = itemInteractions.find(i => i.user_id === userId);
-    const savesCount = itemInteractions.filter(i => i.status === "saved").length;
-    const doneCount = itemInteractions.filter(i => i.status === "done").length;
+    const itemInteractions = (interactions || []).filter(
+      (i) => i.item_id === row.id
+    );
+    const myInteraction = itemInteractions.find((i) => i.user_id === userId);
+    const savesCount = itemInteractions.filter(
+      (i) => i.status === "saved"
+    ).length;
+    const doneCount = itemInteractions.filter(
+      (i) => i.status === "done"
+    ).length;
     const ratings = itemInteractions
-      .map(i => i.rating)
+      .map((i) => i.rating)
       .filter((r): r is number => typeof r === "number");
     const avgRating =
       ratings.length > 0
         ? ratings.reduce((acc, r) => acc + r, 0) / ratings.length
         : null;
 
-    const ageHours = (now - new Date(row.created_at).getTime()) / (1000 * 60 * 60);
+    const ageHours =
+      (now - new Date(row.created_at).getTime()) / (1000 * 60 * 60);
     const baseScore = savesCount * 1 + doneCount * 2 + (avgRating ?? 0) * 1.5;
     const decayFactor = 1 / (1 + ageHours / 24);
     const score = baseScore * decayFactor;
 
     const comments = itemInteractions
-      .filter(i => typeof i.comment === "string" && i.comment.trim().length > 0)
-      .map(i => ({
+      .filter(
+        (i) => typeof i.comment === "string" && i.comment.trim().length > 0
+      )
+      .map((i) => ({
         id: i.id,
         comment: i.comment as string,
         created_at: i.created_at,
@@ -134,18 +140,18 @@ async function fetchHistory(userId: string) {
   }
 
   // Fetch the content items for these interactions
-  const itemIds = [...new Set(interactions.map(i => i.item_id))];
+  const itemIds = [...new Set(interactions.map((i) => i.item_id))];
   const { data: items } = await supabase
     .from("content_items")
     .select("*")
     .in("id", itemIds);
 
-  const itemsMap: Record<string, typeof items[0]> = {};
-  (items || []).forEach(item => {
+  const itemsMap: Record<string, any> = {};
+  (items || []).forEach((item) => {
     itemsMap[item.id] = item;
   });
 
-  return interactions.map(interaction => ({
+  return interactions.map((interaction) => ({
     ...interaction,
     item: itemsMap[interaction.item_id] || null,
   }));
@@ -196,12 +202,14 @@ export function KnowledgeFeed() {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <h1 className="text-xl font-semibold tracking-tight">
-        Shared knowledge
-      </h1>
+      <h1 className="text-xl font-semibold tracking-tight">Shared knowledge</h1>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
         <div className="space-y-4">
-          <FeedList items={feed} currentUserId={userId} onRefresh={refreshData} />
+          <FeedList
+            items={feed}
+            currentUserId={userId}
+            onRefresh={refreshData}
+          />
         </div>
         <div className="space-y-4">
           <Card className="rounded-none">
@@ -216,9 +224,7 @@ export function KnowledgeFeed() {
           </Card>
           <Card className="rounded-none">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold">
-                Saved
-              </CardTitle>
+              <CardTitle className="text-sm font-semibold">Saved</CardTitle>
             </CardHeader>
             <CardContent>
               <HistoryList history={history} filter="saved" />
@@ -226,9 +232,7 @@ export function KnowledgeFeed() {
           </Card>
           <Card className="rounded-none">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold">
-                Completed
-              </CardTitle>
+              <CardTitle className="text-sm font-semibold">Completed</CardTitle>
             </CardHeader>
             <CardContent>
               <HistoryList history={history} filter="done" />

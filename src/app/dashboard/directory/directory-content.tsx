@@ -83,22 +83,29 @@ export function DirectoryContent() {
       ) : members && members.length > 0 ? (
         <div className="grid gap-3">
           {members.map((memberAddress, index) => {
-            const isYou = memberAddress.toLowerCase() === address?.toLowerCase();
+            const isYou =
+              memberAddress.toLowerCase() === address?.toLowerCase();
             const displayName = getDisplayName(memberAddress);
             const avatarUrl = getAvatar(memberAddress);
             const initials = getInitials(memberAddress);
-            const hasProfile = profiles[memberAddress.toLowerCase()]?.display_name;
+            const hasProfile =
+              profiles[memberAddress.toLowerCase()]?.display_name;
 
             return (
               <Card
                 key={memberAddress}
-                className={isYou ? "border-emerald-500/50 bg-emerald-500/5" : ""}
+                className={
+                  isYou ? "border-emerald-500/50 bg-emerald-500/5" : ""
+                }
               >
                 <CardContent className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={avatarUrl || undefined} alt={displayName} />
+                        <AvatarImage
+                          src={avatarUrl || undefined}
+                          alt={displayName}
+                        />
                         <AvatarFallback className="text-sm font-medium">
                           {initials}
                         </AvatarFallback>
@@ -108,12 +115,17 @@ export function DirectoryContent() {
                       </div>
                     </div>
                     <div>
-                      <p className={`text-sm font-medium ${!hasProfile ? "font-mono" : ""}`}>
+                      <p
+                        className={`text-sm font-medium ${
+                          !hasProfile ? "font-mono" : ""
+                        }`}
+                      >
                         {displayName}
                       </p>
                       {hasProfile && (
                         <p className="text-xs text-muted-foreground font-mono">
-                          {memberAddress.slice(0, 6)}...{memberAddress.slice(-4)}
+                          {memberAddress.slice(0, 6)}...
+                          {memberAddress.slice(-4)}
                         </p>
                       )}
                       {isYou && (

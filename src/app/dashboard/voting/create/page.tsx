@@ -62,9 +62,10 @@ export default function CreatePollPage() {
 
     setIsSubmitting(true);
     try {
-      const validOptions = type === "multiple_choice" 
-        ? options.filter((o) => o.trim()) 
-        : undefined;
+      const validOptions =
+        type === "multiple_choice"
+          ? options.filter((o) => o.trim())
+          : undefined;
 
       const poll = await createPoll(
         address,
@@ -95,13 +96,17 @@ export default function CreatePollPage() {
           <ArrowLeft className="h-3 w-3" />
           Back to Voting
         </Link>
-        <h1 className="text-xl font-semibold tracking-tight">Create New Poll</h1>
+        <h1 className="text-xl font-semibold tracking-tight">
+          Create New Poll
+        </h1>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card className="rounded-none">
           <CardHeader>
-            <CardTitle className="text-sm font-semibold">Poll Details</CardTitle>
+            <CardTitle className="text-sm font-semibold">
+              Poll Details
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Title */}
@@ -182,7 +187,9 @@ export default function CreatePollPage() {
                       <Input
                         placeholder={`Option ${index + 1}`}
                         value={option}
-                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                        onChange={(e) =>
+                          handleOptionChange(index, e.target.value)
+                        }
                         className="rounded-none"
                         maxLength={100}
                       />
@@ -227,7 +234,10 @@ export default function CreatePollPage() {
                 <li>Each NFT holder gets one vote</li>
                 <li>Votes are anonymous (only counts are shown)</li>
                 <li>Results update in real-time</li>
-                <li>Poll closes automatically when outcome is mathematically certain</li>
+                <li>
+                  Poll closes automatically when outcome is mathematically
+                  certain
+                </li>
                 <li>You can delete your poll at any time</li>
               </ul>
             </div>

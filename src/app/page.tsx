@@ -37,14 +37,10 @@ export default function LoginPage() {
 
         <div className="relative bg-card/40 backdrop-blur-sm p-8 space-y-8">
           {/* Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-mono font-bold tracking-wider text-foreground">
-              N3Q
-            </h1>
-            <div className="h-px w-16 mx-auto bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
-            <p className="text-xs font-mono text-muted-foreground tracking-wide uppercase">
+          <div className="text-center">
+            <h1 className="text-2xl font-mono font-medium tracking-[0.2em] text-foreground uppercase">
               Nine Three Quarters
-            </p>
+            </h1>
           </div>
 
           {/* Connect section */}
@@ -154,12 +150,6 @@ export default function LoginPage() {
           )}
 
           {/* Footer */}
-          <div className="text-center space-y-2 pt-4">
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-border/50 to-transparent" />
-            <p className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest">
-              Soulbound NFT on Base
-            </p>
-          </div>
         </div>
       </div>
     </div>

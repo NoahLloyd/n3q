@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, XCircle, MinusCircle, ListChecks, Users } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+  ListChecks,
+  Users,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Poll } from "@/lib/supabase/types";
@@ -93,12 +99,17 @@ export function PollCard({ poll, totalMembers }: PollCardProps) {
           {/* Results bars */}
           <div className="space-y-2">
             {results.bars.slice(0, 3).map((bar) => {
-              const percentage = results.total > 0 ? (bar.count / results.total) * 100 : 0;
+              const percentage =
+                results.total > 0 ? (bar.count / results.total) * 100 : 0;
               return (
                 <div key={bar.label} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground truncate">{bar.label}</span>
-                    <span className="font-medium tabular-nums">{bar.count}</span>
+                    <span className="text-muted-foreground truncate">
+                      {bar.label}
+                    </span>
+                    <span className="font-medium tabular-nums">
+                      {bar.count}
+                    </span>
                   </div>
                   <div className="h-1.5 bg-muted overflow-hidden">
                     <div
@@ -153,7 +164,12 @@ export function PollCard({ poll, totalMembers }: PollCardProps) {
               ? `Closed ${formatDistanceToNow(new Date(poll.closed_at))}`
               : `${formatDistanceToNow(new Date(poll.created_at))}`}
             {poll.creator && (
-              <span> by {poll.creator.display_name || `${poll.creator_id.slice(0, 6)}...`}</span>
+              <span>
+                {" "}
+                by{" "}
+                {poll.creator.display_name ||
+                  `${poll.creator_id.slice(0, 6)}...`}
+              </span>
             )}
           </p>
         </CardContent>
@@ -161,4 +177,3 @@ export function PollCard({ poll, totalMembers }: PollCardProps) {
     </Link>
   );
 }
-

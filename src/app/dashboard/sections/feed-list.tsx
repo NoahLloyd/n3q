@@ -296,7 +296,9 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
                     <Avatar className="h-4 w-4">
                       <AvatarImage src={item.creator.avatar_url} alt={byline} />
                       <AvatarFallback className="text-[8px]">
-                        {(item.creator?.display_name || "M").slice(0, 2).toUpperCase()}
+                        {(item.creator?.display_name || "M")
+                          .slice(0, 2)
+                          .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   ) : (
