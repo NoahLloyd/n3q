@@ -8,6 +8,7 @@ import type { Event } from "@/lib/supabase/types";
 
 interface EventCardProps {
   event: Event;
+  isPublic?: boolean;
 }
 
 function formatEventDate(dateStr: string): string {
@@ -35,10 +36,11 @@ function isEventPast(dateStr: string): boolean {
   return eventDate < today;
 }
 
-export function EventCard({ event }: EventCardProps) {
+export function EventCard({ event, isPublic = false }: EventCardProps) {
   const isPast = isEventPast(event.event_date);
   const formattedDate = formatEventDate(event.event_date);
   const formattedTime = formatEventTime(event.event_time);
+  const basePath = isPublic ? "/public" : "/dashboard";
 
   // Get first ~100 chars of description for preview
   const descriptionPreview = event.description
@@ -50,7 +52,7 @@ export function EventCard({ event }: EventCardProps) {
     : null;
 
   return (
-    <Link href={`/dashboard/events/${event.id}`}>
+    <Link href={`${basePath}/events/${event.id}`}>
       <Card
         className={`rounded-none hover:border-sidebar-ring transition-colors cursor-pointer h-full ${
           isPast ? "opacity-60" : ""

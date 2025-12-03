@@ -123,7 +123,8 @@ export async function createEvent(
   eventDate: string,
   description: string | null,
   location: string | null,
-  eventTime: string | null
+  eventTime: string | null,
+  isPublic: boolean = false
 ): Promise<Event | null> {
   // Ensure profile exists
   await supabase.from("profiles").upsert({ id: userId }, { onConflict: "id" });
@@ -137,6 +138,7 @@ export async function createEvent(
       location,
       event_date: eventDate,
       event_time: eventTime,
+      is_public: isPublic,
     })
     .select()
     .single();
@@ -246,5 +248,103 @@ export async function fetchAllEventsForCalendar(): Promise<Event[]> {
   }
 
   return events || [];
+}
+
+// Public functions (no auth required)
+export async function fetchPublicEvents(
+  filter: "upcoming" | "past" = "upcoming"
+): Promise<Event[]> {
+  const today = new Date().toISOString().split("T")[0];
+
+  let query = supabase.from("events").select("*").eq("is_public", true);
+
+  if (filter === "upcoming") {
+    query = query.gte("event_date", today).order("event_date", { ascending: true });
+  } else {
+    query = query.lt("event_date", today).order("event_date", { ascending: false });
+  }
+
+  const { data: events, error } = await query;
+
+  if (error) {
+    console.error("Error fetching public events:", error);
+    return [];
+  }
+
+  // Get RSVP counts for all events
+  const eventIds = (events || []).map((e) => e.id);
+
+  const { data: allRsvps } = await supabase
+    .from("event_rsvps")
+    .select("*")
+    .in("event_id", eventIds);
+
+  // Fetch creator profiles
+  const creatorIds = [...new Set((events || []).map((e) => e.creator_id))];
+  const profiles: Record<string, Profile> = {};
+
+  for (const id of creatorIds) {
+    const profile = await getProfile(id);
+    if (profile) profiles[id] = profile;
+  }
+
+  return (events || []).map((event) => {
+    const eventRsvps = (allRsvps || []).filter((r) => r.event_id === event.id);
+
+    return {
+      ...event,
+      creator: profiles[event.creator_id] || null,
+      rsvp_count: eventRsvps.length,
+      user_has_rsvp: false,
+    };
+  });
+}
+
+export async function fetchPublicEvent(
+  eventId: string
+): Promise<Event | null> {
+  const { data: event, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", eventId)
+    .eq("is_public", true)
+    .single();
+
+  if (error) {
+    console.error("Error fetching public event:", error);
+    return null;
+  }
+
+  // Fetch RSVPs with profiles
+  const { data: rsvps } = await supabase
+    .from("event_rsvps")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: true });
+
+  // Fetch profiles for all RSVPs
+  const rsvpUserIds = [...new Set((rsvps || []).map((r) => r.user_id))];
+  const profiles: Record<string, Profile> = {};
+
+  for (const id of rsvpUserIds) {
+    const profile = await getProfile(id);
+    if (profile) profiles[id] = profile;
+  }
+
+  // Fetch creator profile
+  const creator = await getProfile(event.creator_id);
+
+  const rsvpsWithProfiles: EventRsvp[] = (rsvps || []).map((r) => ({
+    ...r,
+    user: profiles[r.user_id] || null,
+  }));
+
+  return {
+    ...event,
+    creator,
+    rsvps: rsvpsWithProfiles,
+    rsvp_count: rsvpsWithProfiles.length,
+    user_has_rsvp: false,
+  };
 }
 

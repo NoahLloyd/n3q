@@ -10,7 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const supabase = createSupabaseBrowserClient();
 
-export function DirectoryContent() {
+interface DirectoryContentProps {
+  isPublic?: boolean;
+}
+
+export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
   const { address } = useAccount();
   const { members, totalSupply, isLoading } = useAllMembers();
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
@@ -84,7 +88,7 @@ export function DirectoryContent() {
         <div className="grid gap-3">
           {members.map((memberAddress, index) => {
             const isYou =
-              memberAddress.toLowerCase() === address?.toLowerCase();
+              !isPublic && memberAddress.toLowerCase() === address?.toLowerCase();
             const displayName = getDisplayName(memberAddress);
             const avatarUrl = getAvatar(memberAddress);
             const initials = getInitials(memberAddress);

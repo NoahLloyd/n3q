@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Globe, Lock } from "lucide-react";
 import { useAccount } from "wagmi";
 import { createEvent } from "@/lib/supabase/events";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ export default function CreateEventPage() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [isAllDay, setIsAllDay] = useState(true);
+  const [isPublic, setIsPublic] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +49,8 @@ export default function CreateEventPage() {
         eventDate,
         description.trim() || null,
         location.trim() || null,
-        isAllDay ? null : eventTime || null
+        isAllDay ? null : eventTime || null,
+        isPublic
       );
 
       if (event) {
@@ -177,6 +179,47 @@ export default function CreateEventPage() {
                 className="resize-none rounded-none"
                 maxLength={2000}
               />
+            </div>
+
+            {/* Visibility */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Visibility</label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPublic(false)}
+                  className={`p-4 border text-left transition-colors ${
+                    !isPublic
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : "border-border hover:border-muted-foreground"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-4 w-4" />
+                    <span className="font-medium text-sm">Members Only</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Only N3Q members can see this event
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPublic(true)}
+                  className={`p-4 border text-left transition-colors ${
+                    isPublic
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : "border-border hover:border-muted-foreground"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    <span className="font-medium text-sm">Public</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Anyone can view this event, even non-members
+                  </p>
+                </button>
+              </div>
             </div>
 
             {/* Info box */}

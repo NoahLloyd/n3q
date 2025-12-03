@@ -82,9 +82,15 @@ interface FeedListProps {
   items: FeedItem[];
   currentUserId: string;
   onRefresh?: () => void;
+  isPublic?: boolean;
 }
 
-export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
+export function FeedList({
+  items,
+  currentUserId,
+  onRefresh,
+  isPublic = false,
+}: FeedListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [sort, setSort] = useState<"hot" | "new" | "top">(() => {
@@ -92,6 +98,9 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
     return stored && isValidSort(stored.sort) ? stored.sort : "hot";
   });
   const [openComments, setOpenComments] = useState<Record<string, boolean>>({});
+  const [showMemberOnlyMessage, setShowMemberOnlyMessage] = useState<
+    Record<string, boolean>
+  >({});
   const [statusFilter, setStatusFilter] = useState<
     "all" | "saved" | "done" | "untouched"
   >(() => {
@@ -252,25 +261,27 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
         <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={statusFilter}
-            onValueChange={(v) =>
-              setStatusFilter(v as "all" | "saved" | "done" | "untouched")
-            }
-          >
-            <SelectTrigger
-              size="sm"
-              className="w-[122px] border-border/60 bg-card px-2 text-[11px]"
+          {!isPublic && (
+            <Select
+              value={statusFilter}
+              onValueChange={(v) =>
+                setStatusFilter(v as "all" | "saved" | "done" | "untouched")
+              }
             >
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Any status</SelectItem>
-              <SelectItem value="saved">Saved</SelectItem>
-              <SelectItem value="done">Done</SelectItem>
-              <SelectItem value="untouched">New to me</SelectItem>
-            </SelectContent>
-          </Select>
+              <SelectTrigger
+                size="sm"
+                className="w-[122px] border-border/60 bg-card px-2 text-[11px]"
+              >
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any status</SelectItem>
+                <SelectItem value="saved">Saved</SelectItem>
+                <SelectItem value="done">Done</SelectItem>
+                <SelectItem value="untouched">New to me</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           <Select
             value={typeFilter}
             onValueChange={(v) => setTypeFilter(v as FeedItem["type"] | "all")}
@@ -291,24 +302,26 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex h-8 items-center gap-1 border border-border/60 bg-card px-2">
-            <span>Min rating</span>
-            <input
-              type="number"
-              min={0}
-              max={5}
-              step={0.5}
-              value={minRatingFilter}
-              onChange={(e) =>
-                setMinRatingFilter(
-                  Number.isNaN(parseFloat(e.target.value))
-                    ? 0
-                    : Math.min(5, Math.max(0, parseFloat(e.target.value)))
-                )
-              }
-              className="h-5 w-12 border border-border/60 bg-background px-1 text-[11px] outline-none"
-            />
-          </div>
+          {!isPublic && (
+            <div className="flex h-8 items-center gap-1 border border-border/60 bg-card px-2">
+              <span>Min rating</span>
+              <input
+                type="number"
+                min={0}
+                max={5}
+                step={0.5}
+                value={minRatingFilter}
+                onChange={(e) =>
+                  setMinRatingFilter(
+                    Number.isNaN(parseFloat(e.target.value))
+                      ? 0
+                      : Math.min(5, Math.max(0, parseFloat(e.target.value)))
+                  )
+                }
+                className="h-5 w-12 border border-border/60 bg-background px-1 text-[11px] outline-none"
+              />
+            </div>
+          )}
         </div>
         <div className="ml-auto inline-flex overflow-hidden border border-border/60 bg-card">
           <button
@@ -345,8 +358,9 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
       </div>
       {filtered.map((item) => {
         const href = item.url ?? undefined;
-        const byline =
-          item.creator?.display_name ?? item.creator_id.slice(0, 6);
+        const byline = isPublic
+          ? "Member"
+          : item.creator?.display_name ?? item.creator_id.slice(0, 6);
         const typeLabel =
           item.type.charAt(0).toUpperCase() + item.type.slice(1);
         const summaryText = item.summary ?? item.description ?? null;
@@ -426,21 +440,26 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
                 </div>
               )}
               <div className="flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5 border border-border/60 bg-card px-2 py-0.5">
-                  {item.creator?.avatar_url ? (
-                    <Avatar className="h-4 w-4">
-                      <AvatarImage src={item.creator.avatar_url} alt={byline} />
-                      <AvatarFallback className="text-[8px]">
-                        {(item.creator?.display_name || "M")
-                          .slice(0, 2)
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <User className="h-3 w-3" />
-                  )}
-                  <span>{byline}</span>
-                </span>
+                {!isPublic && (
+                  <span className="inline-flex items-center gap-1.5 border border-border/60 bg-card px-2 py-0.5">
+                    {item.creator?.avatar_url ? (
+                      <Avatar className="h-4 w-4">
+                        <AvatarImage
+                          src={item.creator.avatar_url}
+                          alt={byline}
+                        />
+                        <AvatarFallback className="text-[8px]">
+                          {(item.creator?.display_name || "M")
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <User className="h-3 w-3" />
+                    )}
+                    <span>{byline}</span>
+                  </span>
+                )}
                 <span className="inline-flex items-center gap-1 border border-border/60 bg-card px-2 py-0.5">
                   <Tag className="h-3 w-3" />
                   <span>{typeLabel}</span>
@@ -462,92 +481,122 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
                 <button
                   type="button"
                   className="inline-flex items-center gap-1 border border-border/60 bg-card px-2 py-0.5"
-                  onClick={() =>
-                    setOpenComments((prev) => ({
-                      ...prev,
-                      [item.id]: !prev[item.id],
-                    }))
-                  }
+                  onClick={() => {
+                    if (isPublic) {
+                      setShowMemberOnlyMessage((prev) => ({
+                        ...prev,
+                        [item.id]: !prev[item.id],
+                      }));
+                    } else {
+                      setOpenComments((prev) => ({
+                        ...prev,
+                        [item.id]: !prev[item.id],
+                      }));
+                    }
+                  }}
                 >
                   <MessageCircle className="h-3 w-3" />
                   <span>Comments ({item.comments?.length ?? 0})</span>
                 </button>
               </div>
 
-              <div className="mt-1 space-y-2 border border-border/60 bg-background/60 pt-2.5 pb-3 px-3">
-                <CommentInput
-                  initialComment={item.my_comment ?? ""}
-                  onSubmit={(comment) =>
-                    handleInteraction({
-                      itemId: item.id,
-                      comment,
-                    })
-                  }
-                  disabled={isPending}
-                />
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground" />
-                  <div className="flex items-center gap-2">
-                    <RatingStars
-                      value={item.my_rating ?? null}
-                      onChange={(rating) =>
-                        handleInteraction({
-                          itemId: item.id,
-                          rating,
-                        })
-                      }
-                      disabled={isPending}
-                    />
-                    <Button
-                      variant={
-                        item.my_status === "saved" ? "default" : "outline"
-                      }
-                      size="sm"
-                      disabled={isPending}
-                      className="flex items-center gap-1 px-2 py-1 text-[11px]"
-                      onClick={() =>
-                        handleInteraction({
-                          itemId: item.id,
-                          status: "saved",
-                        })
-                      }
-                    >
-                      <Bookmark className="h-3 w-3" />
-                      <span>Save</span>
-                    </Button>
-                    <Button
-                      variant={
-                        item.my_status === "done" ? "default" : "outline"
-                      }
-                      size="sm"
-                      disabled={isPending}
-                      className="flex items-center gap-1 px-2 py-1 text-[11px]"
-                      onClick={() =>
-                        handleInteraction({
-                          itemId: item.id,
-                          status: "done",
-                        })
-                      }
-                    >
-                      <CheckCircle2 className="h-3 w-3" />
-                      <span>Done</span>
-                    </Button>
-                    {item.creator_id === currentUserId && (
+              {/* Interaction section - only for authenticated users */}
+              {!isPublic && (
+                <div className="mt-1 space-y-2 border border-border/60 bg-background/60 pt-2.5 pb-3 px-3">
+                  <CommentInput
+                    initialComment={item.my_comment ?? ""}
+                    onSubmit={(comment) =>
+                      handleInteraction({
+                        itemId: item.id,
+                        comment,
+                      })
+                    }
+                    disabled={isPending}
+                  />
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground" />
+                    <div className="flex items-center gap-2">
+                      <RatingStars
+                        value={item.my_rating ?? null}
+                        onChange={(rating) =>
+                          handleInteraction({
+                            itemId: item.id,
+                            rating,
+                          })
+                        }
+                        disabled={isPending}
+                      />
                       <Button
-                        variant="outline"
+                        variant={
+                          item.my_status === "saved" ? "default" : "outline"
+                        }
                         size="sm"
                         disabled={isPending}
                         className="flex items-center gap-1 px-2 py-1 text-[11px]"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() =>
+                          handleInteraction({
+                            itemId: item.id,
+                            status: "saved",
+                          })
+                        }
                       >
-                        <Trash2 className="h-3 w-3" />
-                        <span>Remove</span>
+                        <Bookmark className="h-3 w-3" />
+                        <span>Save</span>
                       </Button>
-                    )}
+                      <Button
+                        variant={
+                          item.my_status === "done" ? "default" : "outline"
+                        }
+                        size="sm"
+                        disabled={isPending}
+                        className="flex items-center gap-1 px-2 py-1 text-[11px]"
+                        onClick={() =>
+                          handleInteraction({
+                            itemId: item.id,
+                            status: "done",
+                          })
+                        }
+                      >
+                        <CheckCircle2 className="h-3 w-3" />
+                        <span>Done</span>
+                      </Button>
+                      {item.creator_id === currentUserId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isPending}
+                          className="flex items-center gap-1 px-2 py-1 text-[11px]"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          <span>Remove</span>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              {openComments[item.id] &&
+              )}
+
+              {/* Member-only message for public view when clicking comments */}
+              {isPublic && showMemberOnlyMessage[item.id] && (
+                <div className="mt-2 border border-amber-500/30 bg-amber-500/5 px-3 py-3 text-xs">
+                  <p className="text-muted-foreground">
+                    Comments are only visible to N3Q members.{" "}
+                    <a
+                      href="https://ninethreequarters.com/apply"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-500 hover:text-emerald-400 font-medium"
+                    >
+                      Apply to join →
+                    </a>
+                  </p>
+                </div>
+              )}
+
+              {/* Comments section - only for authenticated users */}
+              {!isPublic &&
+                openComments[item.id] &&
                 item.comments &&
                 item.comments.length > 0 && (
                   <div className="mt-2 space-y-2 text-[11px] text-muted-foreground">

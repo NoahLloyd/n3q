@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
@@ -87,6 +88,16 @@ export default function LoginPage() {
                   }}
                 </ConnectButton.Custom>
               </div>
+            </div>
+
+            {/* Browse as Guest */}
+            <div className="text-center pt-2">
+              <Link
+                href="/public/directory"
+                className="text-xs text-muted-foreground hover:text-foreground font-mono transition-colors"
+              >
+                or browse as guest →
+              </Link>
             </div>
           </div>
 

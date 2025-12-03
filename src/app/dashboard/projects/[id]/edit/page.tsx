@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Eye, Edit3 } from "lucide-react";
+import { ArrowLeft, Loader2, Eye, Edit3, Globe, Lock } from "lucide-react";
 import { useAccount } from "wagmi";
 import { fetchProject, updateProject } from "@/lib/supabase/projects";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,7 @@ export default function EditProjectPage({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<ProjectStatus>("idea");
+  const [isPublic, setIsPublic] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -75,6 +76,7 @@ export default function EditProjectPage({
         setTitle(data.title);
         setDescription(data.description || "");
         setStatus(data.status);
+        setIsPublic(data.is_public || false);
       }
       setIsLoading(false);
     };
@@ -109,6 +111,7 @@ export default function EditProjectPage({
         title: title.trim(),
         description: description.trim() || null,
         status,
+        is_public: isPublic,
       });
       router.push(`/dashboard/projects/${project.id}`);
     } catch (error) {
@@ -273,6 +276,47 @@ export default function EditProjectPage({
                     </p>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Visibility */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Visibility</label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPublic(false)}
+                  className={`p-4 border text-left transition-colors ${
+                    !isPublic
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : "border-border hover:border-muted-foreground"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-4 w-4" />
+                    <span className="font-medium text-sm">Members Only</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Only N3Q members can see this project
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPublic(true)}
+                  className={`p-4 border text-left transition-colors ${
+                    isPublic
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : "border-border hover:border-muted-foreground"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    <span className="font-medium text-sm">Public</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Anyone can view this project, even non-members
+                  </p>
+                </button>
               </div>
             </div>
 

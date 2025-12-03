@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "@/lib/utils";
 
 interface ProjectCardProps {
   project: Project;
+  isPublic?: boolean;
 }
 
 const statusConfig: Record<
@@ -37,9 +38,10 @@ const statusConfig: Record<
   },
 };
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, isPublic = false }: ProjectCardProps) {
   const status = statusConfig[project.status];
   const StatusIcon = status.icon;
+  const basePath = isPublic ? "/public" : "/dashboard";
 
   // Get first ~150 chars of description for preview, strip markdown
   const descriptionPreview = project.description
@@ -51,7 +53,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
     : null;
 
   return (
-    <Link href={`/dashboard/projects/${project.id}`}>
+    <Link href={`${basePath}/projects/${project.id}`}>
       <Card className="rounded-none hover:border-sidebar-ring transition-colors cursor-pointer h-full">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">

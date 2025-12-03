@@ -123,6 +123,7 @@ export interface Project {
   title: string;
   description: string | null;
   status: ProjectStatus;
+  is_public: boolean;
   created_at: string;
   updated_at: string;
   creator?: Profile;
@@ -148,6 +149,7 @@ export interface Event {
   location: string | null;
   event_date: string; // YYYY-MM-DD
   event_time: string | null; // HH:MM:SS or null for all-day
+  is_public: boolean;
   created_at: string;
   creator?: Profile;
   rsvp_count?: number;

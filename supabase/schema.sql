@@ -258,4 +258,154 @@ create policy "Users can delete their own upvotes"
   for delete
   using (auth.uid() = user_id);
 
+-- PROJECTS
+create table if not exists public.projects (
+  id uuid primary key default gen_random_uuid(),
+  creator_id uuid not null references public.profiles(id) on delete cascade,
+  title text not null,
+  description text,
+  status text not null default 'idea' check (status in ('idea', 'in_progress', 'looking_for_help', 'completed')),
+  is_public boolean not null default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.projects enable row level security;
+
+create policy "Projects are viewable by authenticated users"
+  on public.projects
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Public projects are viewable by everyone"
+  on public.projects
+  for select
+  using (is_public = true);
+
+create policy "Users can create projects"
+  on public.projects
+  for insert
+  with check (auth.uid() = creator_id);
+
+create policy "Users can update their own projects"
+  on public.projects
+  for update
+  using (auth.uid() = creator_id);
+
+create policy "Users can delete their own projects"
+  on public.projects
+  for delete
+  using (auth.uid() = creator_id);
+
+-- PROJECT MEMBERS
+create table if not exists public.project_members (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  user_id uuid not null,
+  joined_at timestamptz default now(),
+  unique(project_id, user_id)
+);
+
+alter table public.project_members enable row level security;
+
+create policy "Project members are viewable by authenticated users"
+  on public.project_members
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Public project members are viewable by everyone"
+  on public.project_members
+  for select
+  using (
+    (select is_public from public.projects where id = project_id) = true
+  );
+
+create policy "Users can join projects"
+  on public.project_members
+  for insert
+  with check (auth.uid()::text = user_id::text);
+
+create policy "Users can leave projects"
+  on public.project_members
+  for delete
+  using (auth.uid()::text = user_id::text);
+
+-- EVENTS
+create table if not exists public.events (
+  id uuid primary key default gen_random_uuid(),
+  creator_id uuid not null references public.profiles(id) on delete cascade,
+  title text not null,
+  description text,
+  location text,
+  event_date date not null,
+  event_time time,
+  is_public boolean not null default false,
+  created_at timestamptz default now()
+);
+
+alter table public.events enable row level security;
+
+create policy "Events are viewable by authenticated users"
+  on public.events
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Public events are viewable by everyone"
+  on public.events
+  for select
+  using (is_public = true);
+
+create policy "Users can create events"
+  on public.events
+  for insert
+  with check (auth.uid() = creator_id);
+
+create policy "Users can update their own events"
+  on public.events
+  for update
+  using (auth.uid() = creator_id);
+
+create policy "Users can delete their own events"
+  on public.events
+  for delete
+  using (auth.uid() = creator_id);
+
+-- EVENT RSVPS
+create table if not exists public.event_rsvps (
+  id uuid primary key default gen_random_uuid(),
+  event_id uuid not null references public.events(id) on delete cascade,
+  user_id uuid not null,
+  created_at timestamptz default now(),
+  unique(event_id, user_id)
+);
+
+alter table public.event_rsvps enable row level security;
+
+create policy "Event RSVPs are viewable by authenticated users"
+  on public.event_rsvps
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Public event RSVPs are viewable by everyone"
+  on public.event_rsvps
+  for select
+  using (
+    (select is_public from public.events where id = event_id) = true
+  );
+
+create policy "Users can RSVP to events"
+  on public.event_rsvps
+  for insert
+  with check (auth.uid()::text = user_id::text);
+
+create policy "Users can cancel their RSVPs"
+  on public.event_rsvps
+  for delete
+  using (auth.uid()::text = user_id::text);
+
+-- Update profiles to be viewable by everyone (for public directory)
+create policy "Profiles are viewable by everyone"
+  on public.profiles
+  for select
+  using (true);
 

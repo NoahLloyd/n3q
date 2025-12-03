@@ -122,7 +122,8 @@ export async function createProject(
   userId: string,
   title: string,
   description: string | null,
-  status: ProjectStatus
+  status: ProjectStatus,
+  isPublic: boolean = false
 ): Promise<Project | null> {
   // Ensure profile exists
   await supabase.from("profiles").upsert({ id: userId }, { onConflict: "id" });
@@ -135,6 +136,7 @@ export async function createProject(
       title,
       description,
       status,
+      is_public: isPublic,
     })
     .select()
     .single();
@@ -167,6 +169,7 @@ export async function updateProject(
     title?: string;
     description?: string | null;
     status?: ProjectStatus;
+    is_public?: boolean;
   }
 ): Promise<Project | null> {
   // Verify ownership
@@ -291,4 +294,103 @@ export async function leaveProject(
   return true;
 }
 
+// Public functions (no auth required)
+export async function fetchPublicProjects(
+  statusFilter?: ProjectStatus
+): Promise<Project[]> {
+  let query = supabase
+    .from("projects")
+    .select("*")
+    .eq("is_public", true)
+    .order("created_at", { ascending: false });
+
+  if (statusFilter) {
+    query = query.eq("status", statusFilter);
+  }
+
+  const { data: projects, error } = await query;
+
+  if (error) {
+    console.error("Error fetching public projects:", error);
+    return [];
+  }
+
+  // Get member counts for all projects
+  const projectIds = (projects || []).map((p) => p.id);
+
+  const { data: allMembers } = await supabase
+    .from("project_members")
+    .select("*")
+    .in("project_id", projectIds);
+
+  // Fetch creator profiles
+  const creatorIds = [...new Set((projects || []).map((p) => p.creator_id))];
+  const profiles: Record<string, Profile> = {};
+
+  for (const id of creatorIds) {
+    const profile = await getProfile(id);
+    if (profile) profiles[id] = profile;
+  }
+
+  return (projects || []).map((project) => {
+    const projectMembers = (allMembers || []).filter(
+      (m) => m.project_id === project.id
+    );
+
+    return {
+      ...project,
+      creator: profiles[project.creator_id] || null,
+      member_count: projectMembers.length,
+      user_is_member: false,
+    };
+  });
+}
+
+export async function fetchPublicProject(
+  projectId: string
+): Promise<Project | null> {
+  const { data: project, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", projectId)
+    .eq("is_public", true)
+    .single();
+
+  if (error) {
+    console.error("Error fetching public project:", error);
+    return null;
+  }
+
+  // Fetch members
+  const { data: members } = await supabase
+    .from("project_members")
+    .select("*")
+    .eq("project_id", projectId)
+    .order("joined_at", { ascending: true });
+
+  // Fetch profiles for all members
+  const memberUserIds = [...new Set((members || []).map((m) => m.user_id))];
+  const profiles: Record<string, Profile> = {};
+
+  for (const id of memberUserIds) {
+    const profile = await getProfile(id);
+    if (profile) profiles[id] = profile;
+  }
+
+  // Fetch creator profile
+  const creator = await getProfile(project.creator_id);
+
+  const membersWithProfiles: ProjectMember[] = (members || []).map((m) => ({
+    ...m,
+    user: profiles[m.user_id] || null,
+  }));
+
+  return {
+    ...project,
+    creator,
+    members: membersWithProfiles,
+    member_count: membersWithProfiles.length,
+    user_is_member: false,
+  };
+}
 
