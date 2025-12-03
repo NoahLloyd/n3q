@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useAccount } from "wagmi";
-import { Camera, Loader2, Check } from "lucide-react";
+import { Camera, Loader2, Check, Monitor } from "lucide-react";
 import { useMembership, useAllMembers } from "@/lib/web3/hooks";
 import { getOrCreateProfile, updateProfile, uploadAvatar } from "@/lib/supabase/profile";
 import type { Profile } from "@/lib/supabase/types";
@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
 
 export function ProfileContent() {
   const { address } = useAccount();
@@ -302,6 +303,26 @@ export function ProfileContent() {
             If you ever want to leave the DAO, you can burn your membership token.
             This action is irreversible.
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Display Mode */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-semibold">
+            Display Mode
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Full-screen dashboard for office monitors showing knowledge, events, projects, and polls.
+          </p>
+          <Link href="/dashboard/display">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Monitor className="h-4 w-4" />
+              Open Display Mode
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

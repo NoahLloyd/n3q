@@ -83,7 +83,7 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <div className="text-center py-12 border border-dashed border-border">
-          <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
             {filter === "all"
               ? "No projects yet. Be the first to create one!"
               : `No projects with status "${filter.replace(/_/g, " ")}"`}

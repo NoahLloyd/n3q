@@ -15,11 +15,14 @@ interface AppLayoutClientProps {
 
 export function AppLayoutClient({ children }: AppLayoutClientProps) {
   const router = useRouter();
-  const { isConnected, address } = useAccount();
+  const { isConnected, isReconnecting, address } = useAccount();
   const { isMember, isLoading, tokenId } = useMembership();
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
+    // Don't redirect while wagmi is reconnecting from stored state
+    if (isReconnecting) return;
+    
     if (!isConnected) {
       router.push("/");
       return;
@@ -28,7 +31,7 @@ export function AppLayoutClient({ children }: AppLayoutClientProps) {
     if (!isLoading && !isMember) {
       router.push("/");
     }
-  }, [isConnected, isMember, isLoading, router]);
+  }, [isConnected, isReconnecting, isMember, isLoading, router]);
 
   // Fetch or create profile when connected
   useEffect(() => {
@@ -50,7 +53,7 @@ export function AppLayoutClient({ children }: AppLayoutClientProps) {
       window.removeEventListener("profile-updated", handleProfileUpdate);
   }, [address]);
 
-  if (!isConnected || isLoading) {
+  if (isReconnecting || !isConnected || isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
