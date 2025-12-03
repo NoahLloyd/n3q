@@ -97,4 +97,53 @@ export interface CommentUpvote {
   created_at: string;
 }
 
+// Project types
+export type ProjectStatus = "idea" | "in_progress" | "looking_for_help" | "completed";
+
+export interface Project {
+  id: string;
+  creator_id: string;
+  title: string;
+  description: string | null;
+  status: ProjectStatus;
+  created_at: string;
+  updated_at: string;
+  creator?: Profile;
+  member_count?: number;
+  members?: ProjectMember[];
+  user_is_member?: boolean;
+}
+
+export interface ProjectMember {
+  id: string;
+  project_id: string;
+  user_id: string;
+  joined_at: string;
+  user?: Profile;
+}
+
+// Event types
+export interface Event {
+  id: string;
+  creator_id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  event_date: string; // YYYY-MM-DD
+  event_time: string | null; // HH:MM:SS or null for all-day
+  created_at: string;
+  creator?: Profile;
+  rsvp_count?: number;
+  rsvps?: EventRsvp[];
+  user_has_rsvp?: boolean;
+}
+
+export interface EventRsvp {
+  id: string;
+  event_id: string;
+  user_id: string;
+  created_at: string;
+  user?: Profile;
+}
+
 
