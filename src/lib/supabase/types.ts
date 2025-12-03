@@ -1,9 +1,17 @@
 export type ContentType =
   | "article"
-  | "book"
   | "blog"
+  | "book"
   | "podcast"
   | "video"
+  | "paper"
+  | "newsletter"
+  | "report"
+  | "dataset"
+  | "tool"
+  | "course"
+  | "event"
+  | "community"
   | "other";
 
 export interface Profile {
@@ -21,6 +29,15 @@ export interface ContentItem {
   type: ContentType;
   url: string | null;
   title: string;
+  ai_title?: string | null;
+  ai_subtitle?: string | null;
+  site_name?: string | null;
+  author?: string | null;
+  description?: string | null;
+  image_url?: string | null;
+  summary?: string | null;
+  topics?: string[] | null;
+  ai_notes?: Record<string, unknown> | null;
   created_at: string;
   creator?: Profile;
   score?: number;

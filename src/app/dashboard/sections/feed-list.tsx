@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { FeedItem } from "@/lib/feed";
@@ -25,10 +26,57 @@ import {
   Trash2,
   User,
   Tag,
+  ExternalLink,
 } from "lucide-react";
-import { LinkPreview } from "./link-preview";
+import { CONTENT_TYPE_OPTIONS } from "@/lib/content-types";
 
 const supabase = createSupabaseBrowserClient();
+
+const FILTER_STORAGE_KEY = "n3q-shared-knowledge-filters";
+
+type StoredFilters = {
+  sort?: "hot" | "new" | "top";
+  statusFilter?: "all" | "saved" | "done" | "untouched";
+  typeFilter?: FeedItem["type"] | "all";
+  minRatingFilter?: number;
+};
+
+const isValidSort = (value: unknown): value is "hot" | "new" | "top" =>
+  value === "hot" || value === "new" || value === "top";
+
+const isValidStatus = (
+  value: unknown
+): value is "all" | "saved" | "done" | "untouched" =>
+  value === "all" ||
+  value === "saved" ||
+  value === "done" ||
+  value === "untouched";
+
+const isValidType = (value: unknown): value is FeedItem["type"] | "all" =>
+  value === "all" ||
+  (typeof value === "string" &&
+    CONTENT_TYPE_OPTIONS.includes(value as FeedItem["type"]));
+
+const readStoredFilters = (): StoredFilters | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = window.localStorage.getItem(FILTER_STORAGE_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored) as StoredFilters;
+  } catch (error) {
+    console.warn("Failed to parse stored knowledge filters", error);
+    return null;
+  }
+};
+
+const safeHostname = (value?: string | null) => {
+  if (!value) return "";
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return "";
+  }
+};
 
 interface FeedListProps {
   items: FeedItem[];
@@ -39,13 +87,45 @@ interface FeedListProps {
 export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [sort, setSort] = useState<"hot" | "new" | "top">("hot");
+  const [sort, setSort] = useState<"hot" | "new" | "top">(() => {
+    const stored = readStoredFilters();
+    return stored && isValidSort(stored.sort) ? stored.sort : "hot";
+  });
   const [openComments, setOpenComments] = useState<Record<string, boolean>>({});
   const [statusFilter, setStatusFilter] = useState<
     "all" | "saved" | "done" | "untouched"
-  >("all");
-  const [typeFilter, setTypeFilter] = useState<FeedItem["type"] | "all">("all");
-  const [minRatingFilter, setMinRatingFilter] = useState<number>(0);
+  >(() => {
+    const stored = readStoredFilters();
+    return stored && isValidStatus(stored.statusFilter)
+      ? stored.statusFilter
+      : "all";
+  });
+  const [typeFilter, setTypeFilter] = useState<FeedItem["type"] | "all">(() => {
+    const stored = readStoredFilters();
+    return stored && isValidType(stored.typeFilter) ? stored.typeFilter : "all";
+  });
+  const [minRatingFilter, setMinRatingFilter] = useState<number>(() => {
+    const stored = readStoredFilters();
+    if (
+      stored &&
+      typeof stored.minRatingFilter === "number" &&
+      !Number.isNaN(stored.minRatingFilter)
+    ) {
+      return Math.min(5, Math.max(0, stored.minRatingFilter));
+    }
+    return 0;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const payload = {
+      sort,
+      statusFilter,
+      typeFilter,
+      minRatingFilter,
+    };
+    window.localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(payload));
+  }, [sort, statusFilter, typeFilter, minRatingFilter]);
 
   useEffect(() => {
     // Initialize comments open state for new items on the client
@@ -269,12 +349,38 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
           item.creator?.display_name ?? item.creator_id.slice(0, 6);
         const typeLabel =
           item.type.charAt(0).toUpperCase() + item.type.slice(1);
+        const summaryText = item.summary ?? item.description ?? null;
+        const topics =
+          item.topics
+            ?.map((topic) => topic?.trim())
+            .filter((topic): topic is string => Boolean(topic)) ?? [];
+        const uniqueTopics = Array.from(new Set(topics)).slice(0, 6);
+        const hostname = safeHostname(item.url);
+
+        const displayTitle = item.ai_title ?? item.title;
+        const siteLabel = item.site_name ?? hostname ?? "Link";
 
         return (
-          <Card key={item.id} className="border-border/70 rounded-none">
-            <CardHeader className="space-y-1 pb-2">
-              {href && <LinkPreview url={href} />}
-              <CardTitle className="text-sm font-semibold">
+          <Card
+            key={item.id}
+            className="border-border/70 rounded-none overflow-hidden pt-0"
+          >
+            {item.image_url && (
+              <a href={href} target="_blank" rel="noreferrer" className="block">
+                <div className="relative w-full bg-muted aspect-3/1">
+                  <Image
+                    src={item.image_url}
+                    alt={displayTitle}
+                    fill
+                    className="object-cover"
+                    sizes="(min-width: 1024px) 960px, 100vw"
+                    priority={false}
+                  />
+                </div>
+              </a>
+            )}
+            <CardHeader className="space-y-2 pb-3">
+              <CardTitle className="text-base mt-4 mb-0 font-semibold leading-tight">
                 {href ? (
                   <a
                     href={href}
@@ -282,14 +388,43 @@ export function FeedList({ items, currentUserId, onRefresh }: FeedListProps) {
                     rel="noreferrer"
                     className="hover:underline"
                   >
-                    {item.title}
+                    {displayTitle}
                   </a>
                 ) : (
-                  item.title
+                  displayTitle
                 )}
               </CardTitle>
+              {href && (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  <span className="truncate">{hostname || href}</span>
+                </a>
+              )}
             </CardHeader>
-            <CardContent className="space-y-1 text-sm">
+            <CardContent className="space-y-3 text-sm">
+              {summaryText && (
+                <p className="text-sm leading-relaxed text-foreground">
+                  {summaryText}
+                </p>
+              )}
+              {uniqueTopics.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {uniqueTopics.map((topic) => (
+                    <Badge
+                      key={`${item.id}-${topic}`}
+                      variant="secondary"
+                      className="text-[10px] uppercase tracking-wide"
+                    >
+                      {topic}
+                    </Badge>
+                  ))}
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5 border border-border/60 bg-card px-2 py-0.5">
                   {item.creator?.avatar_url ? (

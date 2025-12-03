@@ -30,9 +30,35 @@ create policy "Users can update their own profile"
 create table if not exists public.content_items (
   id uuid primary key default gen_random_uuid(),
   creator_id uuid not null references public.profiles(id) on delete cascade,
-  type text not null check (type in ('article', 'book', 'blog', 'podcast', 'video', 'other')),
+  type text not null check (
+    type in (
+      'article',
+      'blog',
+      'book',
+      'podcast',
+      'video',
+      'paper',
+      'newsletter',
+      'report',
+      'dataset',
+      'tool',
+      'course',
+      'event',
+      'community',
+      'other'
+    )
+  ),
   url text,
   title text not null,
+  ai_title text,
+  ai_subtitle text,
+  site_name text,
+  author text,
+  description text,
+  image_url text,
+  summary text,
+  topics text[] default '{}'::text[],
+  ai_notes jsonb default '{}'::jsonb,
   created_at timestamptz default now()
 );
 
