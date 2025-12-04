@@ -69,6 +69,11 @@ create policy "Content items are viewable by authenticated users"
   for select
   using (auth.role() = 'authenticated');
 
+create policy "Content items are viewable by everyone"
+  on public.content_items
+  for select
+  using (true);
+
 create policy "Users can insert their own content items"
   on public.content_items
   for insert
@@ -102,6 +107,11 @@ create policy "Content interactions are viewable by authenticated users"
   on public.content_interactions
   for select
   using (auth.role() = 'authenticated');
+
+create policy "Content interactions are viewable by everyone for counts"
+  on public.content_interactions
+  for select
+  using (true);
 
 create policy "Users can insert their own interactions"
   on public.content_interactions

@@ -143,12 +143,14 @@ export default function PublicKnowledgePage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
-      <h1 className="text-xl font-semibold tracking-tight">Shared knowledge</h1>
+    <div className="flex flex-1 flex-col items-center">
+      <div className="w-full max-w-3xl flex flex-col gap-6">
+        <h1 className="text-xl font-semibold tracking-tight">
+          Shared knowledge
+        </h1>
 
-      <PublicViewBanner itemType="knowledge" />
+        <PublicViewBanner itemType="knowledge" />
 
-      <div className="">
         <FeedList items={feed} currentUserId="" isPublic />
       </div>
     </div>

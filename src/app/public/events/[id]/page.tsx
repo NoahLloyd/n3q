@@ -17,7 +17,6 @@ import type { Event } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "@/lib/utils";
 import { PublicViewBanner } from "@/components/public-view-banner";
 
@@ -305,74 +304,33 @@ export default function PublicEventDetailPage({
         </Card>
       )}
 
-      {/* Attendees */}
+      {/* Attendees - just show count for public */}
       <Card className="rounded-none">
         <CardHeader>
           <CardTitle className="text-sm font-semibold">
-            Attending ({event.rsvps?.length || 0})
+            Attending ({event.rsvp_count || 0})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {event.rsvps && event.rsvps.length > 0 ? (
-            <div className="space-y-3">
-              {event.rsvps.map((rsvp) => {
-                const displayName =
-                  rsvp.user?.display_name ||
-                  `${rsvp.user_id.slice(0, 6)}...${rsvp.user_id.slice(-4)}`;
-                const initials = rsvp.user?.display_name
-                  ? rsvp.user.display_name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)
-                  : rsvp.user_id.slice(2, 4).toUpperCase();
-
-                return (
-                  <div key={rsvp.id} className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={rsvp.user?.avatar_url || undefined}
-                        alt={displayName}
-                      />
-                      <AvatarFallback className="text-xs">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p
-                        className={`text-sm font-medium ${
-                          !rsvp.user?.display_name ? "font-mono" : ""
-                        }`}
-                      >
-                        {displayName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        RSVP&apos;d {formatDistanceToNow(new Date(rsvp.created_at))}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No one has RSVP&apos;d yet.
+          <div className="border border-amber-500/30 bg-amber-500/5 px-3 py-3 text-xs">
+            <p className="text-muted-foreground">
+              Attendee details are only visible to N3Q members.{" "}
+              <a
+                href="https://ninethreequarters.com/apply"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-500 hover:text-emerald-400 font-medium"
+              >
+                Apply to join →
+              </a>
             </p>
-          )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Event meta */}
+      {/* Event meta - hide creator for public */}
       <p className="text-xs text-muted-foreground">
         Created {formatDistanceToNow(new Date(event.created_at))}
-        {event.creator && (
-          <>
-            {" "}
-            by{" "}
-            {event.creator.display_name || `${event.creator_id.slice(0, 6)}...`}
-          </>
-        )}
       </p>
     </div>
   );

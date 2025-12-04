@@ -15,7 +15,6 @@ import { fetchPublicProject } from "@/lib/supabase/projects";
 import type { Project, ProjectStatus } from "@/lib/supabase/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "@/lib/utils";
 import { PublicViewBanner } from "@/components/public-view-banner";
 
@@ -165,14 +164,6 @@ export default function PublicProjectDetailPage({
           </span>
           <span>
             Created {formatDistanceToNow(new Date(project.created_at))}
-            {project.creator && (
-              <>
-                {" "}
-                by{" "}
-                {project.creator.display_name ||
-                  `${project.creator_id.slice(0, 6)}...`}
-              </>
-            )}
           </span>
         </div>
       </div>
@@ -194,76 +185,27 @@ export default function PublicProjectDetailPage({
         </Card>
       )}
 
-      {/* Members */}
+      {/* Members - just show count for public */}
       <Card className="rounded-none">
         <CardHeader>
           <CardTitle className="text-sm font-semibold">
-            Members ({project.members?.length || 0})
+            Members ({project.member_count || 0})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {project.members && project.members.length > 0 ? (
-            <div className="space-y-3">
-              {project.members.map((member) => {
-                const isProjectCreator =
-                  member.user_id.toLowerCase() ===
-                  project.creator_id.toLowerCase();
-                const displayName =
-                  member.user?.display_name ||
-                  `${member.user_id.slice(0, 6)}...${member.user_id.slice(-4)}`;
-                const initials = member.user?.display_name
-                  ? member.user.display_name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)
-                  : member.user_id.slice(2, 4).toUpperCase();
-
-                return (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={member.user?.avatar_url || undefined}
-                          alt={displayName}
-                        />
-                        <AvatarFallback className="text-xs">
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p
-                          className={`text-sm font-medium ${
-                            !member.user?.display_name ? "font-mono" : ""
-                          }`}
-                        >
-                          {displayName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {isProjectCreator
-                            ? "Creator"
-                            : `Joined ${formatDistanceToNow(
-                                new Date(member.joined_at)
-                              )}`}
-                        </p>
-                      </div>
-                    </div>
-                    {isProjectCreator && (
-                      <Badge variant="secondary" className="text-xs">
-                        Creator
-                      </Badge>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No members yet.</p>
-          )}
+          <div className="border border-amber-500/30 bg-amber-500/5 px-3 py-3 text-xs">
+            <p className="text-muted-foreground">
+              Member details are only visible to N3Q members.{" "}
+              <a
+                href="https://ninethreequarters.com/apply"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-500 hover:text-emerald-400 font-medium"
+              >
+                Apply to join →
+              </a>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
