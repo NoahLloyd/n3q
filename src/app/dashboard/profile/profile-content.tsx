@@ -4,16 +4,16 @@ import { useEffect, useState, useRef } from "react";
 import { useAccount } from "wagmi";
 import { Camera, Loader2, Check, Monitor } from "lucide-react";
 import { useMembership, useAllMembers } from "@/lib/web3/hooks";
-import { getOrCreateProfile, updateProfile, uploadAvatar } from "@/lib/supabase/profile";
-import type { Profile } from "@/lib/supabase/types";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  getOrCreateProfile,
+  updateProfile,
+  uploadAvatar,
+} from "@/lib/supabase/profile";
+import type { Profile } from "@/lib/supabase/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 
@@ -25,9 +25,12 @@ export function ProfileContent() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingBio, setIsSavingBio] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveBioSuccess, setSaveBioSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -36,6 +39,7 @@ export function ProfileContent() {
       getOrCreateProfile(address).then((p) => {
         setProfile(p);
         setDisplayName(p?.display_name || "");
+        setBio(p?.bio || "");
         setIsLoading(false);
       });
     }
@@ -63,6 +67,26 @@ export function ProfileContent() {
     }
   };
 
+  const handleSaveBio = async () => {
+    if (!address) return;
+
+    setIsSavingBio(true);
+    setSaveBioSuccess(false);
+    try {
+      const updated = await updateProfile(address, {
+        bio: bio.trim() || null,
+      });
+      setProfile(updated);
+      setSaveBioSuccess(true);
+      setTimeout(() => setSaveBioSuccess(false), 2000);
+    } catch (error) {
+      console.error("Error saving bio:", error);
+      alert("Failed to save bio");
+    } finally {
+      setIsSavingBio(false);
+    }
+  };
+
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
@@ -87,13 +111,17 @@ export function ProfileContent() {
     try {
       const newAvatarUrl = await uploadAvatar(address, file);
       if (newAvatarUrl) {
-        setProfile((prev) => prev ? { ...prev, avatar_url: newAvatarUrl } : null);
+        setProfile((prev) =>
+          prev ? { ...prev, avatar_url: newAvatarUrl } : null
+        );
         // Notify the layout to refresh sidebar
         window.dispatchEvent(new Event("profile-updated"));
       }
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      alert("Failed to upload avatar. Make sure the avatars storage bucket exists in Supabase.");
+      alert(
+        "Failed to upload avatar. Make sure the avatars storage bucket exists in Supabase."
+      );
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -134,7 +162,10 @@ export function ProfileContent() {
           <div className="flex items-center gap-4">
             <div className="relative group">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "Profile"} />
+                <AvatarImage
+                  src={profile?.avatar_url || undefined}
+                  alt={displayName || "Profile"}
+                />
                 <AvatarFallback className="text-xl">{initials}</AvatarFallback>
               </Avatar>
               <button
@@ -170,7 +201,8 @@ export function ProfileContent() {
               Display Name
             </label>
             <p className="text-xs text-muted-foreground">
-              This name will be shown across votes, comments, and shared knowledge
+              This name will be shown across votes, comments, and shared
+              knowledge
             </p>
             <div className="flex gap-2">
               <Input
@@ -183,7 +215,9 @@ export function ProfileContent() {
               />
               <Button
                 onClick={handleSaveDisplayName}
-                disabled={isSaving || displayName === (profile?.display_name || "")}
+                disabled={
+                  isSaving || displayName === (profile?.display_name || "")
+                }
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -195,14 +229,48 @@ export function ProfileContent() {
               </Button>
             </div>
           </div>
+
+          {/* Bio */}
+          <div className="space-y-2">
+            <label htmlFor="bio" className="text-sm font-medium">
+              Bio
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Tell other members about yourself, your interests, and what
+              you&apos;re working on
+            </p>
+            <Textarea
+              id="bio"
+              placeholder="Write a short bio about yourself..."
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="min-h-[100px] resize-none"
+              maxLength={500}
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">
+                {bio.length}/500 characters
+              </span>
+              <Button
+                onClick={handleSaveBio}
+                disabled={isSavingBio || bio === (profile?.bio || "")}
+              >
+                {isSavingBio ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : saveBioSuccess ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  "Save Bio"
+                )}
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold">
-            Wallet
-          </CardTitle>
+          <CardTitle className="text-base font-semibold">Wallet</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1">
@@ -235,14 +303,20 @@ export function ProfileContent() {
             </div>
             <div>
               <p className="font-medium">Member #{tokenId}</p>
-              <p className="text-sm text-muted-foreground">Soulbound NFT on Base</p>
+              <p className="text-sm text-muted-foreground">
+                Soulbound NFT on Base
+              </p>
             </div>
           </div>
 
           {tokenURI && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Metadata URI</p>
-              <p className="font-mono text-xs text-muted-foreground break-all">{tokenURI}</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Metadata URI
+              </p>
+              <p className="font-mono text-xs text-muted-foreground break-all">
+                {tokenURI}
+              </p>
             </div>
           )}
 
@@ -262,9 +336,7 @@ export function ProfileContent() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold">
-            DAO Stats
-          </CardTitle>
+          <CardTitle className="text-base font-semibold">DAO Stats</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -293,15 +365,18 @@ export function ProfileContent() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
-            Your N3Q membership is a <strong className="text-foreground">soulbound NFT</strong> — 
-            it cannot be transferred or sold. It&apos;s permanently linked to your wallet.
+            Your N3Q membership is a{" "}
+            <strong className="text-foreground">soulbound NFT</strong> — it
+            cannot be transferred or sold. It&apos;s permanently linked to your
+            wallet.
           </p>
           <p>
-            As a member, you can participate in DAO votes and access all N3Q resources.
+            As a member, you can participate in DAO votes and access all N3Q
+            resources.
           </p>
           <p>
-            If you ever want to leave the DAO, you can burn your membership token.
-            This action is irreversible.
+            If you ever want to leave the DAO, you can burn your membership
+            token. This action is irreversible.
           </p>
         </CardContent>
       </Card>
@@ -315,7 +390,8 @@ export function ProfileContent() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Full-screen dashboard for office monitors showing knowledge, events, projects, and polls.
+            Full-screen dashboard for office monitors showing knowledge, events,
+            projects, and polls.
           </p>
           <Link href="/dashboard/display">
             <Button variant="outline" size="sm" className="gap-2">

@@ -5,8 +5,7 @@ import { useAccount } from "wagmi";
 import { useAllMembers } from "@/lib/web3/hooks";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
 
 const supabase = createSupabaseBrowserClient();
 
@@ -60,6 +59,11 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
     return profile?.avatar_url || null;
   };
 
+  const getBio = (memberAddress: string) => {
+    const profile = profiles[memberAddress.toLowerCase()];
+    return profile?.bio || null;
+  };
+
   const getInitials = (memberAddress: string) => {
     const profile = profiles[memberAddress.toLowerCase()];
     if (profile?.display_name) {
@@ -74,23 +78,39 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Directory</h1>
+        <h1 className="text-xl font-semibold tracking-tight">
+          Member Directory
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {totalSupply !== undefined ? `${totalSupply} members` : "Loading..."}
+          {totalSupply !== undefined
+            ? `${totalSupply} members in the community`
+            : "Loading..."}
         </p>
       </div>
 
       {isLoading || profilesLoading ? (
-        <p className="text-sm text-muted-foreground">Loading members...</p>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="animate-pulse overflow-hidden">
+              <div className="aspect-square bg-muted" />
+              <div className="p-4 space-y-2">
+                <div className="h-4 bg-muted rounded w-2/3" />
+                <div className="h-3 bg-muted rounded w-1/2" />
+              </div>
+            </Card>
+          ))}
+        </div>
       ) : members && members.length > 0 ? (
-        <div className="grid gap-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {members.map((memberAddress, index) => {
             const isYou =
-              !isPublic && memberAddress.toLowerCase() === address?.toLowerCase();
+              !isPublic &&
+              memberAddress.toLowerCase() === address?.toLowerCase();
             const displayName = getDisplayName(memberAddress);
             const avatarUrl = getAvatar(memberAddress);
+            const bio = getBio(memberAddress);
             const initials = getInitials(memberAddress);
             const hasProfile =
               profiles[memberAddress.toLowerCase()]?.display_name;
@@ -98,54 +118,62 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
             return (
               <Card
                 key={memberAddress}
-                className={
-                  isYou ? "border-emerald-500/50 bg-emerald-500/5" : ""
-                }
+                className={`overflow-hidden pt-0 transition-all hover:shadow-lg ${
+                  isYou ? "ring-2 ring-emerald-500/50" : ""
+                }`}
               >
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src={avatarUrl || undefined}
-                          alt={displayName}
-                        />
-                        <AvatarFallback className="text-sm font-medium">
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium border border-background">
-                        #{index}
-                      </div>
+                {/* Square Image */}
+                <div className="relative aspect-square bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={displayName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-500/20 to-emerald-600/10">
+                      <span className="text-5xl font-bold text-emerald-500/60">
+                        {initials}
+                      </span>
                     </div>
-                    <div>
-                      <p
-                        className={`text-sm font-medium ${
-                          !hasProfile ? "font-mono" : ""
-                        }`}
-                      >
-                        {displayName}
-                      </p>
-                      {hasProfile && (
-                        <p className="text-xs text-muted-foreground font-mono">
-                          {memberAddress.slice(0, 6)}...
-                          {memberAddress.slice(-4)}
-                        </p>
-                      )}
-                      {isYou && (
-                        <p className="text-xs text-emerald-500">This is you</p>
-                      )}
-                    </div>
+                  )}
+                  {/* Member number badge */}
+                  <div className="absolute top-3 left-3 flex h-7 w-7 items-center justify-center rounded-lg bg-black/60 text-xs font-semibold text-white backdrop-blur-sm">
+                    #{index}
                   </div>
-                  <a
-                    href={`https://basescan.org/address/${memberAddress}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    View →
-                  </a>
-                </CardContent>
+                  {/* You badge */}
+                  {isYou && (
+                    <div className="absolute top-3 right-3 rounded-lg bg-emerald-500 px-2 py-1 text-xs font-semibold text-white">
+                      You
+                    </div>
+                  )}
+                </div>
+
+                {/* Member Info */}
+                <div className="p-4 space-y-2">
+                  <div>
+                    <h3
+                      className={`font-semibold text-base leading-tight ${
+                        !hasProfile ? "font-mono text-sm" : ""
+                      }`}
+                    >
+                      {displayName}
+                    </h3>
+                    <a
+                      href={`https://basescan.org/address/${memberAddress}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-muted-foreground font-mono hover:text-emerald-500 transition-colors"
+                    >
+                      {memberAddress.slice(0, 6)}...{memberAddress.slice(-4)}
+                    </a>
+                  </div>
+
+                  {/* Bio */}
+                  {bio && (
+                    <p className="text-sm text-muted-foreground">{bio}</p>
+                  )}
+                </div>
               </Card>
             );
           })}
