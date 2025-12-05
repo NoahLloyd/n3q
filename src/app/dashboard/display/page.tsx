@@ -15,11 +15,22 @@ const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes
 
 interface ContentItem {
   id: string;
+  creator_id: string;
   title: string;
+  ai_title: string | null;
   url: string | null;
   type: string;
   created_at: string;
   creator?: Profile;
+}
+
+async function getProfile(userId: string): Promise<Profile | null> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+  return data;
 }
 
 async function fetchLatestKnowledge(): Promise<ContentItem[]> {
@@ -29,8 +40,24 @@ async function fetchLatestKnowledge(): Promise<ContentItem[]> {
     .order("created_at", { ascending: false })
     .limit(10);
 
-  if (error || !items) return [];
-  return items;
+  if (error || !items) {
+    console.error("Error fetching knowledge:", error);
+    return [];
+  }
+
+  // Fetch creator profiles
+  const creatorIds = [...new Set(items.map((item) => item.creator_id))];
+  const profiles: Record<string, Profile> = {};
+
+  for (const id of creatorIds) {
+    const profile = await getProfile(id);
+    if (profile) profiles[id] = profile;
+  }
+
+  return items.map((item) => ({
+    ...item,
+    creator: profiles[item.creator_id] || undefined,
+  }));
 }
 
 const projectStatusColors: Record<string, string> = {
@@ -70,7 +97,20 @@ export default function DisplayPage() {
       setKnowledge(knowledgeData);
       setProjects(projectsData.slice(0, 8));
       setEvents(eventsData.slice(0, 8));
-      setPolls(pollsData.filter((p) => p.status === "active").slice(0, 6));
+
+      // Show active polls and polls closed within the last week
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const relevantPolls = pollsData.filter((p) => {
+        if (p.status === "active") return true;
+        if (p.status === "closed" && p.closed_at) {
+          return new Date(p.closed_at) >= oneWeekAgo;
+        }
+        return false;
+      });
+
+      setPolls(relevantPolls.slice(0, 6));
       setIsLoading(false);
     } catch (error) {
       console.error("Error loading display data:", error);
@@ -109,17 +149,36 @@ export default function DisplayPage() {
         </div>
         <div className="flex-1 overflow-hidden">
           <div className="space-y-2">
-            {knowledge.map((item) => (
-              <div
-                key={item.id}
-                className="p-3 border border-border/50 bg-card/30"
-              >
-                <p className="text-sm font-medium line-clamp-1">{item.title}</p>
-                <span className="text-xs text-muted-foreground uppercase">
-                  {item.type}
-                </span>
-              </div>
-            ))}
+            {knowledge.map((item) => {
+              const submittedDate = new Date(item.created_at);
+              const formattedDate = submittedDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              });
+              const displayTitle = item.ai_title || item.title;
+              const typeLabel = item.type
+                .split("_")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
+
+              return (
+                <div
+                  key={item.id}
+                  className="p-3 border border-border/50 bg-card/30"
+                >
+                  <p className="text-sm font-medium line-clamp-1">
+                    {displayTitle}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                    <span>{typeLabel}</span>
+                    <span>•</span>
+                    <span>{item.creator?.display_name || "Unknown"}</span>
+                    <span>•</span>
+                    <span>{formattedDate}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -178,7 +237,9 @@ export default function DisplayPage() {
                 );
               })
             ) : (
-              <p className="text-sm text-muted-foreground">No upcoming events</p>
+              <p className="text-sm text-muted-foreground">
+                No upcoming events
+              </p>
             )}
           </div>
         </div>
@@ -234,7 +295,7 @@ export default function DisplayPage() {
             <Vote className="h-5 w-5" />
           </div>
           <h2 className="font-semibold uppercase tracking-wider text-sm">
-            Active Polls
+            Polls
           </h2>
         </div>
         <div className="flex-1 overflow-hidden">
@@ -246,15 +307,25 @@ export default function DisplayPage() {
                     ? poll.yes_count + poll.no_count + poll.abstain_count
                     : poll.options?.reduce((sum, o) => sum + o.vote_count, 0) ||
                       0;
+                const isClosed = poll.status === "closed";
 
                 return (
                   <div
                     key={poll.id}
-                    className="p-3 border border-border/50 bg-card/30"
+                    className={`p-3 border border-border/50 bg-card/30 ${
+                      isClosed ? "opacity-75" : ""
+                    }`}
                   >
-                    <p className="text-sm font-medium line-clamp-1 mb-2">
-                      {poll.title}
-                    </p>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="text-sm font-medium line-clamp-1 flex-1">
+                        {poll.title}
+                      </p>
+                      {isClosed && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          Closed
+                        </span>
+                      )}
+                    </div>
                     <div className="space-y-1">
                       {poll.type === "yes_no_abstain" ? (
                         <>
@@ -272,17 +343,23 @@ export default function DisplayPage() {
                           />
                         </>
                       ) : (
-                        poll.options?.slice(0, 3).map((opt, i) => (
-                          <PollBar
-                            key={opt.id}
-                            label={opt.label}
-                            count={opt.vote_count}
-                            total={totalVotes}
-                            color={
-                              ["bg-emerald-500", "bg-blue-500", "bg-amber-500"][i]
-                            }
-                          />
-                        ))
+                        poll.options
+                          ?.slice(0, 3)
+                          .map((opt, i) => (
+                            <PollBar
+                              key={opt.id}
+                              label={opt.label}
+                              count={opt.vote_count}
+                              total={totalVotes}
+                              color={
+                                [
+                                  "bg-emerald-500",
+                                  "bg-blue-500",
+                                  "bg-amber-500",
+                                ][i]
+                              }
+                            />
+                          ))
                       )}
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
