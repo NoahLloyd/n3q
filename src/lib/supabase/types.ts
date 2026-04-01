@@ -34,7 +34,6 @@ export interface ContentItem {
   site_name?: string | null;
   author?: string | null;
   description?: string | null;
-  image_url?: string | null;
   summary?: string | null;
   topics?: string[] | null;
   ai_notes?: Record<string, unknown> | null;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { FeedItem } from "@/lib/feed";
@@ -379,21 +378,7 @@ export function FeedList({
             key={item.id}
             className="border-border/70 rounded-none overflow-hidden pt-0"
           >
-            {item.image_url && (
-              <a href={href} target="_blank" rel="noreferrer" className="block">
-                <div className="relative w-full bg-muted aspect-3/1">
-                  <Image
-                    src={item.image_url}
-                    alt={displayTitle}
-                    fill
-                    className="object-cover"
-                    sizes="(min-width: 1024px) 960px, 100vw"
-                    priority={false}
-                  />
-                </div>
-              </a>
-            )}
-            <CardHeader className="space-y-2 pb-3">
+<CardHeader className="space-y-2 pb-3">
               <CardTitle className="text-base mt-4 mb-0 font-semibold leading-tight">
                 {href ? (
                   <a

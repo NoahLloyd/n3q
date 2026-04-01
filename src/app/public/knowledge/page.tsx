@@ -101,7 +101,6 @@ async function fetchPublicFeed(): Promise<FeedItem[]> {
       site_name: row.site_name,
       author: row.author,
       description: row.description,
-      image_url: row.image_url,
       summary: row.summary,
       topics: row.topics,
       ai_notes: row.ai_notes,
