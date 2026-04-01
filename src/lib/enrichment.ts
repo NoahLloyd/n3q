@@ -11,7 +11,6 @@ export interface EnrichmentPayload {
   site_name: string | null;
   author: string | null;
   description: string | null;
-  image_url: string | null;
   summary: string | null;
   topics: string[];
   ai_notes: Record<string, unknown> | null;
@@ -23,7 +22,6 @@ interface SharedKnowledgeAgentResult {
   aiTitle: string | null;
   aiSubtitle: string | null;
   contentType: ContentType | null;
-  imagePrompt: string | null;
   raw?: Record<string, unknown>;
 }
 
@@ -72,14 +70,13 @@ async function callPerplexityAgent({
       {
         role: "system",
         content:
-          `You help members of the Nine Three Quarters collective understand new resources and craft beautiful hero prompts. Respond ONLY with compact JSON using these keys:
+          `You help members of the Nine Three Quarters collective understand new resources. Respond ONLY with compact JSON using these keys:
 {
-  "summary": string | null (<=80 words, tailored to ambitious builders),
+  "summary": string | null (1 sentence, max 15 words),
   "topics": string[] (<=6 concise, lowercase tags),
   "title": string | null (the clearest, reference-friendly title),
-  "subtitle": string | null (short hook or key insight),
-  "content_type": string | null (one of: ${allowedTypesSentence}),
-  "image_prompt": string | null (instructions for an ultra-wide ~3:1 hero image that features the EXACT title rendered as massive, centered lettering filling most of the canvas, surrounded by symbolic visuals relevant to the content, no other text, describe palette, lighting, and supporting motifs).
+  "subtitle": string | null (under 8 words),
+  "content_type": string | null (one of: ${allowedTypesSentence})
 }
 If something is unknown, set it to null. Never include extra commentary.`,
       },
@@ -148,19 +145,12 @@ If something is unknown, set it to null. Never include extra commentary.`,
 
   const contentType = normalizeContentType(parsed?.content_type);
 
-  const imagePrompt =
-    typeof parsed?.image_prompt === "string" &&
-    parsed.image_prompt.trim().length > 0
-      ? parsed.image_prompt.trim()
-      : null;
-
   return {
     summary: summary || null,
     topics,
     aiTitle,
     aiSubtitle,
     contentType,
-    imagePrompt,
     raw: {
       provider: "perplexity",
       model: json.model ?? perplexityModel,
@@ -244,9 +234,6 @@ function runStubAgent(
     aiTitle: metadata.title ?? metadata.hostname ?? url,
     aiSubtitle: summary,
     contentType: "article",
-    imagePrompt: summary
-      ? `Abstract hero illustration representing: ${summary}`
-      : null,
     raw: {
       stub: true,
       runId,
@@ -310,7 +297,6 @@ export async function buildEnrichedContent({
     site_name: metadata.siteName ?? metadata.hostname ?? null,
     author: metadata.author,
     description: metadata.description,
-    image_url: metadata.image,
     summary,
     topics,
     ai_notes: {
@@ -319,7 +305,6 @@ export async function buildEnrichedContent({
         resolvedUrl: metadata.resolvedUrl,
       },
       agentRunId,
-      imagePrompt: agent.imagePrompt,
       agent: agent.raw ?? { stub: true },
     },
   };
