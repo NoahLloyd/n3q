@@ -64,7 +64,7 @@ function renderMarkdown(text: string): string {
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">$1</a>'
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-amber-500 hover:underline">$1</a>'
     )
     .replace(
       /`([^`]+)`/g,
@@ -242,6 +242,7 @@ export default function PublicEventDetailPage({
             <span className="flex items-center gap-1.5">
               <Clock className="h-4 w-4" />
               {formattedTime}
+              {event.event_end_time && ` - ${formatEventTime(event.event_end_time)}`}
             </span>
           ) : (
             <Badge variant="outline" className="text-xs">
@@ -262,7 +263,7 @@ export default function PublicEventDetailPage({
                 href={event.location}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-500 hover:underline flex items-center gap-1"
+                className="text-amber-500 hover:underline flex items-center gap-1"
               >
                 {event.location}
                 <ExternalLink className="h-3 w-3" />
@@ -319,7 +320,7 @@ export default function PublicEventDetailPage({
                 href="https://ninethreequarters.com/apply"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-500 hover:text-emerald-400 font-medium"
+                className="text-amber-500 hover:text-amber-400 font-medium"
               >
                 Apply to join →
               </a>

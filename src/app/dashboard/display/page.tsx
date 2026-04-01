@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { BookOpen, Rocket, CalendarDays, Vote, Clock } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchProjects } from "@/lib/supabase/projects";
 import { fetchEvents } from "@/lib/supabase/events";
@@ -63,7 +64,7 @@ async function fetchLatestKnowledge(): Promise<ContentItem[]> {
 const projectStatusColors: Record<string, string> = {
   idea: "text-amber-400",
   in_progress: "text-blue-400",
-  looking_for_help: "text-emerald-400",
+  looking_for_help: "text-amber-400",
   completed: "text-zinc-400",
 };
 
@@ -130,7 +131,7 @@ export default function DisplayPage() {
   if (isLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
       </div>
     );
   }
@@ -227,9 +228,28 @@ export default function DisplayPage() {
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {formattedTime}
+                          {event.event_end_time && (() => {
+                            const [h, m] = event.event_end_time.split(":");
+                            const hr = parseInt(h, 10);
+                            const ap = hr >= 12 ? "PM" : "AM";
+                            const h12 = hr % 12 || 12;
+                            return ` - ${h12}:${m} ${ap}`;
+                          })()}
                         </span>
                       )}
-                      <span className="text-emerald-500">
+                      <span className="flex items-center gap-1.5 text-amber-500">
+                        {event.rsvp_profiles && event.rsvp_profiles.length > 0 && (
+                          <span className="flex -space-x-1">
+                            {event.rsvp_profiles.slice(0, 3).map((profile) => (
+                              <Avatar key={profile.id} className="h-4 w-4 border border-background">
+                                <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || ""} />
+                                <AvatarFallback className="text-[6px]">
+                                  {profile.display_name?.charAt(0)?.toUpperCase() || "?"}
+                                </AvatarFallback>
+                              </Avatar>
+                            ))}
+                          </span>
+                        )}
                         {event.rsvp_count || 0} going
                       </span>
                     </div>
@@ -333,7 +353,7 @@ export default function DisplayPage() {
                             label="Yes"
                             count={poll.yes_count}
                             total={totalVotes}
-                            color="bg-emerald-500"
+                            color="bg-amber-500"
                           />
                           <PollBar
                             label="No"
@@ -353,7 +373,7 @@ export default function DisplayPage() {
                               total={totalVotes}
                               color={
                                 [
-                                  "bg-emerald-500",
+                                  "bg-amber-500",
                                   "bg-blue-500",
                                   "bg-amber-500",
                                 ][i]

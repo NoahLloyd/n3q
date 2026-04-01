@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import { Calendar, Clock, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Event } from "@/lib/supabase/types";
 
 interface EventCardProps {
@@ -74,13 +75,13 @@ export function EventCard({ event, isPublic = false }: EventCardProps) {
               <Calendar className="h-3 w-3" />
               {formattedDate}
             </span>
-            {formattedTime && (
+            {formattedTime ? (
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {formattedTime}
+                {event.event_end_time && ` - ${formatEventTime(event.event_end_time)}`}
               </span>
-            )}
-            {!formattedTime && (
+            ) : (
               <span className="text-xs text-muted-foreground">All day</span>
             )}
           </div>
@@ -100,10 +101,27 @@ export function EventCard({ event, isPublic = false }: EventCardProps) {
           )}
 
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-            <span className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              {event.rsvp_count || 0} attending
-            </span>
+            <div className="flex items-center gap-2">
+              {event.rsvp_profiles && event.rsvp_profiles.length > 0 ? (
+                <div className="flex items-center">
+                  <div className="flex -space-x-1.5">
+                    {event.rsvp_profiles.slice(0, 3).map((profile) => (
+                      <Avatar key={profile.id} className="h-5 w-5 border border-background">
+                        <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || ""} />
+                        <AvatarFallback className="text-[8px]">
+                          {profile.display_name?.charAt(0)?.toUpperCase() || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                    ))}
+                  </div>
+                  <span className="ml-1.5">
+                    {event.rsvp_count || 0} going
+                  </span>
+                </div>
+              ) : (
+                <span>{event.rsvp_count || 0} going</span>
+              )}
+            </div>
             {event.creator && (
               <span>
                 by{" "}

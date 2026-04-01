@@ -17,9 +17,10 @@ export default function CreateEventPage() {
   const [title, setTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
+  const [eventEndTime, setEventEndTime] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
-  const [isAllDay, setIsAllDay] = useState(true);
+  const [isAllDay, setIsAllDay] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,7 +51,8 @@ export default function CreateEventPage() {
         description.trim() || null,
         location.trim() || null,
         isAllDay ? null : eventTime || null,
-        isPublic
+        isPublic,
+        isAllDay ? null : eventEndTime || null
       );
 
       if (event) {
@@ -136,14 +138,27 @@ export default function CreateEventPage() {
                     All day
                   </label>
                 </div>
-                <Input
-                  id="time"
-                  type="time"
-                  value={eventTime}
-                  onChange={(e) => setEventTime(e.target.value)}
-                  disabled={isAllDay}
-                  className="rounded-none"
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="time"
+                    type="time"
+                    value={eventTime}
+                    onChange={(e) => setEventTime(e.target.value)}
+                    disabled={isAllDay}
+                    className="rounded-none"
+                    placeholder="Start"
+                  />
+                  <span className="text-xs text-muted-foreground shrink-0">to</span>
+                  <Input
+                    id="end-time"
+                    type="time"
+                    value={eventEndTime}
+                    onChange={(e) => setEventEndTime(e.target.value)}
+                    disabled={isAllDay}
+                    className="rounded-none"
+                    placeholder="End"
+                  />
+                </div>
               </div>
             </div>
 
@@ -190,7 +205,7 @@ export default function CreateEventPage() {
                   onClick={() => setIsPublic(false)}
                   className={`p-4 border text-left transition-colors ${
                     !isPublic
-                      ? "border-emerald-500 bg-emerald-500/10"
+                      ? "border-amber-500 bg-amber-500/10"
                       : "border-border hover:border-muted-foreground"
                   }`}
                 >
@@ -207,7 +222,7 @@ export default function CreateEventPage() {
                   onClick={() => setIsPublic(true)}
                   className={`p-4 border text-left transition-colors ${
                     isPublic
-                      ? "border-emerald-500 bg-emerald-500/10"
+                      ? "border-amber-500 bg-amber-500/10"
                       : "border-border hover:border-muted-foreground"
                   }`}
                 >

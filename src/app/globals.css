@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Departure Mono font - n3q brand font */
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('/fonts/DepartureMono-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -119,4 +128,51 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer utilities {
+  .font-departure {
+    font-family: 'Departure Mono', monospace;
+  }
+}
+
+/* Login page animations */
+@keyframes logo-glow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes pixel-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.6; }
+  94% { opacity: 1; }
+  97% { opacity: 0.8; }
+  98% { opacity: 1; }
+}
+
+.animate-logo-glow {
+  animation: logo-glow-pulse 4s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease-out both;
+}
+
+.animate-scan-line {
+  animation: scan-line 8s linear infinite;
+}
+
+.animate-pixel-flicker {
+  animation: pixel-flicker 6s step-end infinite;
 }

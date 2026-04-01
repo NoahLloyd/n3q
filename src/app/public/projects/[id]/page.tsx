@@ -35,7 +35,7 @@ const statusConfig: Record<
   looking_for_help: {
     label: "Looking for Help",
     icon: HandHelping,
-    color: "bg-emerald-500/20 text-emerald-500 border-emerald-500/30",
+    color: "bg-amber-500/20 text-amber-500 border-amber-500/30",
   },
   completed: {
     label: "Completed",
@@ -63,7 +63,7 @@ function renderMarkdown(text: string): string {
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">$1</a>'
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-amber-500 hover:underline">$1</a>'
     )
     .replace(
       /`([^`]+)`/g,
@@ -200,7 +200,7 @@ export default function PublicProjectDetailPage({
                 href="https://ninethreequarters.com/apply"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-500 hover:text-emerald-400 font-medium"
+                className="text-amber-500 hover:text-amber-400 font-medium"
               >
                 Apply to join →
               </a>
