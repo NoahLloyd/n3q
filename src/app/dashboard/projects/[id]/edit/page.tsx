@@ -43,7 +43,7 @@ function renderMarkdown(text: string): string {
     .replace(/^# (.*$)/gm, '<h1 class="text-xl font-semibold mt-4 mb-2">$1</h1>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-amber-500 hover:underline">$1</a>')
     .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 text-sm font-mono">$1</code>')
     .replace(/\n/g, '<br />');
 }
@@ -266,7 +266,7 @@ export default function EditProjectPage({
                     onClick={() => setStatus(option.value)}
                     className={`p-4 border text-left transition-colors ${
                       status === option.value
-                        ? "border-emerald-500 bg-emerald-500/10"
+                        ? "border-amber-500 bg-amber-500/10"
                         : "border-border hover:border-muted-foreground"
                     }`}
                   >
@@ -288,7 +288,7 @@ export default function EditProjectPage({
                   onClick={() => setIsPublic(false)}
                   className={`p-4 border text-left transition-colors ${
                     !isPublic
-                      ? "border-emerald-500 bg-emerald-500/10"
+                      ? "border-amber-500 bg-amber-500/10"
                       : "border-border hover:border-muted-foreground"
                   }`}
                 >
@@ -305,7 +305,7 @@ export default function EditProjectPage({
                   onClick={() => setIsPublic(true)}
                   className={`p-4 border text-left transition-colors ${
                     isPublic
-                      ? "border-emerald-500 bg-emerald-500/10"
+                      ? "border-amber-500 bg-amber-500/10"
                       : "border-border hover:border-muted-foreground"
                   }`}
                 >

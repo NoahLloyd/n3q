@@ -149,7 +149,7 @@ export default function CreatePollPage() {
                   onClick={() => setType("yes_no_abstain")}
                   className={`p-4 border text-left transition-colors ${
                     type === "yes_no_abstain"
-                      ? "border-emerald-500 bg-emerald-500/10"
+                      ? "border-amber-500 bg-amber-500/10"
                       : "border-border hover:border-muted-foreground"
                   }`}
                 >
@@ -163,7 +163,7 @@ export default function CreatePollPage() {
                   onClick={() => setType("multiple_choice")}
                   className={`p-4 border text-left transition-colors ${
                     type === "multiple_choice"
-                      ? "border-emerald-500 bg-emerald-500/10"
+                      ? "border-amber-500 bg-amber-500/10"
                       : "border-border hover:border-muted-foreground"
                   }`}
                 >

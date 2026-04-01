@@ -154,11 +154,13 @@ export interface Event {
   location: string | null;
   event_date: string; // YYYY-MM-DD
   event_time: string | null; // HH:MM:SS or null for all-day
+  event_end_time: string | null; // HH:MM:SS or null
   is_public: boolean;
   created_at: string;
   creator?: Profile;
   rsvp_count?: number;
   rsvps?: EventRsvp[];
+  rsvp_profiles?: Profile[];
   user_has_rsvp?: boolean;
 }
 

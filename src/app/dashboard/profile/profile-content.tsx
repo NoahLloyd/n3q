@@ -293,7 +293,7 @@ export function ProfileContent() {
                 href={`https://basescan.org/address/${walletAddress}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-emerald-500 hover:underline"
+                className="text-sm text-amber-500 hover:underline"
               >
                 View on Basescan →
               </a>
@@ -350,7 +350,7 @@ export function ProfileContent() {
                 href={`https://basescan.org/address/${walletAddress}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-emerald-500 hover:underline"
+                className="text-sm text-amber-500 hover:underline"
               >
                 View on Basescan →
               </a>
@@ -370,7 +370,7 @@ export function ProfileContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-16 w-16 items-center justify-center rounded bg-emerald-500/20 text-2xl font-bold text-emerald-500">
+                <div className="flex h-16 w-16 items-center justify-center rounded bg-amber-500/20 text-2xl font-bold text-amber-500">
                   #{tokenId}
                 </div>
                 <div>

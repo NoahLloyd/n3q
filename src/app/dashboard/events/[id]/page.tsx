@@ -75,7 +75,7 @@ function renderMarkdown(text: string): string {
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">$1</a>'
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-amber-500 hover:underline">$1</a>'
     )
     .replace(
       /`([^`]+)`/g,
@@ -101,7 +101,9 @@ function generateSingleEventICS(event: Event): string {
   if (event.event_time) {
     const dateTime = `${event.event_date}T${event.event_time}`;
     const startDate = new Date(dateTime);
-    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+    const endDate = event.event_end_time
+      ? new Date(`${event.event_date}T${event.event_end_time}`)
+      : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
     dtstart = startDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
     dtend = endDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
     dateProps = `DTSTART:${dtstart}\nDTEND:${dtend}`;
@@ -296,6 +298,7 @@ export default function EventDetailPage({
             <span className="flex items-center gap-1.5">
               <Clock className="h-4 w-4" />
               {formattedTime}
+              {event.event_end_time && ` - ${formatEventTime(event.event_end_time)}`}
             </span>
           ) : (
             <Badge variant="outline" className="text-xs">
@@ -316,7 +319,7 @@ export default function EventDetailPage({
                 href={event.location}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-500 hover:underline flex items-center gap-1"
+                className="text-amber-500 hover:underline flex items-center gap-1"
               >
                 {event.location}
                 <ExternalLink className="h-3 w-3" />

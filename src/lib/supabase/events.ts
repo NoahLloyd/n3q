@@ -50,16 +50,32 @@ export async function fetchEvents(
     if (profile) profiles[id] = profile;
   }
 
+  // Fetch profiles for RSVP users (for avatar display)
+  const rsvpUserIds = [...new Set((allRsvps || []).map((r) => r.user_id))];
+  const rsvpProfiles: Record<string, Profile> = {};
+
+  for (const id of rsvpUserIds) {
+    const profile = await getProfile(id);
+    if (profile) rsvpProfiles[id] = profile;
+  }
+
   return (events || []).map((event) => {
     const eventRsvps = (allRsvps || []).filter((r) => r.event_id === event.id);
     const userHasRsvp = eventRsvps.some(
       (r) => r.user_id.toLowerCase() === userId.toLowerCase()
     );
 
+    // Get first 3 RSVP profiles for avatar display
+    const rsvp_profiles = eventRsvps
+      .slice(0, 3)
+      .map((r) => rsvpProfiles[r.user_id])
+      .filter(Boolean) as Profile[];
+
     return {
       ...event,
       creator: profiles[event.creator_id] || null,
       rsvp_count: eventRsvps.length,
+      rsvp_profiles,
       user_has_rsvp: userHasRsvp,
     };
   });
@@ -124,7 +140,8 @@ export async function createEvent(
   description: string | null,
   location: string | null,
   eventTime: string | null,
-  isPublic: boolean = false
+  isPublic: boolean = false,
+  eventEndTime: string | null = null
 ): Promise<Event | null> {
   // Ensure profile exists
   await supabase.from("profiles").upsert({ id: userId }, { onConflict: "id" });
@@ -138,6 +155,7 @@ export async function createEvent(
       location,
       event_date: eventDate,
       event_time: eventTime,
+      event_end_time: eventEndTime,
       is_public: isPublic,
     })
     .select()
@@ -288,13 +306,28 @@ export async function fetchPublicEvents(
     if (profile) profiles[id] = profile;
   }
 
+  // Fetch profiles for RSVP users (for avatar display)
+  const rsvpUserIds = [...new Set((allRsvps || []).map((r) => r.user_id))];
+  const rsvpProfiles: Record<string, Profile> = {};
+
+  for (const id of rsvpUserIds) {
+    const profile = await getProfile(id);
+    if (profile) rsvpProfiles[id] = profile;
+  }
+
   return (events || []).map((event) => {
     const eventRsvps = (allRsvps || []).filter((r) => r.event_id === event.id);
+
+    const rsvp_profiles = eventRsvps
+      .slice(0, 3)
+      .map((r) => rsvpProfiles[r.user_id])
+      .filter(Boolean) as Profile[];
 
     return {
       ...event,
       creator: profiles[event.creator_id] || null,
       rsvp_count: eventRsvps.length,
+      rsvp_profiles,
       user_has_rsvp: false,
     };
   });

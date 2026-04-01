@@ -571,7 +571,7 @@ export function FeedList({
                       href="https://ninethreequarters.com/apply"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-emerald-500 hover:text-emerald-400 font-medium"
+                      className="text-amber-500 hover:text-amber-400 font-medium"
                     >
                       Apply to join →
                     </a>

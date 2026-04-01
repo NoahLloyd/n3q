@@ -69,7 +69,7 @@ export function CalendarGuideModal({
                 className="shrink-0"
               >
                 {copied ? (
-                  <Check className="h-4 w-4 text-emerald-500" />
+                  <Check className="h-4 w-4 text-amber-500" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}

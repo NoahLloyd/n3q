@@ -142,7 +142,7 @@ export default function PollDetailPage({ params }: PollDetailPageProps) {
     if (poll.type === "yes_no_abstain") {
       const total = poll.yes_count + poll.no_count + poll.abstain_count;
       return [
-        { id: "yes", label: "Yes", count: poll.yes_count, color: "bg-emerald-500", textColor: "text-emerald-500" },
+        { id: "yes", label: "Yes", count: poll.yes_count, color: "bg-amber-500", textColor: "text-amber-500" },
         { id: "no", label: "No", count: poll.no_count, color: "bg-red-500", textColor: "text-red-500" },
         { id: "abstain", label: "Abstain", count: poll.abstain_count, color: "bg-zinc-500", textColor: "text-zinc-500" },
       ].map((opt) => ({ ...opt, percentage: total > 0 ? (opt.count / total) * 100 : 0 }));
@@ -150,7 +150,7 @@ export default function PollDetailPage({ params }: PollDetailPageProps) {
       const options = poll.options || [];
       const total = options.reduce((sum, opt) => sum + opt.vote_count, 0);
       const colors = [
-        { bg: "bg-emerald-500", text: "text-emerald-500" },
+        { bg: "bg-amber-500", text: "text-amber-500" },
         { bg: "bg-blue-500", text: "text-blue-500" },
         { bg: "bg-amber-500", text: "text-amber-500" },
         { bg: "bg-purple-500", text: "text-purple-500" },
@@ -206,7 +206,7 @@ export default function PollDetailPage({ params }: PollDetailPageProps) {
                 Closed
               </Badge>
             ) : (
-              <Badge className="text-xs bg-emerald-500/20 text-emerald-500 border-emerald-500/30">
+              <Badge className="text-xs bg-amber-500/20 text-amber-500 border-amber-500/30">
                 Active
               </Badge>
             )}
@@ -247,8 +247,8 @@ export default function PollDetailPage({ params }: PollDetailPageProps) {
             <div className="flex items-center gap-3 p-3 bg-muted/50 border border-border">
               {poll.winning_option === "yes" && (
                 <>
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                  <span className="font-medium text-emerald-500">Passed</span>
+                  <CheckCircle2 className="h-5 w-5 text-amber-500" />
+                  <span className="font-medium text-amber-500">Passed</span>
                 </>
               )}
               {poll.winning_option === "no" && (
@@ -284,7 +284,7 @@ export default function PollDetailPage({ params }: PollDetailPageProps) {
                     className={`w-full text-left p-3 border transition-colors ${
                       canSelect
                         ? isSelected
-                          ? "border-emerald-500 bg-emerald-500/10"
+                          ? "border-amber-500 bg-amber-500/10"
                           : "border-border hover:border-muted-foreground"
                         : "border-border cursor-default"
                     }`}

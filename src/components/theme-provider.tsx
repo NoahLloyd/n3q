@@ -39,10 +39,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-    const initial: Theme = prefersDark ? "dark" : "light";
+    const initial: Theme = "dark";
     applyThemeClass(initial);
     setTheme(initial);
     // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect

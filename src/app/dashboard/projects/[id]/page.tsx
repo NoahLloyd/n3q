@@ -55,7 +55,7 @@ const statusConfig: Record<
   looking_for_help: {
     label: "Looking for Help",
     icon: HandHelping,
-    color: "bg-emerald-500/20 text-emerald-500 border-emerald-500/30",
+    color: "bg-amber-500/20 text-amber-500 border-amber-500/30",
   },
   completed: {
     label: "Completed",
@@ -87,7 +87,7 @@ function renderMarkdown(text: string): string {
     // Links
     .replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">$1</a>'
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-amber-500 hover:underline">$1</a>'
     )
     // Inline code
     .replace(

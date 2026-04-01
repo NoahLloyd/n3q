@@ -114,7 +114,7 @@ export function CommentSection({ pollId, userId, comments, onRefresh }: CommentS
                   disabled={upvotingCommentId === comment.id}
                   className={`flex flex-col items-center gap-0.5 pt-1 transition-colors ${
                     comment.user_has_upvoted
-                      ? "text-emerald-500"
+                      ? "text-amber-500"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >

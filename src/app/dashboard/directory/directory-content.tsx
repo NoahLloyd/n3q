@@ -119,7 +119,7 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
               <Card
                 key={memberAddress}
                 className={`overflow-hidden pt-0 transition-all hover:shadow-lg ${
-                  isYou ? "ring-2 ring-emerald-500/50" : ""
+                  isYou ? "ring-2 ring-amber-500/50" : ""
                 }`}
               >
                 {/* Square Image */}
@@ -131,8 +131,8 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-500/20 to-emerald-600/10">
-                      <span className="text-5xl font-bold text-emerald-500/60">
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-500/20 to-amber-600/10">
+                      <span className="text-5xl font-bold text-amber-500/60">
                         {initials}
                       </span>
                     </div>
@@ -143,7 +143,7 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
                   </div>
                   {/* You badge */}
                   {isYou && (
-                    <div className="absolute top-3 right-3 rounded-lg bg-emerald-500 px-2 py-1 text-xs font-semibold text-white">
+                    <div className="absolute top-3 right-3 rounded-lg bg-amber-500 px-2 py-1 text-xs font-semibold text-white">
                       You
                     </div>
                   )}
@@ -163,7 +163,7 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
                       href={`https://basescan.org/address/${memberAddress}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-muted-foreground font-mono hover:text-emerald-500 transition-colors"
+                      className="text-xs text-muted-foreground font-mono hover:text-amber-500 transition-colors"
                     >
                       {memberAddress.slice(0, 6)}...{memberAddress.slice(-4)}
                     </a>
