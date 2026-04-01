@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
       path: false,
       os: false,
     };
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@react-native-async-storage/async-storage": false,
+    };
 
     // Ignore missing optional dependencies
     config.ignoreWarnings = [
