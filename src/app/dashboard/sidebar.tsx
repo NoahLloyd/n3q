@@ -11,7 +11,6 @@ import {
   LogOut,
   Vote,
   ExternalLink,
-  UserCheck,
 } from "lucide-react";
 import { useDisconnect } from "wagmi";
 import { useAuth } from "@/lib/auth/context";
@@ -169,25 +168,6 @@ export function Sidebar({
           </div>
         </Link>
 
-        {/* Member Verification - only for authenticated users */}
-        {!isPublic && (
-          <Link
-            href="/dashboard/members"
-            className={itemClasses("/dashboard/members")}
-          >
-            <div className={iconClasses("/dashboard/members")}>
-              <UserCheck className="h-5 w-5" />
-            </div>
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-foreground">
-                Verify Members
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Approve new community sign-ups
-              </p>
-            </div>
-          </Link>
-        )}
       </div>
 
       {/* Profile and logout section - only for authenticated users */}
