@@ -8,7 +8,7 @@ import type { Profile } from "@/lib/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, ChevronDown, ChevronUp, Loader2, UserCheck } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Loader2, UserCheck, X } from "lucide-react";
 
 const supabase = createSupabaseBrowserClient();
 
@@ -37,6 +37,7 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
   const [pendingLoading, setPendingLoading] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [verifying, setVerifying] = useState<string | null>(null);
+  const [rejecting, setRejecting] = useState<string | null>(null);
 
   // Fetch profiles for all members
   useEffect(() => {
@@ -65,36 +66,38 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
     fetchProfiles();
   }, [members]);
 
-  // Fetch pending member count on mount (for authenticated members)
+  // Fetch pending members on mount and when expanded (for authenticated members)
   useEffect(() => {
     if (isPublic || !isMember) return;
 
-    supabase
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("is_verified", false)
-      .eq("auth_method", "google")
-      .then(({ count }) => {
-        setPendingCount(count ?? 0);
-      });
-  }, [isPublic, isMember]);
-
-  // Fetch full pending list when expanded
-  useEffect(() => {
-    if (!showPending) return;
-
-    setPendingLoading(true);
-    supabase
-      .from("profiles")
-      .select("id, display_name, email, avatar_url, auth_method, created_at")
-      .eq("is_verified", false)
-      .eq("auth_method", "google")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setPending(data ?? []);
+    // Always fetch the full list via the API route (uses service client to bypass RLS)
+    const fetchPending = async () => {
+      setPendingLoading(true);
+      try {
+        const res = await fetch("/api/members/pending");
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          console.error("[directory] Error fetching pending members:", err);
+          setPending([]);
+          setPendingCount(0);
+          setPendingLoading(false);
+          return;
+        }
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : [];
+        setPending(list);
+        setPendingCount(list.length);
+      } catch (err) {
+        console.error("[directory] Error fetching pending members:", err);
+        setPending([]);
+        setPendingCount(0);
+      } finally {
         setPendingLoading(false);
-      });
-  }, [showPending]);
+      }
+    };
+
+    fetchPending();
+  }, [isPublic, isMember]);
 
   const handleVerify = async (memberId: string) => {
     setVerifying(memberId);
@@ -120,6 +123,32 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
       alert("Failed to verify member");
     } finally {
       setVerifying(null);
+    }
+  };
+
+  const handleReject = async (memberId: string) => {
+    if (!confirm("Reject this sign-up? Their account will be removed.")) return;
+
+    setRejecting(memberId);
+    try {
+      const res = await fetch("/api/members/reject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: memberId }),
+      });
+
+      if (res.ok) {
+        setPending((prev) => prev.filter((m) => m.id !== memberId));
+        setPendingCount((c) => Math.max(0, c - 1));
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to reject member");
+      }
+    } catch (err) {
+      console.error("Error rejecting member:", err);
+      alert("Failed to reject member");
+    } finally {
+      setRejecting(null);
     }
   };
 
@@ -273,55 +302,69 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
       )}
 
       {/* Verify pending members section */}
-      {!isPublic && isMember && pendingCount > 0 && (
+      {!isPublic && isMember && (
         <div className="mt-2">
           <button
             onClick={() => setShowPending(!showPending)}
             className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <UserCheck className="h-3.5 w-3.5" />
-            {pendingCount} pending verification{pendingCount !== 1 ? "s" : ""}
-            {showPending ? (
-              <ChevronUp className="h-3 w-3" />
-            ) : (
-              <ChevronDown className="h-3 w-3" />
-            )}
+            {pendingLoading
+              ? "Checking pending..."
+              : pendingCount > 0
+                ? `${pendingCount} pending verification${pendingCount !== 1 ? "s" : ""}`
+                : "No pending verifications"}
+            {pendingCount > 0 &&
+              (showPending ? (
+                <ChevronUp className="h-3 w-3" />
+              ) : (
+                <ChevronDown className="h-3 w-3" />
+              ))}
           </button>
 
-          {showPending && (
+          {showPending && pendingCount > 0 && (
             <div className="mt-3 space-y-2">
-              {pendingLoading ? (
-                <div className="flex items-center justify-center py-6">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              ) : (
-                pending.map((member) => (
-                  <Card key={member.id}>
-                    <CardContent className="flex items-center justify-between gap-4 py-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <Avatar className="h-9 w-9 shrink-0">
-                          <AvatarImage
-                            src={member.avatar_url || undefined}
-                            alt={member.display_name || ""}
-                          />
-                          <AvatarFallback className="text-xs">
-                            {getPendingInitials(member)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="font-medium text-sm truncate">
-                            {member.display_name || "No name"}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {member.email}
-                          </p>
-                        </div>
+              {pending.map((member) => (
+                <Card key={member.id}>
+                  <CardContent className="flex items-center justify-between gap-4 py-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Avatar className="h-9 w-9 shrink-0">
+                        <AvatarImage
+                          src={member.avatar_url || undefined}
+                          alt={member.display_name || ""}
+                        />
+                        <AvatarFallback className="text-xs">
+                          {getPendingInitials(member)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {member.display_name || "No name"}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {member.email}
+                        </p>
                       </div>
+                    </div>
+                    <div className="flex gap-1.5 shrink-0">
+                      <Button
+                        onClick={() => handleReject(member.id)}
+                        disabled={rejecting === member.id || verifying === member.id}
+                        size="sm"
+                        variant="outline"
+                        className="gap-1 text-muted-foreground hover:text-red-500 hover:border-red-500/50"
+                      >
+                        {rejecting === member.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <X className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
                       <Button
                         onClick={() => handleVerify(member.id)}
-                        disabled={verifying === member.id}
+                        disabled={verifying === member.id || rejecting === member.id}
                         size="sm"
-                        className="shrink-0 gap-1.5"
+                        className="gap-1.5"
                       >
                         {verifying === member.id ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -330,10 +373,10 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
                         )}
                         Verify
                       </Button>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </div>

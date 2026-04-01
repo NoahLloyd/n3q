@@ -25,6 +25,7 @@ export interface Profile {
   is_verified: boolean;
   verified_by: string | null;
   verified_at: string | null;
+  google_user_id?: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 
 export function ProfileContent() {
-  const { userId, authMethod, walletAddress, email, isWalletConnected } = useAuth();
+  const { userId, authMethod, walletAddress, email, isWalletConnected, linkWallet, profile: authProfile } = useAuth();
   const { tokenId, tokenURI } = useMembership();
   const { totalSupply } = useAllMembers();
 
@@ -27,6 +27,16 @@ export function ProfileContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
+
+  // When a Google user connects a wallet, save the address to their profile
+  useEffect(() => {
+    if (authMethod === "google" && isWalletConnected && walletAddress) {
+      // Only link if not already saved
+      if (authProfile?.wallet_address !== walletAddress) {
+        linkWallet(walletAddress);
+      }
+    }
+  }, [authMethod, isWalletConnected, walletAddress, authProfile?.wallet_address, linkWallet]);
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingBio, setIsSavingBio] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -302,7 +312,7 @@ export function ProfileContent() {
         </Card>
       )}
 
-      {authMethod === "google" && !isWalletConnected && (
+      {authMethod === "google" && !isWalletConnected && !authProfile?.wallet_address && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-semibold">
