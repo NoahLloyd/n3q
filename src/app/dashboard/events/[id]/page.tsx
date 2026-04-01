@@ -84,6 +84,14 @@ function renderMarkdown(text: string): string {
     .replace(/\n/g, "<br />");
 }
 
+const EVENT_TIMEZONE = "Europe/Copenhagen";
+
+// Format a time string (HH:MM or HH:MM:SS) to HHMMSS
+function formatICSTime(timeStr: string): string {
+  const parts = timeStr.split(":");
+  return `${parts[0]}${parts[1]}${parts[2] ? parts[2] : "00"}`;
+}
+
 // Generate .ics content for single event download
 function generateSingleEventICS(event: Event): string {
   const now = new Date();
@@ -94,24 +102,27 @@ function generateSingleEventICS(event: Event): string {
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}/, "");
 
-  let dtstart: string;
-  let dtend: string;
   let dateProps: string;
 
   if (event.event_time) {
-    const dateTime = `${event.event_date}T${event.event_time}`;
-    const startDate = new Date(dateTime);
-    const endDate = event.event_end_time
-      ? new Date(`${event.event_date}T${event.event_end_time}`)
-      : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-    dtstart = startDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-    dtend = endDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-    dateProps = `DTSTART:${dtstart}\nDTEND:${dtend}`;
+    const dateFormatted = event.event_date.replace(/-/g, "");
+    const dtstart = `${dateFormatted}T${formatICSTime(event.event_time)}`;
+
+    let dtend: string;
+    if (event.event_end_time) {
+      dtend = `${dateFormatted}T${formatICSTime(event.event_end_time)}`;
+    } else {
+      // Default 2 hour duration
+      const timeParts = event.event_time.split(":");
+      const endHour = String(Math.min(parseInt(timeParts[0], 10) + 2, 23)).padStart(2, "0");
+      dtend = `${dateFormatted}T${endHour}${timeParts[1]}00`;
+    }
+    dateProps = `DTSTART;TZID=${EVENT_TIMEZONE}:${dtstart}\nDTEND;TZID=${EVENT_TIMEZONE}:${dtend}`;
   } else {
-    dtstart = event.event_date.replace(/-/g, "");
-    const nextDay = new Date(event.event_date);
+    const dtstart = event.event_date.replace(/-/g, "");
+    const nextDay = new Date(event.event_date + "T12:00:00");
     nextDay.setDate(nextDay.getDate() + 1);
-    dtend = nextDay.toISOString().split("T")[0].replace(/-/g, "");
+    const dtend = nextDay.toISOString().split("T")[0].replace(/-/g, "");
     dateProps = `DTSTART;VALUE=DATE:${dtstart}\nDTEND;VALUE=DATE:${dtend}`;
   }
 
