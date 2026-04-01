@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
+const TIMEZONE = "Europe/Copenhagen";
+
 // Generate a valid iCalendar file
 function generateICS(events: Array<{
   id: string;
@@ -9,6 +11,7 @@ function generateICS(events: Array<{
   location: string | null;
   event_date: string;
   event_time: string | null;
+  event_end_time: string | null;
   created_at: string;
 }>): string {
   const now = new Date();
@@ -20,7 +23,7 @@ PRODID:-//N3Q//Events Calendar//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:N3Q Events
-X-WR-TIMEZONE:UTC
+X-WR-TIMEZONE:${TIMEZONE}
 `;
 
   for (const event of events) {
@@ -29,27 +32,6 @@ X-WR-TIMEZONE:UTC
       .toISOString()
       .replace(/[-:]/g, "")
       .replace(/\.\d{3}/, "");
-
-    // Format date/time
-    let dtstart: string;
-    let dtend: string;
-
-    if (event.event_time) {
-      // Specific time event
-      const dateTime = `${event.event_date}T${event.event_time}`;
-      const startDate = new Date(dateTime);
-      const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Default 2 hour duration
-
-      dtstart = startDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-      dtend = endDate.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-    } else {
-      // All-day event
-      dtstart = event.event_date.replace(/-/g, "");
-      // For all-day events, end date is the next day
-      const nextDay = new Date(event.event_date);
-      nextDay.setDate(nextDay.getDate() + 1);
-      dtend = nextDay.toISOString().split("T")[0].replace(/-/g, "");
-    }
 
     // Escape special characters in text fields
     const escapeText = (text: string | null): string => {
@@ -72,10 +54,36 @@ CREATED:${created}
 `;
 
     if (event.event_time) {
-      ics += `DTSTART:${dtstart}
-DTEND:${dtend}
+      // Format time as local Copenhagen time with TZID — no Date conversion needed
+      // event_time is stored as "HH:MM" or "HH:MM:SS"
+      const timeParts = event.event_time.split(":");
+      const timeFormatted = `${timeParts[0]}${timeParts[1]}${timeParts[2] ? timeParts[2] : "00"}`;
+      const dateFormatted = event.event_date.replace(/-/g, "");
+      const dtstart = `${dateFormatted}T${timeFormatted}`;
+
+      let dtend: string;
+      if (event.event_end_time) {
+        const endParts = event.event_end_time.split(":");
+        const endFormatted = `${endParts[0]}${endParts[1]}${endParts[2] ? endParts[2] : "00"}`;
+        dtend = `${dateFormatted}T${endFormatted}`;
+      } else {
+        // Default 2 hour duration: add 2 hours to the start time
+        const startHour = parseInt(timeParts[0], 10);
+        const startMin = timeParts[1];
+        const endHour = String(Math.min(startHour + 2, 23)).padStart(2, "0");
+        dtend = `${dateFormatted}T${endHour}${startMin}00`;
+      }
+
+      ics += `DTSTART;TZID=${TIMEZONE}:${dtstart}
+DTEND;TZID=${TIMEZONE}:${dtend}
 `;
     } else {
+      // All-day event
+      const dtstart = event.event_date.replace(/-/g, "");
+      const nextDay = new Date(event.event_date + "T12:00:00"); // noon to avoid DST edge cases
+      nextDay.setDate(nextDay.getDate() + 1);
+      const dtend = nextDay.toISOString().split("T")[0].replace(/-/g, "");
+
       ics += `DTSTART;VALUE=DATE:${dtstart}
 DTEND;VALUE=DATE:${dtend}
 `;
