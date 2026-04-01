@@ -19,6 +19,12 @@ export interface Profile {
   display_name: string | null;
   avatar_url: string | null;
   bio: string | null;
+  wallet_address: string | null;
+  email: string | null;
+  auth_method: "wallet" | "google";
+  is_verified: boolean;
+  verified_by: string | null;
+  verified_at: string | null;
   created_at: string;
   updated_at: string;
 }

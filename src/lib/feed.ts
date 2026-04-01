@@ -214,6 +214,12 @@ export async function getFeed(userId: string): Promise<FeedItem[]> {
             display_name: row.profiles.display_name,
             avatar_url: row.profiles.avatar_url,
             bio: null,
+            wallet_address: null,
+            email: null,
+            auth_method: "wallet" as const,
+            is_verified: true,
+            verified_by: null,
+            verified_at: null,
             created_at: "",
             updated_at: "",
           }

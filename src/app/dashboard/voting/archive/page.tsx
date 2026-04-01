@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { useAllMembers } from "@/lib/web3/hooks";
 import { fetchPolls } from "@/lib/supabase/polls";
 import type { Poll } from "@/lib/supabase/types";
 import { PollCard } from "../components/poll-card";
 
 export default function VotingArchivePage() {
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [polls, setPolls] = useState<Poll[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { totalSupply } = useAllMembers();

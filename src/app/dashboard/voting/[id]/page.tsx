@@ -13,7 +13,7 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { useAllMembers } from "@/lib/web3/hooks";
 import { fetchPoll, deletePoll, castVote, fetchComments } from "@/lib/supabase/polls";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ interface PollDetailPageProps {
 export default function PollDetailPage({ params }: PollDetailPageProps) {
   const { id } = use(params);
   const router = useRouter();
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const { totalSupply } = useAllMembers();
 
   const [poll, setPoll] = useState<Poll | null>(null);

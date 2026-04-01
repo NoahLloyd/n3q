@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { fetchProjects } from "@/lib/supabase/projects";
 import type { Project, ProjectStatus } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { ProjectCard } from "./components/project-card";
 type FilterOption = "all" | ProjectStatus;
 
 export default function ProjectsPage() {
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<FilterOption>("all");

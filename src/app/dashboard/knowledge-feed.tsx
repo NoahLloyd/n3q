@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { FeedItem } from "@/lib/feed";
 import type { Profile } from "@/lib/supabase/types";
@@ -112,16 +112,7 @@ async function fetchFeed(userId: string): Promise<FeedItem[]> {
       topics: row.topics,
       ai_notes: row.ai_notes,
       created_at: row.created_at,
-      creator: creator
-        ? {
-            id: creator.id,
-            display_name: creator.display_name,
-            avatar_url: creator.avatar_url,
-            bio: creator.bio,
-            created_at: creator.created_at,
-            updated_at: creator.updated_at,
-          }
-        : undefined,
+      creator: creator || undefined,
       saves_count: savesCount,
       done_count: doneCount,
       avg_rating: avgRating,
@@ -166,12 +157,13 @@ async function fetchHistory(userId: string) {
 }
 
 export function KnowledgeFeed() {
-  const { address } = useAccount();
+  const { userId: authUserId } = useAuth();
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const userId = address ?? "";
+  const address = authUserId;
+  const userId = authUserId ?? "";
 
   useEffect(() => {
     if (!address) return;

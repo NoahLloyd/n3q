@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { createPoll } from "@/lib/supabase/polls";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import type { PollType } from "@/lib/supabase/types";
 
 export default function CreatePollPage() {
   const router = useRouter();
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState<PollType>("yes_no_abstain");
@@ -43,7 +43,7 @@ export default function CreatePollPage() {
     e.preventDefault();
 
     if (!address) {
-      alert("Please connect your wallet");
+      alert("Please sign in");
       return;
     }
 
