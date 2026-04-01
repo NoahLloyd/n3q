@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Globe, Lock } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { createEvent } from "@/lib/supabase/events";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function CreateEventPage() {
   const router = useRouter();
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [title, setTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
@@ -27,7 +27,7 @@ export default function CreateEventPage() {
     e.preventDefault();
 
     if (!address) {
-      alert("Please connect your wallet");
+      alert("Please sign in");
       return;
     }
 

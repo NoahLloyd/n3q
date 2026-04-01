@@ -4,6 +4,12 @@ create table if not exists public.profiles (
   display_name text,
   avatar_url text,
   bio text,
+  wallet_address text,
+  email text,
+  auth_method text default 'wallet' check (auth_method in ('wallet', 'google')),
+  is_verified boolean default false,
+  verified_by uuid references public.profiles(id),
+  verified_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

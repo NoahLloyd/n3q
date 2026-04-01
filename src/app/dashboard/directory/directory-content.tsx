@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { useAllMembers } from "@/lib/web3/hooks";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
@@ -14,7 +14,7 @@ interface DirectoryContentProps {
 }
 
 export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const { members, totalSupply, isLoading } = useAllMembers();
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [profilesLoading, setProfilesLoading] = useState(false);

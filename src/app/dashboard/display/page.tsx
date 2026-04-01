@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { BookOpen, Rocket, CalendarDays, Vote, Clock } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchProjects } from "@/lib/supabase/projects";
@@ -75,7 +75,7 @@ const projectStatusLabels: Record<string, string> = {
 };
 
 export default function DisplayPage() {
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [knowledge, setKnowledge] = useState<ContentItem[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [events, setEvents] = useState<Event[]>([]);

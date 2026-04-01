@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Calendar } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { fetchEvents } from "@/lib/supabase/events";
 import type { Event } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { CalendarGuideModal } from "./components/calendar-guide-modal";
 type FilterOption = "upcoming" | "past";
 
 export default function EventsPage() {
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<FilterOption>("upcoming");

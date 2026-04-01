@@ -16,7 +16,7 @@ import {
   Download,
   ExternalLink,
 } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import {
   fetchEvent,
   rsvpEvent,
@@ -153,7 +153,7 @@ export default function EventDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);

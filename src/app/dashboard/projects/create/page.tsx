@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Eye, Edit3, Globe, Lock } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { createProject } from "@/lib/supabase/projects";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,7 +56,7 @@ function renderMarkdown(text: string): string {
 
 export default function CreateProjectPage() {
   const router = useRouter();
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<ProjectStatus>("idea");

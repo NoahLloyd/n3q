@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Eye, Edit3, Globe, Lock } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { fetchProject, updateProject } from "@/lib/supabase/projects";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,7 +55,7 @@ export default function EditProjectPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

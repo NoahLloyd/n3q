@@ -16,7 +16,7 @@ import {
   Loader2,
   Pencil,
 } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import {
   fetchProject,
   joinProject,
@@ -105,7 +105,7 @@ export default function ProjectDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { address } = useAccount();
+  const { userId: address } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);

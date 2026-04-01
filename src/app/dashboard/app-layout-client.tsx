@@ -2,11 +2,8 @@
 
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
-import { useMembership } from "@/lib/web3/hooks";
-import { getOrCreateProfile } from "@/lib/supabase/profile";
-import type { Profile } from "@/lib/supabase/types";
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth/context";
 import { Sidebar } from "./sidebar";
 
 interface AppLayoutClientProps {
@@ -15,45 +12,49 @@ interface AppLayoutClientProps {
 
 export function AppLayoutClient({ children }: AppLayoutClientProps) {
   const router = useRouter();
-  const { isConnected, isReconnecting, address } = useAccount();
-  const { isMember, isLoading, tokenId } = useMembership();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const {
+    isAuthenticated,
+    isMember,
+    isPendingVerification,
+    isLoading,
+    profile,
+    refreshProfile,
+    walletAddress,
+    tokenId,
+    authMethod,
+    email,
+  } = useAuth();
 
   useEffect(() => {
-    // Don't redirect while wagmi is reconnecting from stored state
-    if (isReconnecting) return;
-    
-    if (!isConnected) {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
       router.push("/");
       return;
     }
 
-    if (!isLoading && !isMember) {
+    if (isPendingVerification) {
+      router.push("/pending");
+      return;
+    }
+
+    if (!isMember) {
       router.push("/");
     }
-  }, [isConnected, isReconnecting, isMember, isLoading, router]);
-
-  // Fetch or create profile when connected
-  useEffect(() => {
-    if (address && isMember) {
-      getOrCreateProfile(address).then(setProfile);
-    }
-  }, [address, isMember]);
+  }, [isAuthenticated, isMember, isPendingVerification, isLoading, router]);
 
   // Listen for profile updates (from profile page edits)
   useEffect(() => {
     const handleProfileUpdate = () => {
-      if (address) {
-        getOrCreateProfile(address).then(setProfile);
-      }
+      refreshProfile();
     };
 
     window.addEventListener("profile-updated", handleProfileUpdate);
     return () =>
       window.removeEventListener("profile-updated", handleProfileUpdate);
-  }, [address]);
+  }, [refreshProfile]);
 
-  if (isReconnecting || !isConnected || isLoading) {
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -70,10 +71,13 @@ export function AppLayoutClient({ children }: AppLayoutClientProps) {
     return null;
   }
 
-  // Use profile display name if set, otherwise truncated wallet address
+  // Use profile display name if set, otherwise email or truncated wallet address
   const displayName =
     profile?.display_name ||
-    (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Member");
+    email ||
+    (walletAddress
+      ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+      : "Member");
 
   // Generate initials from display name or use default
   const initials = profile?.display_name
@@ -83,7 +87,9 @@ export function AppLayoutClient({ children }: AppLayoutClientProps) {
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : "N3";
+    : email
+      ? email[0].toUpperCase()
+      : "N3";
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -91,8 +97,9 @@ export function AppLayoutClient({ children }: AppLayoutClientProps) {
         displayName={displayName}
         avatarUrl={profile?.avatar_url || undefined}
         initials={initials}
-        walletAddress={address}
+        walletAddress={walletAddress}
         tokenId={tokenId}
+        authMethod={authMethod}
       />
       <main className="flex-1 px-4 py-4 sm:px-6 sm:py-6">
         <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">

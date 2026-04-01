@@ -10,12 +10,15 @@ import {
   LogOut,
   Vote,
   ExternalLink,
+  UserCheck,
 } from "lucide-react";
 import { useDisconnect } from "wagmi";
+import { useAuth } from "@/lib/auth/context";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import type { AuthMethod } from "@/lib/auth/context";
 
 interface SidebarProps {
   displayName?: string;
@@ -24,6 +27,7 @@ interface SidebarProps {
   walletAddress?: string;
   tokenId?: number;
   isPublic?: boolean;
+  authMethod?: AuthMethod;
 }
 
 export function Sidebar({
@@ -33,22 +37,26 @@ export function Sidebar({
   walletAddress,
   tokenId,
   isPublic = false,
+  authMethod,
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { disconnect } = useDisconnect();
+  const { signOut } = useAuth();
 
   const basePath = isPublic ? "/public" : "/dashboard";
   const knowledgePath = isPublic ? "/public/knowledge" : "/dashboard";
 
-  const handleDisconnect = () => {
-    disconnect();
+  const handleDisconnect = async () => {
+    if (authMethod === "wallet") {
+      disconnect();
+    }
+    await signOut();
     router.push("/");
   };
 
   const isActive = (href: string) => {
     if (href === "/dashboard" || href === "/public/knowledge") {
-      // For knowledge page, check exact match or with trailing slash
       if (href === "/public/knowledge") {
         return (
           pathname === "/public/knowledge" || pathname === "/public/knowledge/"
@@ -152,6 +160,26 @@ export function Sidebar({
             </p>
           </div>
         </Link>
+
+        {/* Member Verification - only for authenticated users */}
+        {!isPublic && (
+          <Link
+            href="/dashboard/members"
+            className={itemClasses("/dashboard/members")}
+          >
+            <div className={iconClasses("/dashboard/members")}>
+              <UserCheck className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-foreground">
+                Verify Members
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Approve new community sign-ups
+              </p>
+            </div>
+          </Link>
+        )}
       </div>
 
       {/* Profile and logout section - only for authenticated users */}
@@ -180,19 +208,30 @@ export function Sidebar({
               variant="outline"
               size="icon"
               className="h-7 w-7 shrink-0"
-              title="Disconnect wallet"
+              title={authMethod === "wallet" ? "Disconnect wallet" : "Sign out"}
             >
               <LogOut className="h-3 w-3" />
             </Button>
           </div>
 
-          {/* Membership badge - now below profile */}
-          {tokenId !== undefined && (
+          {/* Membership badge */}
+          {authMethod === "wallet" && tokenId !== undefined && (
             <div className="rounded border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-emerald-500" />
                 <span className="text-xs font-medium text-emerald-500">
                   Member #{tokenId}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {authMethod === "google" && (
+            <div className="rounded border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-xs font-medium text-emerald-500">
+                  Verified Member
                 </span>
               </div>
             </div>
@@ -225,7 +264,7 @@ export function Sidebar({
           </div>
           <Link href="/">
             <Button variant="outline" size="sm" className="w-full text-xs">
-              Sign in with wallet
+              Sign in
             </Button>
           </Link>
         </div>
