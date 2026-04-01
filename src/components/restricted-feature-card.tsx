@@ -52,7 +52,7 @@ export function RestrictedFeatureCard({
                   key={index}
                   className="flex items-start gap-2 text-sm text-muted-foreground"
                 >
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                   {feature}
                 </li>
               ))}

@@ -25,7 +25,7 @@ function getResultsDisplay(poll: Poll) {
     return {
       total,
       bars: [
-        { label: "Yes", count: poll.yes_count, color: "bg-emerald-500" },
+        { label: "Yes", count: poll.yes_count, color: "bg-amber-500" },
         { label: "No", count: poll.no_count, color: "bg-red-500" },
         { label: "Abstain", count: poll.abstain_count, color: "bg-zinc-500" },
       ],
@@ -34,7 +34,7 @@ function getResultsDisplay(poll: Poll) {
     const options = poll.options || [];
     const total = options.reduce((sum, opt) => sum + opt.vote_count, 0);
     const colors = [
-      "bg-emerald-500",
+      "bg-amber-500",
       "bg-blue-500",
       "bg-amber-500",
       "bg-purple-500",
@@ -72,7 +72,7 @@ export function PollCard({ poll, totalMembers }: PollCardProps) {
                 Closed
               </Badge>
             ) : (
-              <Badge className="shrink-0 text-xs bg-emerald-500/20 text-emerald-500 border-emerald-500/30">
+              <Badge className="shrink-0 text-xs bg-amber-500/20 text-amber-500 border-amber-500/30">
                 Active
               </Badge>
             )}
@@ -133,8 +133,8 @@ export function PollCard({ poll, totalMembers }: PollCardProps) {
               <div className="flex items-center gap-2 text-xs">
                 {poll.winning_option === "yes" && (
                   <>
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                    <span className="font-medium text-emerald-500">Passed</span>
+                    <CheckCircle2 className="h-4 w-4 text-amber-500" />
+                    <span className="font-medium text-amber-500">Passed</span>
                   </>
                 )}
                 {poll.winning_option === "no" && (

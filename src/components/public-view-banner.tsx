@@ -37,7 +37,7 @@ export function PublicViewBanner({ itemType }: PublicViewBannerProps) {
           href="https://ninethreequarters.com/apply"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-500 hover:text-emerald-400 transition-colors shrink-0"
+          className="inline-flex items-center gap-1 text-xs font-medium text-amber-500 hover:text-amber-400 transition-colors shrink-0"
         >
           Apply to join
           <ExternalLink className="h-3 w-3" />

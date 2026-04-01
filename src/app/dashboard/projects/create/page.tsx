@@ -47,7 +47,7 @@ function renderMarkdown(text: string): string {
     // Italic
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-amber-500 hover:underline">$1</a>')
     // Inline code
     .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 text-sm font-mono">$1</code>')
     // Line breaks
@@ -204,7 +204,7 @@ export default function CreateProjectPage() {
                     onClick={() => setStatus(option.value)}
                     className={`p-4 border text-left transition-colors ${
                       status === option.value
-                        ? "border-emerald-500 bg-emerald-500/10"
+                        ? "border-amber-500 bg-amber-500/10"
                         : "border-border hover:border-muted-foreground"
                     }`}
                   >
@@ -226,7 +226,7 @@ export default function CreateProjectPage() {
                   onClick={() => setIsPublic(false)}
                   className={`p-4 border text-left transition-colors ${
                     !isPublic
-                      ? "border-emerald-500 bg-emerald-500/10"
+                      ? "border-amber-500 bg-amber-500/10"
                       : "border-border hover:border-muted-foreground"
                   }`}
                 >
@@ -243,7 +243,7 @@ export default function CreateProjectPage() {
                   onClick={() => setIsPublic(true)}
                   className={`p-4 border text-left transition-colors ${
                     isPublic
-                      ? "border-emerald-500 bg-emerald-500/10"
+                      ? "border-amber-500 bg-amber-500/10"
                       : "border-border hover:border-muted-foreground"
                   }`}
                 >

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -78,9 +79,16 @@ export function Sidebar({
       <div className="flex items-center justify-between gap-2">
         <Link
           href={isPublic ? "/public/directory" : "/dashboard"}
-          className="text-sm font-semibold tracking-tight"
+          className="flex items-center"
         >
-          n3q
+          <Image
+            src="/n3q-favicon.png"
+            alt="n3q logo"
+            width={32}
+            height={32}
+            style={{ imageRendering: "crisp-edges" }}
+            priority
+          />
         </Link>
         <ThemeToggle />
       </div>
@@ -188,10 +196,10 @@ export function Sidebar({
 
           {/* Membership badge - now below profile */}
           {tokenId !== undefined && (
-            <div className="rounded border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+            <div className="rounded border border-amber-500/30 bg-amber-500/10 px-3 py-2">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="text-xs font-medium text-emerald-500">
+                <div className="h-2 w-2 rounded-full bg-amber-500" />
+                <span className="text-xs font-medium text-amber-500">
                   Member #{tokenId}
                 </span>
               </div>
@@ -217,7 +225,7 @@ export function Sidebar({
               href="https://ninethreequarters.com/apply"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-500 hover:text-emerald-400 transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-medium text-amber-500 hover:text-amber-400 transition-colors"
             >
               Become a member
               <ExternalLink className="h-3 w-3" />

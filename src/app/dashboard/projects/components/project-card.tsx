@@ -29,7 +29,7 @@ const statusConfig: Record<
   looking_for_help: {
     label: "Looking for Help",
     icon: HandHelping,
-    color: "bg-emerald-500/20 text-emerald-500 border-emerald-500/30",
+    color: "bg-amber-500/20 text-amber-500 border-amber-500/30",
   },
   completed: {
     label: "Completed",
