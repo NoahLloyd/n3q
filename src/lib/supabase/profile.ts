@@ -46,6 +46,7 @@ export async function updateProfile(
     display_name?: string | null;
     avatar_url?: string | null;
     bio?: string | null;
+    email?: string | null;
   }
 ): Promise<Profile | null> {
   const { data, error } = await supabase

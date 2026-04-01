@@ -248,27 +248,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Save a wallet address to the current profile
+  // Link a wallet to the current Google profile.
+  // If a wallet profile already exists for that address, merges the two accounts
+  // (wallet profile becomes primary, Google profile is absorbed).
   const linkWallet = useCallback(
     async (walletAddr: string) => {
-      if (!userId) return;
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          wallet_address: walletAddr,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", userId);
+      if (!supabaseUser) return;
 
-      if (error) {
-        console.error("[AuthProvider] Error linking wallet:", error.message);
-        return;
+      try {
+        const res = await fetch("/api/members/merge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            walletAddress: walletAddr,
+            googleProfileId: supabaseUser.id,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          console.error("[AuthProvider] Error linking wallet:", err.error);
+          return;
+        }
+
+        const { merged, profileId } = await res.json();
+
+        if (merged) {
+          console.log(`[AuthProvider] Merged into wallet profile ${profileId}`);
+        }
+
+        // Re-fetch the (possibly new) profile
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", profileId)
+          .maybeSingle();
+
+        setProfile(data);
+      } catch (err) {
+        console.error("[AuthProvider] Error linking wallet:", err);
       }
-
-      // Refresh profile to pick up the change
-      await refreshProfile();
     },
-    [userId, refreshProfile]
+    [supabaseUser]
   );
 
   const value: AuthState = {

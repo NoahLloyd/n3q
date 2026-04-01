@@ -37,6 +37,9 @@ export function ProfileContent() {
       }
     }
   }, [authMethod, isWalletConnected, walletAddress, authProfile?.wallet_address, linkWallet]);
+  const [profileEmail, setProfileEmail] = useState("");
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
+  const [saveEmailSuccess, setSaveEmailSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingBio, setIsSavingBio] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -51,6 +54,7 @@ export function ProfileContent() {
         setProfile(p);
         setDisplayName(p?.display_name || "");
         setBio(p?.bio || "");
+        setProfileEmail(p?.email || "");
         setIsLoading(false);
       });
     }
@@ -94,6 +98,26 @@ export function ProfileContent() {
       alert("Failed to save bio");
     } finally {
       setIsSavingBio(false);
+    }
+  };
+
+  const handleSaveEmail = async () => {
+    if (!userId) return;
+
+    setIsSavingEmail(true);
+    setSaveEmailSuccess(false);
+    try {
+      const updated = await updateProfile(userId, {
+        email: profileEmail.trim() || null,
+      });
+      setProfile(updated);
+      setSaveEmailSuccess(true);
+      setTimeout(() => setSaveEmailSuccess(false), 2000);
+    } catch (error) {
+      console.error("Error saving email:", error);
+      alert("Failed to save email");
+    } finally {
+      setIsSavingEmail(false);
     }
   };
 
@@ -275,13 +299,48 @@ export function ProfileContent() {
             </div>
           </div>
 
-          {/* Email (for Google users) */}
-          {email && (
+          {/* Email */}
+          {authMethod === "google" && email ? (
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground">Email</p>
               <p className="text-sm">{email}</p>
             </div>
-          )}
+          ) : authMethod === "wallet" ? (
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">
+                Email
+              </label>
+              <p className="text-xs text-muted-foreground">
+                Adding your email lets you sign in with Google later and link
+                both accounts
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={profileEmail}
+                  onChange={(e) => setProfileEmail(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={handleSaveEmail}
+                  disabled={
+                    isSavingEmail ||
+                    profileEmail === (profile?.email || "")
+                  }
+                >
+                  {isSavingEmail ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : saveEmailSuccess ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
