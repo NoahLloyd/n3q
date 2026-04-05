@@ -7,6 +7,8 @@ import type { YesNoAbstainVote } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 export default function PollDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { userId } = useAuth();
@@ -18,10 +20,20 @@ export default function PollDetailScreen() {
     enabled: !!userId,
   });
 
+  const { data: memberCount = 50 } = useQuery({
+    queryKey: ["memberCount"],
+    queryFn: async () => {
+      const res = await fetch(`${API_URL}/api/members/count`);
+      if (!res.ok) return 50;
+      const data = await res.json();
+      return data.count;
+    },
+    staleTime: 5 * 60 * 1000, // cache for 5 minutes
+  });
+
   const voteMutation = useMutation({
     mutationFn: async ({ vote, optionId }: { vote?: YesNoAbstainVote; optionId?: string }) => {
-      // TODO: Get totalMembers from API
-      return castVote(supabase, id, userId!, vote || null, optionId || null, 50);
+      return castVote(supabase, id, userId!, vote || null, optionId || null, memberCount);
     },
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

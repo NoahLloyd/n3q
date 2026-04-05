@@ -33,6 +33,7 @@ export default function TabLayout() {
         name="feed"
         options={{
           title: "Feed",
+          headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="newspaper-o" color={color} />,
         }}
       />
@@ -40,6 +41,7 @@ export default function TabLayout() {
         name="events"
         options={{
           title: "Events",
+          headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
         }}
       />
@@ -47,6 +49,7 @@ export default function TabLayout() {
         name="voting"
         options={{
           title: "Voting",
+          headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="check-square-o" color={color} />,
         }}
       />
@@ -54,6 +57,7 @@ export default function TabLayout() {
         name="directory"
         options={{
           title: "Members",
+          headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
         }}
       />

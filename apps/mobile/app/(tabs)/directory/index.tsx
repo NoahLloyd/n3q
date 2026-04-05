@@ -1,8 +1,9 @@
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, Image, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { supabase } from "@/src/lib/supabase/client";
 import type { Profile } from "@n3q/shared";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function DirectoryScreen() {
   const router = useRouter();
@@ -10,17 +11,10 @@ export default function DirectoryScreen() {
   const { data: members = [], isLoading, refetch } = useQuery({
     queryKey: ["directory"],
     queryFn: async (): Promise<Profile[]> => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("is_verified", true)
-        .order("display_name", { ascending: true });
-
-      if (error) {
-        console.error("Error fetching members:", error);
-        return [];
-      }
-      return data || [];
+      const res = await fetch(`${API_URL}/api/members/list`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.members || [];
     },
   });
 

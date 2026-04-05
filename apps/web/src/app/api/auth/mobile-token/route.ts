@@ -3,19 +3,26 @@ import { randomUUID } from "crypto";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service-client";
 
-export async function POST() {
-  // Verify the user is authenticated
+export async function POST(request: Request) {
+  // Try Supabase auth first (Google users)
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // For wallet-only users, check the cookie/session for user ID
-  // The auth context on the web side sets the user ID
   let userId = user?.id;
 
+  // For wallet-only users, accept userId from request body
   if (!userId) {
-    // Check for wallet-based auth via custom header
+    try {
+      const body = await request.json();
+      userId = body.userId;
+    } catch {
+      // No body provided
+    }
+  }
+
+  if (!userId) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
@@ -25,6 +32,21 @@ export async function POST() {
       { error: "Server configuration error" },
       { status: 500 }
     );
+  }
+
+  // Verify the user exists and is verified
+  const { data: profile } = await serviceClient
+    .from("profiles")
+    .select("id, is_verified")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!profile) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  if (!profile.is_verified) {
+    return NextResponse.json({ error: "User not verified" }, { status: 403 });
   }
 
   // Generate a one-time token

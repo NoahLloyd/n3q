@@ -519,6 +519,7 @@ export function ProfileContent() {
 }
 
 function MobileLinkCard() {
+  const { userId, authMethod } = useAuth();
   const [deepLink, setDeepLink] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -527,7 +528,11 @@ function MobileLinkCard() {
   const generateToken = async () => {
     setIsGenerating(true);
     try {
-      const res = await fetch("/api/auth/mobile-token", { method: "POST" });
+      const res = await fetch("/api/auth/mobile-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
       if (!res.ok) {
         const data = await res.json();
         alert(data.error || "Failed to generate token");
