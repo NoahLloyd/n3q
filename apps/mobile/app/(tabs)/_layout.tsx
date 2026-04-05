@@ -32,9 +32,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="feed"
         options={{
-          title: "Feed",
+          title: "Knowledge",
           headerShown: false,
-          tabBarIcon: ({ color }) => <TabBarIcon name="newspaper-o" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -56,7 +56,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="directory"
         options={{
-          title: "Members",
+          title: "Directory",
           headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
         }}

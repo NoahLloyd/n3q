@@ -1,6 +1,7 @@
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, Image, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { colors } from "@/src/lib/theme";
 import type { Profile } from "@n3q/shared";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -19,23 +20,31 @@ export default function DirectoryScreen() {
   });
 
   function renderMember({ item }: { item: Profile }) {
+    const initials = item.display_name
+      ? item.display_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+      : "?";
+
     return (
       <TouchableOpacity
         style={styles.card}
         onPress={() => router.push(`/(tabs)/directory/${item.id}`)}
+        activeOpacity={0.7}
       >
         {item.avatar_url ? (
           <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
         ) : (
           <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Text style={styles.avatarText}>
-              {(item.display_name || "?")[0].toUpperCase()}
-            </Text>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
         )}
-        <Text style={styles.name} numberOfLines={1}>
-          {item.display_name || "Anonymous"}
-        </Text>
+        <View style={styles.memberInfo}>
+          <Text style={styles.name} numberOfLines={1}>
+            {item.display_name || "Anonymous"}
+          </Text>
+          {item.bio && (
+            <Text style={styles.bio} numberOfLines={1}>{item.bio}</Text>
+          )}
+        </View>
       </TouchableOpacity>
     );
   }
@@ -46,10 +55,8 @@ export default function DirectoryScreen() {
         data={members}
         renderItem={renderMember}
         keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#f5a623" />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={styles.list}
         ListEmptyComponent={
@@ -65,54 +72,46 @@ export default function DirectoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0a0a0a",
-  },
-  list: {
-    padding: 16,
-  },
-  row: {
-    gap: 12,
-    marginBottom: 12,
-  },
+  container: { flex: 1, backgroundColor: colors.pageBg },
+  list: { padding: 12 },
   card: {
-    flex: 1,
-    backgroundColor: "#1a1a1a",
-    borderRadius: 10,
-    padding: 16,
-    alignItems: "center",
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: "#222",
+    borderColor: colors.cardBorder,
+    padding: 12,
+    marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginBottom: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   avatarPlaceholder: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.muted,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
-    color: "#f5a623",
-    fontSize: 22,
-    fontWeight: "bold",
+    color: colors.amber,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  memberInfo: {
+    flex: 1,
   },
   name: {
-    color: "#fff",
+    color: colors.foreground,
     fontSize: 14,
     fontWeight: "500",
-    textAlign: "center",
   },
-  empty: {
-    alignItems: "center",
-    paddingTop: 60,
+  bio: {
+    color: colors.mutedForeground,
+    fontSize: 12,
+    marginTop: 2,
   },
-  emptyText: {
-    color: "#666",
-    fontSize: 16,
-  },
+  empty: { alignItems: "center", paddingTop: 60 },
+  emptyText: { color: colors.mutedForeground, fontSize: 14 },
 });

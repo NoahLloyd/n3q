@@ -5,7 +5,26 @@ import { useRouter } from "expo-router";
 import { fetchEvents } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
+import { colors } from "@/src/lib/theme";
 import type { Event } from "@n3q/shared";
+
+function formatEventDate(dateStr: string): string {
+  const date = new Date(dateStr + "T00:00:00");
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatEventTime(timeStr: string | null): string | null {
+  if (!timeStr) return null;
+  const [hours, minutes] = timeStr.split(":");
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+}
 
 export default function EventsScreen() {
   const { userId } = useAuth();
@@ -19,39 +38,44 @@ export default function EventsScreen() {
   });
 
   function renderEvent({ item }: { item: Event }) {
-    const dateStr = new Date(item.event_date).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-
     return (
       <TouchableOpacity
         style={styles.card}
         onPress={() => router.push(`/(tabs)/events/${item.id}`)}
+        activeOpacity={0.7}
       >
-        <View style={styles.dateColumn}>
-          <Text style={styles.dateDay}>
-            {new Date(item.event_date).getDate()}
-          </Text>
-          <Text style={styles.dateMonth}>
-            {new Date(item.event_date).toLocaleDateString("en-US", { month: "short" })}
-          </Text>
+        <View style={styles.cardHeader}>
+          <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
         </View>
-        <View style={styles.details}>
-          <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
-          {item.location && (
-            <Text style={styles.location} numberOfLines={1}>{item.location}</Text>
+
+        <View style={styles.metaRow}>
+          <Text style={styles.metaText}>{formatEventDate(item.event_date)}</Text>
+          {item.event_time && (
+            <Text style={styles.metaText}>
+              {formatEventTime(item.event_time)}
+              {item.event_end_time ? ` - ${formatEventTime(item.event_end_time)}` : ""}
+            </Text>
           )}
-          <Text style={styles.rsvpCount}>
-            {item.rsvp_count || 0} attending
-          </Text>
         </View>
-        {item.user_has_rsvp && (
-          <View style={styles.goingBadge}>
-            <Text style={styles.goingText}>Going</Text>
-          </View>
+
+        {item.description && (
+          <Text style={styles.description} numberOfLines={2}>
+            {item.description.replace(/[#*`[\]()]/g, "").replace(/\n+/g, " ").slice(0, 100)}
+          </Text>
         )}
+
+        {item.location && (
+          <Text style={styles.location} numberOfLines={1}>{item.location}</Text>
+        )}
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>{item.rsvp_count || 0} going</Text>
+          {item.creator && (
+            <Text style={styles.footerText}>
+              by {item.creator.display_name || `${item.creator_id.slice(0, 6)}...`}
+            </Text>
+          )}
+        </View>
       </TouchableOpacity>
     );
   }
@@ -59,22 +83,17 @@ export default function EventsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.filterRow}>
-        <TouchableOpacity
-          style={[styles.filterBtn, filter === "upcoming" && styles.filterActive]}
-          onPress={() => setFilter("upcoming")}
-        >
-          <Text style={[styles.filterText, filter === "upcoming" && styles.filterTextActive]}>
-            Upcoming
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterBtn, filter === "past" && styles.filterActive]}
-          onPress={() => setFilter("past")}
-        >
-          <Text style={[styles.filterText, filter === "past" && styles.filterTextActive]}>
-            Past
-          </Text>
-        </TouchableOpacity>
+        {(["upcoming", "past"] as const).map((f) => (
+          <TouchableOpacity
+            key={f}
+            style={[styles.filterBtn, filter === f && styles.filterActive]}
+            onPress={() => setFilter(f)}
+          >
+            <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <FlatList
@@ -82,7 +101,7 @@ export default function EventsScreen() {
         renderItem={renderEvent}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#f5a623" />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={styles.list}
         ListEmptyComponent={
@@ -98,98 +117,43 @@ export default function EventsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0a0a0a",
-  },
-  filterRow: {
-    flexDirection: "row",
-    padding: 16,
-    gap: 8,
-  },
+  container: { flex: 1, backgroundColor: colors.pageBg },
+  filterRow: { flexDirection: "row", padding: 12, gap: 8 },
   filterBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: "#1a1a1a",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderWidth: 1,
-    borderColor: "#222",
+    borderColor: colors.cardBorder,
+    backgroundColor: colors.card,
   },
   filterActive: {
-    backgroundColor: "#f5a623",
-    borderColor: "#f5a623",
+    backgroundColor: colors.amberMuted,
+    borderColor: colors.amberBorder,
   },
-  filterText: {
-    color: "#888",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  filterTextActive: {
-    color: "#000",
-  },
-  list: {
-    paddingHorizontal: 16,
-  },
+  filterText: { color: colors.mutedForeground, fontSize: 12, fontWeight: "500" },
+  filterTextActive: { color: colors.amber },
+  list: { paddingHorizontal: 12 },
   card: {
-    backgroundColor: "#1a1a1a",
-    borderRadius: 10,
-    padding: 16,
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: "#222",
-    marginBottom: 12,
+    borderColor: colors.cardBorder,
+    padding: 14,
+    marginBottom: 8,
+  },
+  cardHeader: { marginBottom: 6 },
+  title: { color: colors.foreground, fontSize: 14, fontWeight: "500", lineHeight: 20 },
+  metaRow: { flexDirection: "row", gap: 12, marginBottom: 8 },
+  metaText: { color: colors.mutedForeground, fontSize: 11 },
+  description: { color: colors.mutedForeground, fontSize: 13, lineHeight: 18, marginBottom: 8 },
+  location: { color: colors.mutedForeground, fontSize: 11, marginBottom: 8 },
+  footer: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.cardBorder,
   },
-  dateColumn: {
-    alignItems: "center",
-    marginRight: 16,
-    minWidth: 40,
-  },
-  dateDay: {
-    color: "#f5a623",
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  dateMonth: {
-    color: "#888",
-    fontSize: 12,
-    textTransform: "uppercase",
-  },
-  details: {
-    flex: 1,
-  },
-  title: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  location: {
-    color: "#888",
-    fontSize: 13,
-    marginTop: 2,
-  },
-  rsvpCount: {
-    color: "#666",
-    fontSize: 12,
-    marginTop: 4,
-  },
-  goingBadge: {
-    backgroundColor: "#1a3a1a",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  goingText: {
-    color: "#4ade80",
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  empty: {
-    alignItems: "center",
-    paddingTop: 60,
-  },
-  emptyText: {
-    color: "#666",
-    fontSize: 16,
-  },
+  footerText: { color: colors.mutedForeground, fontSize: 11 },
+  empty: { alignItems: "center", paddingTop: 60 },
+  emptyText: { color: colors.mutedForeground, fontSize: 14 },
 });

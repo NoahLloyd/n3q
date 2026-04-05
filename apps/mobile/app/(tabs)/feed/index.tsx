@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
+import { colors } from "@/src/lib/theme";
 import type { ContentItem } from "@n3q/shared";
-import { formatDistanceToNow } from "@n3q/shared";
+import { formatDistanceToNow, CONTENT_TYPE_LABELS } from "@n3q/shared";
 
 export default function FeedScreen() {
   const { userId } = useAuth();
@@ -23,7 +24,6 @@ export default function FeedScreen() {
         return [];
       }
 
-      // Fetch creator profiles
       const creatorIds = [...new Set((data || []).map((item) => item.creator_id))];
       const { data: profiles } = await supabase
         .from("profiles")
@@ -41,32 +41,46 @@ export default function FeedScreen() {
   });
 
   function renderItem({ item }: { item: ContentItem }) {
+    const typeLabel = CONTENT_TYPE_LABELS[item.type] || item.type;
+    const hostname = item.url ? (() => { try { return new URL(item.url).hostname; } catch { return ""; } })() : "";
+
     return (
       <TouchableOpacity
         style={styles.card}
         onPress={() => router.push(`/(tabs)/feed/${item.id}`)}
+        activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
-          <View style={styles.typeBadge}>
-            <Text style={styles.typeBadgeText}>{item.type}</Text>
-          </View>
-          <Text style={styles.timeText}>
-            {formatDistanceToNow(new Date(item.created_at))}
+          <Text style={styles.title} numberOfLines={2}>
+            {item.ai_title || item.title}
           </Text>
         </View>
-        <Text style={styles.title} numberOfLines={2}>
-          {item.ai_title || item.title}
-        </Text>
+
+        <View style={styles.metaRow}>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{typeLabel}</Text>
+          </View>
+          {hostname ? (
+            <Text style={styles.metaText}>{hostname}</Text>
+          ) : null}
+        </View>
+
         {item.ai_subtitle && (
-          <Text style={styles.subtitle} numberOfLines={2}>
+          <Text style={styles.description} numberOfLines={2}>
             {item.ai_subtitle}
           </Text>
         )}
-        {item.creator && (
-          <Text style={styles.creator}>
-            by {item.creator.display_name || "Anonymous"}
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            {formatDistanceToNow(new Date(item.created_at))}
           </Text>
-        )}
+          {item.creator && (
+            <Text style={styles.footerText}>
+              by {item.creator.display_name || `${item.creator_id.slice(0, 6)}...`}
+            </Text>
+          )}
+        </View>
       </TouchableOpacity>
     );
   }
@@ -78,7 +92,7 @@ export default function FeedScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#f5a623" />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={styles.list}
         ListEmptyComponent={
@@ -96,67 +110,72 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: colors.pageBg,
   },
   list: {
-    padding: 16,
-    gap: 12,
+    padding: 12,
   },
   card: {
-    backgroundColor: "#1a1a1a",
-    borderRadius: 10,
-    padding: 16,
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: "#222",
-    marginBottom: 12,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    borderColor: colors.cardBorder,
+    padding: 14,
     marginBottom: 8,
   },
-  typeBadge: {
-    backgroundColor: "#2a2a2a",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  typeBadgeText: {
-    color: "#f5a623",
-    fontSize: 11,
-    fontWeight: "600",
-    textTransform: "uppercase",
-  },
-  timeText: {
-    color: "#666",
-    fontSize: 12,
+  cardHeader: {
+    marginBottom: 8,
   },
   title: {
-    color: "#fff",
-    fontSize: 16,
+    color: colors.foreground,
+    fontSize: 14,
+    fontWeight: "500",
+    lineHeight: 20,
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  badge: {
+    backgroundColor: colors.amberMuted,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: colors.amberBorder,
+  },
+  badgeText: {
+    color: colors.amber,
+    fontSize: 10,
     fontWeight: "600",
-    lineHeight: 22,
   },
-  subtitle: {
-    color: "#999",
+  metaText: {
+    color: colors.mutedForeground,
+    fontSize: 11,
+  },
+  description: {
+    color: colors.mutedForeground,
     fontSize: 13,
-    marginTop: 4,
     lineHeight: 18,
+    marginBottom: 8,
   },
-  creator: {
-    color: "#666",
-    fontSize: 12,
-    marginTop: 8,
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.cardBorder,
+  },
+  footerText: {
+    color: colors.mutedForeground,
+    fontSize: 11,
   },
   empty: {
-    flex: 1,
     alignItems: "center",
-    justifyContent: "center",
     paddingTop: 60,
   },
   emptyText: {
-    color: "#666",
-    fontSize: 16,
+    color: colors.mutedForeground,
+    fontSize: 14,
   },
 });

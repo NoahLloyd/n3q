@@ -17,7 +17,7 @@ export default function FeedLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Feed",
+          title: "Knowledge",
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.push("/profile")} style={{ marginLeft: 8 }}>
               <FontAwesome name="user-circle-o" size={22} color="#888" />

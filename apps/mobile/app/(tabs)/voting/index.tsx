@@ -4,8 +4,37 @@ import { useRouter } from "expo-router";
 import { fetchPolls } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
+import { colors } from "@/src/lib/theme";
 import type { Poll } from "@n3q/shared";
 import { formatDistanceToNow } from "@n3q/shared";
+
+function getResultsBars(poll: Poll) {
+  if (poll.type === "yes_no_abstain") {
+    const total = poll.yes_count + poll.no_count + poll.abstain_count;
+    return {
+      total,
+      bars: [
+        { label: "Yes", count: poll.yes_count, color: colors.amber },
+        { label: "No", count: poll.no_count, color: colors.red },
+        { label: "Abstain", count: poll.abstain_count, color: colors.mutedForeground },
+      ],
+    };
+  } else {
+    const options = poll.options || [];
+    const total = options.reduce((sum, opt) => sum + opt.vote_count, 0);
+    const barColors = [colors.amber, colors.blue, colors.green, "#a78bfa", "#f472b6"];
+    return {
+      total,
+      bars: options
+        .sort((a, b) => a.position - b.position)
+        .map((opt, i) => ({
+          label: opt.label,
+          count: opt.vote_count,
+          color: barColors[i % barColors.length],
+        })),
+    };
+  }
+}
 
 export default function VotingScreen() {
   const { userId } = useAuth();
@@ -21,34 +50,61 @@ export default function VotingScreen() {
   const closedPolls = polls.filter((p) => p.status === "closed").slice(0, 5);
 
   function renderPoll({ item }: { item: Poll }) {
-    const isActive = item.status === "active";
+    const isClosed = item.status === "closed";
+    const results = getResultsBars(item);
+    const voteCount = item.vote_count || results.total;
 
     return (
       <TouchableOpacity
         style={styles.card}
         onPress={() => router.push(`/(tabs)/voting/${item.id}`)}
+        activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
-          <View style={[styles.statusBadge, !isActive && styles.closedBadge]}>
-            <Text style={[styles.statusText, !isActive && styles.closedText]}>
-              {isActive ? "Active" : "Closed"}
+          <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+          <View style={[styles.badge, isClosed ? styles.badgeClosed : styles.badgeActive]}>
+            <Text style={[styles.badgeText, isClosed ? styles.badgeTextClosed : styles.badgeTextActive]}>
+              {isClosed ? "Closed" : "Active"}
             </Text>
           </View>
-          {item.user_has_voted && (
-            <View style={styles.votedBadge}>
-              <Text style={styles.votedText}>Voted</Text>
-            </View>
-          )}
         </View>
-        <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
-        <View style={styles.cardFooter}>
-          <Text style={styles.footerText}>
-            {item.vote_count || 0} votes &middot;{" "}
+
+        <View style={styles.metaRow}>
+          <Text style={styles.metaText}>
             {item.type === "yes_no_abstain" ? "Yes/No/Abstain" : "Multiple Choice"}
           </Text>
-          <Text style={styles.timeText}>
-            {formatDistanceToNow(new Date(item.created_at))}
+          <Text style={styles.metaText}>{voteCount} votes</Text>
+        </View>
+
+        {/* Result bars */}
+        <View style={styles.barsContainer}>
+          {results.bars.slice(0, 3).map((bar) => {
+            const pct = results.total > 0 ? (bar.count / results.total) * 100 : 0;
+            return (
+              <View key={bar.label} style={styles.barRow}>
+                <View style={styles.barLabel}>
+                  <Text style={styles.barLabelText} numberOfLines={1}>{bar.label}</Text>
+                  <Text style={styles.barCount}>{bar.count}</Text>
+                </View>
+                <View style={styles.barTrack}>
+                  <View style={[styles.barFill, { width: `${pct}%`, backgroundColor: bar.color }]} />
+                </View>
+              </View>
+            );
+          })}
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            {isClosed && item.closed_at
+              ? `Closed ${formatDistanceToNow(new Date(item.closed_at))}`
+              : formatDistanceToNow(new Date(item.created_at))}
           </Text>
+          {item.creator && (
+            <Text style={styles.footerText}>
+              by {item.creator.display_name || `${item.creator_id.slice(0, 6)}...`}
+            </Text>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -61,7 +117,7 @@ export default function VotingScreen() {
         renderItem={renderPoll}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#f5a623" />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={styles.list}
         ListEmptyComponent={
@@ -77,80 +133,46 @@ export default function VotingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0a0a0a",
-  },
-  list: {
-    padding: 16,
-  },
+  container: { flex: 1, backgroundColor: colors.pageBg },
+  list: { padding: 12 },
   card: {
-    backgroundColor: "#1a1a1a",
-    borderRadius: 10,
-    padding: 16,
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: "#222",
-    marginBottom: 12,
+    borderColor: colors.cardBorder,
+    padding: 14,
+    marginBottom: 8,
   },
   cardHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     gap: 8,
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  statusBadge: {
-    backgroundColor: "#1a3a1a",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  closedBadge: {
-    backgroundColor: "#2a2a2a",
-  },
-  statusText: {
-    color: "#4ade80",
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  closedText: {
-    color: "#888",
-  },
-  votedBadge: {
-    backgroundColor: "#1a2a3a",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  votedText: {
-    color: "#60a5fa",
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  title: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    lineHeight: 22,
-  },
-  cardFooter: {
+  title: { color: colors.foreground, fontSize: 14, fontWeight: "500", lineHeight: 20, flex: 1 },
+  badge: { paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1 },
+  badgeActive: { backgroundColor: colors.amberMuted, borderColor: colors.amberBorder },
+  badgeClosed: { backgroundColor: colors.muted, borderColor: colors.cardBorder },
+  badgeText: { fontSize: 10, fontWeight: "600" },
+  badgeTextActive: { color: colors.amber },
+  badgeTextClosed: { color: colors.mutedForeground },
+  metaRow: { flexDirection: "row", gap: 12, marginBottom: 10 },
+  metaText: { color: colors.mutedForeground, fontSize: 11 },
+  barsContainer: { gap: 6, marginBottom: 10 },
+  barRow: { gap: 4 },
+  barLabel: { flexDirection: "row", justifyContent: "space-between" },
+  barLabelText: { color: colors.mutedForeground, fontSize: 11, flex: 1 },
+  barCount: { color: colors.foreground, fontSize: 11, fontWeight: "500", fontVariant: ["tabular-nums"] },
+  barTrack: { height: 4, backgroundColor: colors.muted, overflow: "hidden" },
+  barFill: { height: "100%" },
+  footer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.cardBorder,
   },
-  footerText: {
-    color: "#666",
-    fontSize: 12,
-  },
-  timeText: {
-    color: "#555",
-    fontSize: 12,
-  },
-  empty: {
-    alignItems: "center",
-    paddingTop: 60,
-  },
-  emptyText: {
-    color: "#666",
-    fontSize: 16,
-  },
+  footerText: { color: colors.mutedForeground, fontSize: 11 },
+  empty: { alignItems: "center", paddingTop: 60 },
+  emptyText: { color: colors.mutedForeground, fontSize: 14 },
 });
