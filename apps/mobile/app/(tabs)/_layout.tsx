@@ -16,7 +16,7 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.tabBarWrapper, { bottom: insets.bottom }]}>
+    <View style={[styles.tabBarWrapper, { bottom: Math.max(insets.bottom - 12, 4) }]}>
       <BlurView intensity={50} tint="dark" style={[StyleSheet.absoluteFill, styles.glass]} />
       {/* Corner squares */}
       <View style={[styles.corner, { top: 0, left: 0 }]} />
@@ -34,7 +34,7 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
               key={tab.name}
               style={styles.tabItem}
               onPress={() => navigation.navigate(tab.name)}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
               <FontAwesome name={tab.icon} size={16} color={color} />
               <Text style={[styles.tabLabel, { color }]}>{tab.title}</Text>
@@ -63,8 +63,8 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   tabBarWrapper: {
     position: "absolute",
-    left: 10,
-    right: 10,
+    left: 24,
+    right: 24,
     height: 60,
     overflow: "hidden",
   },
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "500",
     fontFamily: "DepartureMono",
     letterSpacing: 0.5,
