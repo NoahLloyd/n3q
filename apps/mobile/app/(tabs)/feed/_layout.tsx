@@ -44,6 +44,7 @@ export default function FeedLayout() {
         name="index"
         options={{
           headerTitle: () => <HeaderBar />,
+          // @ts-ignore – headerTitleContainerStyle works at runtime but isn't in the type defs
           headerTitleContainerStyle: { left: 12, right: 12 },
           headerLeft: () => null,
         }}
