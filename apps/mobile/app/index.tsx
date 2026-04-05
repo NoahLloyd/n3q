@@ -12,6 +12,7 @@ import {
   Keyboard,
 } from "react-native";
 import Svg, { Defs, RadialGradient, Stop, Rect, Circle } from "react-native-svg";
+import * as WebBrowser from "expo-web-browser";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/src/lib/auth/context";
 
@@ -213,6 +214,16 @@ export default function LoginScreen() {
           </View>
         )}
       </View>
+
+      {/* Link to web */}
+      <TouchableOpacity
+        style={styles.webLink}
+        onPress={() => WebBrowser.openBrowserAsync("https://www.n3q.house/")}
+      >
+        <Text style={styles.webLinkText}>
+          Generate code at n3q.house
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -319,6 +330,16 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     backgroundColor: "rgba(245,166,35,0.5)",
+  },
+  webLink: {
+    marginTop: 24,
+    alignItems: "center",
+  },
+  webLinkText: {
+    fontFamily: "DepartureMono",
+    fontSize: 11,
+    color: "#6A6B60",
+    letterSpacing: 1,
   },
   cornerTL: { top: 0, left: 0 },
   cornerTR: { top: 0, right: 0 },
