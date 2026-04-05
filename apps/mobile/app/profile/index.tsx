@@ -1,7 +1,9 @@
-import { View, Text, ScrollView, Image, Pressable, StyleSheet, Alert } from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import { View, Text, ScrollView, Image, Pressable, Switch, StyleSheet, Alert, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, Stack } from "expo-router";
 import Svg, { Path } from "react-native-svg";
+import * as Notifications from "expo-notifications";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
 
@@ -18,6 +20,44 @@ export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const headerHeight = 44 + insets.top;
+  const [pushEnabled, setPushEnabled] = useState(false);
+
+  const checkPushStatus = useCallback(async () => {
+    const { status } = await Notifications.getPermissionsAsync();
+    setPushEnabled(status === "granted");
+  }, []);
+
+  useEffect(() => {
+    checkPushStatus();
+  }, [checkPushStatus]);
+
+  async function togglePush() {
+    if (pushEnabled) {
+      // Can't revoke programmatically — open settings
+      Alert.alert(
+        "Disable Notifications",
+        "To turn off notifications, go to Settings > N3Q > Notifications.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Open Settings", onPress: () => Linking.openSettings() },
+        ]
+      );
+    } else {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === "granted") {
+        setPushEnabled(true);
+      } else {
+        Alert.alert(
+          "Permission Required",
+          "Enable notifications in Settings > N3Q > Notifications.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
+    }
+  }
 
   async function handleSignOut() {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -103,6 +143,19 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Notifications</Text>
+          <View style={styles.switchRow}>
+            <Text style={styles.sectionText}>Push notifications</Text>
+            <Switch
+              value={pushEnabled}
+              onValueChange={togglePush}
+              trackColor={{ false: "#333", true: "#f5a623" }}
+              thumbColor="#fff"
+            />
+          </View>
+        </View>
+
         <Pressable style={styles.signOutButton} onPress={handleSignOut}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </Pressable>
@@ -147,6 +200,11 @@ const styles = StyleSheet.create({
   sectionTitle: { color: colors.mutedForeground, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
   sectionText: { color: colors.foreground, fontSize: 14, lineHeight: 21 },
   wallet: { color: colors.mutedForeground, fontSize: 13, fontFamily: "SpaceMono" },
+  switchRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   signOutButton: {
     backgroundColor: colors.card,
     borderWidth: 1,
