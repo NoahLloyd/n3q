@@ -1,4 +1,5 @@
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, Image, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { colors } from "@/src/lib/theme";
@@ -8,6 +9,8 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function DirectoryScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const headerHeight = 44 + insets.top;
 
   const { data: members = [], isLoading, refetch } = useQuery({
     queryKey: ["directory"],
@@ -58,7 +61,7 @@ export default function DirectoryScreen() {
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12 }]}
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>

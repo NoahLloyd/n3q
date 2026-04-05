@@ -1,4 +1,5 @@
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { fetchPolls } from "@n3q/shared";
@@ -39,6 +40,8 @@ function getResultsBars(poll: Poll) {
 export default function VotingScreen() {
   const { userId } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const headerHeight = 44 + insets.top;
 
   const { data: polls = [], isLoading, refetch } = useQuery({
     queryKey: ["polls"],
@@ -119,7 +122,7 @@ export default function VotingScreen() {
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12 }]}
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>

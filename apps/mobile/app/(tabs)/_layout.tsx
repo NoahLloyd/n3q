@@ -1,66 +1,102 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
-import { useColorScheme } from "@/components/useColorScheme";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { BlurView } from "expo-blur";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-  color: string;
-}) {
-  return <FontAwesome size={22} style={{ marginBottom: -3 }} {...props} />;
+const tabs = [
+  { name: "feed", title: "Knowledge", icon: "book" as const },
+  { name: "events", title: "Events", icon: "calendar" as const },
+  { name: "voting", title: "Voting", icon: "check-square-o" as const },
+  { name: "directory", title: "Directory", icon: "users" as const },
+];
+
+function CustomTabBar({ state, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={[styles.tabBarWrapper, { bottom: insets.bottom }]}>
+      <BlurView intensity={50} tint="dark" style={[StyleSheet.absoluteFill, styles.glass]} />
+      {/* Corner squares */}
+      <View style={[styles.corner, { top: 0, left: 0 }]} />
+      <View style={[styles.corner, { top: 0, right: 0 }]} />
+      <View style={[styles.corner, { bottom: 0, left: 0 }]} />
+      <View style={[styles.corner, { bottom: 0, right: 0 }]} />
+
+      <View style={styles.tabRow}>
+        {tabs.map((tab, index) => {
+          const isActive = state.index === index;
+          const color = isActive ? "#f5a623" : "rgba(255, 255, 255, 0.5)";
+
+          return (
+            <TouchableOpacity
+              key={tab.name}
+              style={styles.tabItem}
+              onPress={() => navigation.navigate(tab.name)}
+              activeOpacity={0.7}
+            >
+              <FontAwesome name={tab.icon} size={16} color={color} />
+              <Text style={[styles.tabLabel, { color }]}>{tab.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const tintColor = "#f5a623";
-  const inactiveColor = colorScheme === "dark" ? "#666" : "#999";
-
   return (
     <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: tintColor,
-        tabBarInactiveTintColor: inactiveColor,
-        tabBarStyle: {
-          backgroundColor: colorScheme === "dark" ? "#0a0a0a" : "#fff",
-          borderTopColor: colorScheme === "dark" ? "#222" : "#eee",
-        },
-        headerStyle: {
-          backgroundColor: colorScheme === "dark" ? "#0a0a0a" : "#fff",
-        },
-        headerTintColor: colorScheme === "dark" ? "#fff" : "#000",
-      }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen
-        name="feed"
-        options={{
-          title: "Knowledge",
-          headerShown: false,
-          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="events"
-        options={{
-          title: "Events",
-          headerShown: false,
-          tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="voting"
-        options={{
-          title: "Voting",
-          headerShown: false,
-          tabBarIcon: ({ color }) => <TabBarIcon name="check-square-o" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="directory"
-        options={{
-          title: "Directory",
-          headerShown: false,
-          tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
-        }}
-      />
+      <Tabs.Screen name="feed" />
+      <Tabs.Screen name="events" />
+      <Tabs.Screen name="voting" />
+      <Tabs.Screen name="directory" />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBarWrapper: {
+    position: "absolute",
+    left: 10,
+    right: 10,
+    height: 60,
+    overflow: "hidden",
+  },
+  glass: {
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+  corner: {
+    position: "absolute",
+    width: 5,
+    height: 5,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    zIndex: 1,
+  },
+  tabRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+  },
+  tabItem: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 6,
+    flex: 1,
+  },
+  tabLabel: {
+    fontSize: 12,
+    fontWeight: "500",
+    fontFamily: "DepartureMono",
+    letterSpacing: 0.5,
+  },
+});

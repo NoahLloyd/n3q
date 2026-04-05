@@ -1,17 +1,27 @@
 import { Stack, useRouter } from "expo-router";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, StyleSheet, View } from "react-native";
+import { BlurView } from "expo-blur";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useColorScheme } from "@/components/useColorScheme";
+
+function GlassButton({ onPress, children }: { onPress: () => void; children: React.ReactNode }) {
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <BlurView intensity={40} tint="dark" style={styles.glassButton}>
+        {children}
+      </BlurView>
+    </TouchableOpacity>
+  );
+}
 
 export default function FeedLayout() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
 
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colorScheme === "dark" ? "#0a0a0a" : "#fff" },
-        headerTintColor: colorScheme === "dark" ? "#fff" : "#000",
+        headerTransparent: true,
+        headerTitleStyle: { color: "#fff", fontSize: 16, fontWeight: "600" },
+        headerStyle: { backgroundColor: "transparent" },
       }}
     >
       <Stack.Screen
@@ -19,19 +29,32 @@ export default function FeedLayout() {
         options={{
           title: "Knowledge",
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.push("/profile")} style={{ marginLeft: 8 }}>
-              <FontAwesome name="user-circle-o" size={22} color="#888" />
-            </TouchableOpacity>
+            <GlassButton onPress={() => router.push("/profile")}>
+              <FontAwesome name="user-circle-o" size={16} color="rgba(255,255,255,0.7)" />
+            </GlassButton>
           ),
           headerRight: () => (
-            <TouchableOpacity onPress={() => router.push("/(tabs)/feed/add")} style={{ marginRight: 8 }}>
-              <FontAwesome name="plus" size={18} color="#f5a623" />
-            </TouchableOpacity>
+            <GlassButton onPress={() => router.push("/(tabs)/feed/add")}>
+              <FontAwesome name="plus" size={14} color="#f5a623" />
+            </GlassButton>
           ),
         }}
       />
-      <Stack.Screen name="[id]" options={{ title: "Content" }} />
-      <Stack.Screen name="add" options={{ title: "Add Content", presentation: "modal" }} />
+      <Stack.Screen name="[id]" options={{ title: "" }} />
+      <Stack.Screen name="add" options={{ title: "Add Content", presentation: "modal", headerTransparent: false, headerStyle: { backgroundColor: "#0a0a0a" }, headerTintColor: "#fff" }} />
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  glassButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.18)",
+  },
+});

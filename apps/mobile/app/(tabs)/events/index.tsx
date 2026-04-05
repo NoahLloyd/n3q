@@ -1,4 +1,5 @@
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -29,6 +30,8 @@ function formatEventTime(timeStr: string | null): string | null {
 export default function EventsScreen() {
   const { userId } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const headerHeight = 44 + insets.top;
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
 
   const { data: events = [], isLoading, refetch } = useQuery({
@@ -81,7 +84,7 @@ export default function EventsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: headerHeight }]}>
       <View style={styles.filterRow}>
         {(["upcoming", "past"] as const).map((f) => (
           <TouchableOpacity
@@ -118,7 +121,7 @@ export default function EventsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.pageBg },
-  filterRow: { flexDirection: "row", padding: 12, gap: 8 },
+  filterRow: { flexDirection: "row", paddingHorizontal: 12, paddingBottom: 8, gap: 8 },
   filterBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,

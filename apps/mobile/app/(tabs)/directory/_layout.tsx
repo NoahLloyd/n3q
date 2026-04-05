@@ -1,18 +1,16 @@
 import { Stack } from "expo-router";
-import { useColorScheme } from "@/components/useColorScheme";
 
 export default function DirectoryLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colorScheme === "dark" ? "#0a0a0a" : "#fff" },
-        headerTintColor: colorScheme === "dark" ? "#fff" : "#000",
+        headerTransparent: true,
+        headerTitleStyle: { color: "#fff", fontSize: 16, fontWeight: "600" },
+        headerStyle: { backgroundColor: "transparent" },
       }}
     >
       <Stack.Screen name="index" options={{ title: "Directory" }} />
-      <Stack.Screen name="[id]" options={{ title: "Profile" }} />
+      <Stack.Screen name="[id]" options={{ title: "" }} />
     </Stack>
   );
 }

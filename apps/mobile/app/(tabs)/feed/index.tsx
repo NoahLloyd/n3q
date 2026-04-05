@@ -1,4 +1,5 @@
-import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { supabase } from "@/src/lib/supabase/client";
@@ -10,6 +11,8 @@ import { formatDistanceToNow, CONTENT_TYPE_LABELS } from "@n3q/shared";
 export default function FeedScreen() {
   const { userId } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const headerHeight = 44 + insets.top;
 
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ["feed"],
@@ -94,7 +97,7 @@ export default function FeedScreen() {
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12 }]}
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>
