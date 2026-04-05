@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Tabs } from "expo-router";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, Easing } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BookOpen, Rocket, CalendarDays, Vote, Users } from "lucide-react-native";
@@ -16,20 +16,32 @@ const tabs: { name: string; title: string; Icon: LucideIcon }[] = [
   { name: "directory", title: "Directory", Icon: Users },
 ];
 
+const easeOut = Easing.bezier(0.25, 0.1, 0.25, 1);
+
 function TabItem({ tab, isActive, onPress }: { tab: typeof tabs[0]; isActive: boolean; onPress: () => void }) {
   const progress = useSharedValue(isActive ? 1 : 0);
+  const textOpacity = useSharedValue(isActive ? 1 : 0);
 
   useEffect(() => {
-    progress.value = withTiming(isActive ? 1 : 0, { duration: 250 });
+    if (isActive) {
+      // Expand: ease in with slight delay on text visibility
+      progress.value = withTiming(1, { duration: 350, easing: easeOut });
+      textOpacity.value = withDelay(100, withTiming(1, { duration: 200 }));
+    } else {
+      // Collapse: fast, text disappears immediately
+      textOpacity.value = withTiming(0, { duration: 80 });
+      progress.value = withTiming(0, { duration: 150 });
+    }
   }, [isActive]);
 
   const clipStyle = useAnimatedStyle(() => ({
     maxWidth: progress.value * 100,
-    opacity: progress.value,
+    overflow: "hidden" as const,
   }));
 
   const slideStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: (1 - progress.value) * -20 }],
+    opacity: textOpacity.value,
+    transform: [{ translateX: (1 - progress.value) * -16 }],
   }));
 
   const color = isActive ? "#f5a623" : "rgba(255, 255, 255, 0.4)";
@@ -41,7 +53,7 @@ function TabItem({ tab, isActive, onPress }: { tab: typeof tabs[0]; isActive: bo
       activeOpacity={0.8}
     >
       <tab.Icon size={18} color={color} strokeWidth={2.2} />
-      <Animated.View style={[styles.labelClip, clipStyle]}>
+      <Animated.View style={clipStyle}>
         <Animated.Text style={[styles.tabLabel, slideStyle]} numberOfLines={1}>
           {tab.title}
         </Animated.Text>
@@ -123,9 +135,6 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 6,
-  },
-  labelClip: {
-    overflow: "hidden",
   },
   tabLabel: {
     fontSize: 11,
