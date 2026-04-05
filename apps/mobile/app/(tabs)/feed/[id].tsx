@@ -14,12 +14,19 @@ export default function ContentDetailScreen() {
     queryFn: async (): Promise<ContentItem | null> => {
       const { data, error } = await supabase
         .from("content_items")
-        .select("*, profiles(id, display_name, avatar_url)")
+        .select("*")
         .eq("id", id)
         .single();
 
       if (error) return null;
-      return { ...data, creator: data.profiles } as unknown as ContentItem;
+
+      const { data: creator } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .eq("id", data.creator_id)
+        .maybeSingle();
+
+      return { ...data, creator: creator || undefined } as ContentItem;
     },
   });
 

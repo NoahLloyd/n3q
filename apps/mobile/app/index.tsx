@@ -71,7 +71,7 @@ export default function LoginScreen() {
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef<(TextInput | null)[]>([]);
-  const { authenticate } = useAuth();
+  const { authenticate, devLogin } = useAuth();
   const router = useRouter();
 
   function handleDigitChange(index: number, value: string) {
@@ -215,6 +215,19 @@ export default function LoginScreen() {
         )}
       </View>
 
+      {/* Dev bypass */}
+      {__DEV__ && (
+        <TouchableOpacity
+          style={styles.devButton}
+          onPress={async () => {
+            await devLogin("0x75aa27A40651A2aAf3a114f27460060BCC5cA511");
+            router.replace("/(tabs)/feed");
+          }}
+        >
+          <Text style={styles.devButtonText}>Dev: Skip Login</Text>
+        </TouchableOpacity>
+      )}
+
       {/* Link to web */}
       <TouchableOpacity
         style={styles.webLink}
@@ -330,6 +343,20 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     backgroundColor: "rgba(245,166,35,0.5)",
+  },
+  devButton: {
+    marginTop: 16,
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  devButtonText: {
+    fontFamily: "DepartureMono",
+    fontSize: 11,
+    color: "#555",
+    letterSpacing: 1,
   },
   webLink: {
     marginTop: 24,

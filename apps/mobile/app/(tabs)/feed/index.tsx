@@ -15,7 +15,7 @@ export default function FeedScreen() {
     queryFn: async (): Promise<ContentItem[]> => {
       const { data, error } = await supabase
         .from("content_items")
-        .select("*, profiles(id, display_name, avatar_url)")
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -23,9 +23,18 @@ export default function FeedScreen() {
         return [];
       }
 
-      return (data || []).map((item: Record<string, unknown>) => ({
+      // Fetch creator profiles
+      const creatorIds = [...new Set((data || []).map((item) => item.creator_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .in("id", creatorIds);
+
+      const profileMap = Object.fromEntries((profiles || []).map((p) => [p.id, p]));
+
+      return (data || []).map((item) => ({
         ...item,
-        creator: item.profiles as ContentItem["creator"],
+        creator: profileMap[item.creator_id] || undefined,
       })) as ContentItem[];
     },
     enabled: !!userId,

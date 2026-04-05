@@ -13,6 +13,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   authenticate: (accessToken: string, refreshToken: string) => Promise<void>;
   getAccessToken: () => Promise<string | null>;
+  devLogin: (userId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState>({
@@ -23,6 +24,7 @@ const AuthContext = createContext<AuthState>({
   signOut: async () => {},
   authenticate: async () => {},
   getAccessToken: async () => null,
+  devLogin: async () => {},
 });
 
 function decodeJwtPayload(token: string): Record<string, unknown> {
@@ -149,6 +151,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return token;
   }, []);
 
+  async function devLogin(uid: string) {
+    await SecureStore.setItemAsync("n3q_user_id", uid);
+    await SecureStore.setItemAsync("n3q_access_token", "dev");
+    setUserId(uid);
+    setIsAuthenticated(true);
+    await fetchProfile(uid);
+  }
+
   async function signOut() {
     await SecureStore.deleteItemAsync("n3q_access_token");
     await SecureStore.deleteItemAsync("n3q_refresh_token");
@@ -168,6 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut,
         authenticate,
         getAccessToken,
+        devLogin,
       }}
     >
       {children}
