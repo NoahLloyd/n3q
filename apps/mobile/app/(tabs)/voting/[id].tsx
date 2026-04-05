@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,6 +7,7 @@ import { fetchPoll, castVote } from "@n3q/shared";
 import type { YesNoAbstainVote } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
+import { colors } from "@/src/lib/theme";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -32,7 +33,7 @@ export default function PollDetailScreen() {
       const data = await res.json();
       return data.count;
     },
-    staleTime: 5 * 60 * 1000, // cache for 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   const voteMutation = useMutation({
@@ -62,8 +63,8 @@ export default function PollDetailScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}>
-      <View style={[styles.statusBadge, isClosed && styles.closedBadge]}>
-        <Text style={[styles.statusText, isClosed && styles.closedText]}>
+      <View style={[styles.badge, isClosed ? styles.badgeClosed : styles.badgeActive]}>
+        <Text style={[styles.badgeText, isClosed ? styles.badgeTextClosed : styles.badgeTextActive]}>
           {isClosed ? "Closed" : "Active"}
         </Text>
       </View>
@@ -82,7 +83,7 @@ export default function PollDetailScreen() {
             const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
 
             return (
-              <TouchableOpacity
+              <Pressable
                 key={choice}
                 style={styles.optionCard}
                 onPress={() => voteMutation.mutate({ vote: choice })}
@@ -99,13 +100,13 @@ export default function PollDetailScreen() {
                     style={[
                       styles.progressFill,
                       { width: `${pct}%` },
-                      choice === "yes" && styles.fillYes,
-                      choice === "no" && styles.fillNo,
-                      choice === "abstain" && styles.fillAbstain,
+                      choice === "yes" && { backgroundColor: colors.amber },
+                      choice === "no" && { backgroundColor: colors.red },
+                      choice === "abstain" && { backgroundColor: colors.mutedForeground },
                     ]}
                   />
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </View>
@@ -115,7 +116,7 @@ export default function PollDetailScreen() {
             const pct = totalVotes > 0 ? Math.round((option.vote_count / totalVotes) * 100) : 0;
 
             return (
-              <TouchableOpacity
+              <Pressable
                 key={option.id}
                 style={styles.optionCard}
                 onPress={() => voteMutation.mutate({ optionId: option.id })}
@@ -126,9 +127,9 @@ export default function PollDetailScreen() {
                   <Text style={styles.optionCount}>{option.vote_count} ({pct}%)</Text>
                 </View>
                 <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, styles.fillYes, { width: `${pct}%` }]} />
+                  <View style={[styles.progressFill, { width: `${pct}%`, backgroundColor: colors.amber }]} />
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </View>
@@ -149,123 +150,39 @@ export default function PollDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0a0a0a",
-  },
-  content: {
-    padding: 20,
-  },
-  loadingText: {
-    color: "#666",
-    textAlign: "center",
-    marginTop: 40,
-  },
-  statusBadge: {
-    backgroundColor: "#1a3a1a",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    alignSelf: "flex-start",
-    marginBottom: 12,
-  },
-  closedBadge: {
-    backgroundColor: "#2a2a2a",
-  },
-  statusText: {
-    color: "#4ade80",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  closedText: {
-    color: "#888",
-  },
-  title: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  description: {
-    color: "#aaa",
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  voteCount: {
-    color: "#666",
-    fontSize: 13,
-    marginBottom: 20,
-  },
-  options: {
-    gap: 10,
-  },
+  container: { flex: 1, backgroundColor: colors.pageBg },
+  content: { padding: 14 },
+  loadingText: { color: colors.mutedForeground, textAlign: "center", marginTop: 40 },
+  badge: { paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, alignSelf: "flex-start", marginBottom: 12 },
+  badgeActive: { backgroundColor: colors.amberMuted, borderColor: colors.amberBorder },
+  badgeClosed: { backgroundColor: colors.muted, borderColor: colors.cardBorder },
+  badgeText: { fontSize: 10, fontWeight: "600" },
+  badgeTextActive: { color: colors.amber },
+  badgeTextClosed: { color: colors.mutedForeground },
+  title: { color: colors.foreground, fontSize: 20, fontWeight: "600", marginBottom: 8 },
+  description: { color: colors.mutedForeground, fontSize: 14, lineHeight: 20, marginBottom: 12 },
+  voteCount: { color: colors.mutedForeground, fontSize: 12, marginBottom: 20 },
+  options: { gap: 8 },
   optionCard: {
-    backgroundColor: "#1a1a1a",
-    borderRadius: 8,
+    backgroundColor: colors.card,
     padding: 14,
     borderWidth: 1,
-    borderColor: "#222",
+    borderColor: colors.cardBorder,
   },
-  optionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  optionLabel: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  optionCount: {
-    color: "#888",
-    fontSize: 13,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 3,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 3,
-  },
-  fillYes: {
-    backgroundColor: "#4ade80",
-  },
-  fillNo: {
-    backgroundColor: "#f87171",
-  },
-  fillAbstain: {
-    backgroundColor: "#888",
-  },
-  votedNote: {
-    color: "#60a5fa",
-    fontSize: 13,
-    textAlign: "center",
-    marginTop: 16,
-  },
+  optionRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
+  optionLabel: { color: colors.foreground, fontSize: 14, fontWeight: "500" },
+  optionCount: { color: colors.mutedForeground, fontSize: 12, fontVariant: ["tabular-nums"] },
+  progressBar: { height: 4, backgroundColor: colors.muted, overflow: "hidden" },
+  progressFill: { height: "100%" },
+  votedNote: { fontFamily: "DepartureMono", color: colors.blue, fontSize: 12, textAlign: "center", marginTop: 16, letterSpacing: 0.5 },
   winnerCard: {
-    backgroundColor: "#1a2a1a",
-    borderRadius: 8,
+    backgroundColor: colors.card,
     padding: 16,
     marginTop: 20,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#2a3a2a",
+    borderColor: colors.amberBorder,
   },
-  winnerLabel: {
-    color: "#888",
-    fontSize: 12,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  winnerText: {
-    color: "#4ade80",
-    fontSize: 18,
-    fontWeight: "bold",
-    textTransform: "capitalize",
-  },
+  winnerLabel: { fontFamily: "DepartureMono", color: colors.mutedForeground, fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
+  winnerText: { fontFamily: "DepartureMono", color: colors.amber, fontSize: 16, textTransform: "capitalize" },
 });

@@ -1,10 +1,11 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchEvent, rsvpEvent, cancelRsvp } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
+import { colors } from "@/src/lib/theme";
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -69,8 +70,8 @@ export default function EventDetailScreen() {
         <Text style={styles.description}>{event.description}</Text>
       )}
 
-      <TouchableOpacity
-        style={[styles.rsvpButton, event.user_has_rsvp && styles.cancelButton]}
+      <Pressable
+        style={[styles.button, event.user_has_rsvp && styles.buttonSecondary]}
         onPress={() => {
           if (event.user_has_rsvp) {
             cancelMutation.mutate();
@@ -80,10 +81,10 @@ export default function EventDetailScreen() {
         }}
         disabled={rsvpMutation.isPending || cancelMutation.isPending}
       >
-        <Text style={[styles.rsvpText, event.user_has_rsvp && styles.cancelText]}>
+        <Text style={[styles.buttonText, event.user_has_rsvp && styles.buttonTextSecondary]}>
           {event.user_has_rsvp ? "Cancel RSVP" : "RSVP"}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
 
       {event.rsvps && event.rsvps.length > 0 && (
         <View style={styles.attendees}>
@@ -91,9 +92,11 @@ export default function EventDetailScreen() {
             Attending ({event.rsvp_count})
           </Text>
           {event.rsvps.map((rsvp) => (
-            <Text key={rsvp.id} style={styles.attendeeName}>
-              {rsvp.user?.display_name || "Anonymous"}
-            </Text>
+            <View key={rsvp.id} style={styles.attendeeRow}>
+              <Text style={styles.attendeeName}>
+                {rsvp.user?.display_name || "Anonymous"}
+              </Text>
+            </View>
           ))}
         </View>
       )}
@@ -102,81 +105,29 @@ export default function EventDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0a0a0a",
-  },
-  content: {
-    padding: 20,
-  },
-  loadingText: {
-    color: "#666",
-    textAlign: "center",
-    marginTop: 40,
-  },
-  title: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  date: {
-    color: "#f5a623",
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  time: {
-    color: "#aaa",
-    fontSize: 14,
-    marginTop: 4,
-  },
-  location: {
-    color: "#888",
-    fontSize: 14,
-    marginTop: 4,
-  },
-  description: {
-    color: "#ccc",
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 16,
-  },
-  rsvpButton: {
-    backgroundColor: "#f5a623",
-    borderRadius: 8,
+  container: { flex: 1, backgroundColor: colors.pageBg },
+  content: { padding: 14 },
+  loadingText: { color: colors.mutedForeground, textAlign: "center", marginTop: 40 },
+  title: { color: colors.foreground, fontSize: 20, fontWeight: "600", marginBottom: 8 },
+  date: { color: colors.amber, fontSize: 14 },
+  time: { color: colors.mutedForeground, fontSize: 13, marginTop: 4 },
+  location: { color: colors.mutedForeground, fontSize: 13, marginTop: 4 },
+  description: { color: colors.foreground, fontSize: 14, lineHeight: 21, marginTop: 16 },
+  button: {
+    backgroundColor: "#FFA236",
     padding: 14,
     alignItems: "center",
     marginTop: 24,
   },
-  cancelButton: {
-    backgroundColor: "#2a2a2a",
+  buttonText: { fontFamily: "DepartureMono", fontSize: 16, color: "#171717", letterSpacing: 1 },
+  buttonSecondary: {
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.cardBorder,
   },
-  rsvpText: {
-    color: "#000",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  cancelText: {
-    color: "#ccc",
-  },
-  attendees: {
-    marginTop: 24,
-  },
-  sectionTitle: {
-    color: "#888",
-    fontSize: 13,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 12,
-  },
-  attendeeName: {
-    color: "#ccc",
-    fontSize: 14,
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#1a1a1a",
-  },
+  buttonTextSecondary: { color: colors.mutedForeground },
+  attendees: { marginTop: 24 },
+  sectionTitle: { color: colors.mutedForeground, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 },
+  attendeeRow: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.cardBorder },
+  attendeeName: { color: colors.foreground, fontSize: 14 },
 });
