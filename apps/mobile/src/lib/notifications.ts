@@ -1,8 +1,11 @@
 import { useEffect, useRef } from "react";
-import { Platform } from "react-native";
+import { Alert, Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
+import * as SecureStore from "expo-secure-store";
 import { supabase } from "./supabase/client";
+
+const PROMPT_KEY = "n3q_push_prompted";
 
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
@@ -20,20 +23,46 @@ async function registerForPushNotifications(): Promise<string | null> {
   }
 
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
 
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
+  if (existingStatus === "granted") {
+    const tokenData = await Notifications.getExpoPushTokenAsync();
+    return tokenData.data;
   }
 
-  if (finalStatus !== "granted") {
-    console.log("Push notification permission not granted");
-    return null;
-  }
+  // Check if we already prompted
+  const prompted = await SecureStore.getItemAsync(PROMPT_KEY);
+  if (prompted === "true") return null;
 
-  const tokenData = await Notifications.getExpoPushTokenAsync();
-  return tokenData.data;
+  // Show a pre-prompt explaining why
+  return new Promise((resolve) => {
+    Alert.alert(
+      "Stay in the loop",
+      "Get notified about new votes, events, and projects from the community.",
+      [
+        {
+          text: "Not now",
+          style: "cancel",
+          onPress: async () => {
+            await SecureStore.setItemAsync(PROMPT_KEY, "true");
+            resolve(null);
+          },
+        },
+        {
+          text: "Enable",
+          onPress: async () => {
+            await SecureStore.setItemAsync(PROMPT_KEY, "true");
+            const { status } = await Notifications.requestPermissionsAsync();
+            if (status !== "granted") {
+              resolve(null);
+              return;
+            }
+            const tokenData = await Notifications.getExpoPushTokenAsync();
+            resolve(tokenData.data);
+          },
+        },
+      ]
+    );
+  });
 }
 
 export function useNotifications(userId: string | null) {
@@ -46,7 +75,6 @@ export function useNotifications(userId: string | null) {
       const token = await registerForPushNotifications();
       if (!token) return;
 
-      // Store token in Supabase
       await supabase.from("push_tokens").upsert(
         { user_id: userId, token },
         { onConflict: "token" }
