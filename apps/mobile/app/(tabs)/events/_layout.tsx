@@ -1,11 +1,11 @@
 import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { BlurView } from "expo-blur";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { Plus } from "lucide-react-native";
 
 function GlassButton({ onPress, children }: { onPress: () => void; children: React.ReactNode }) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={styles.glassTouchable}>
       <BlurView intensity={40} tint="dark" style={styles.glassButton}>
         {children}
       </BlurView>
@@ -28,9 +28,10 @@ export default function EventsLayout() {
         name="index"
         options={{
           title: "Events",
+          headerRightContainerStyle: { justifyContent: "center" },
           headerRight: () => (
             <GlassButton onPress={() => router.push("/(tabs)/events/create")}>
-              <FontAwesome name="plus" size={14} color="#f5a623" />
+              <Plus size={18} color="#f5a623" strokeWidth={2.5} />
             </GlassButton>
           ),
         }}
@@ -42,6 +43,12 @@ export default function EventsLayout() {
 }
 
 const styles = StyleSheet.create({
+  glassTouchable: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   glassButton: {
     width: 32,
     height: 32,
