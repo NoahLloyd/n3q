@@ -4,16 +4,16 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service-client";
 import { signJwt } from "@/lib/jwt";
 
 export async function POST(request: Request) {
-  let body: { token?: string };
+  let body: { code?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { token } = body;
+  const token = body.code;
   if (!token) {
-    return NextResponse.json({ error: "token is required" }, { status: 400 });
+    return NextResponse.json({ error: "code is required" }, { status: 400 });
   }
 
   const serviceClient = createSupabaseServiceClient();

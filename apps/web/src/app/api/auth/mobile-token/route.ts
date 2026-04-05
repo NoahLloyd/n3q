@@ -40,14 +40,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // Generate a one-time token
-  const token = randomUUID();
+  // Generate a 6-digit code (easy to type on phone)
+  const code = String(Math.floor(100000 + Math.random() * 900000));
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
   // Try service client for insert (bypasses RLS), fall back to server client
   const { error } = await dbClient.from("mobile_auth_tokens").insert({
     user_id: userId,
-    token,
+    token: code,
     expires_at: expiresAt.toISOString(),
   });
 
@@ -60,8 +60,7 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({
-    token,
-    deep_link: `n3q://auth?token=${token}`,
+    code,
     expires_at: expiresAt.toISOString(),
   });
 }

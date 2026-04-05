@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Camera, Loader2, Check, Monitor, Wallet, Smartphone, Copy, RefreshCw } from "lucide-react";
+import { Camera, Loader2, Check, Monitor, Wallet, Smartphone, RefreshCw } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAuth } from "@/lib/auth/context";
 import { useMembership, useAllMembers } from "@/lib/web3/hooks";
@@ -519,13 +519,26 @@ export function ProfileContent() {
 }
 
 function MobileLinkCard() {
-  const { userId, authMethod } = useAuth();
-  const [deepLink, setDeepLink] = useState<string | null>(null);
+  const { userId } = useAuth();
+  const [code, setCode] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
 
-  const generateToken = async () => {
+  // Countdown timer
+  useEffect(() => {
+    if (!expiresAt) return;
+    const tick = () => {
+      const remaining = Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining <= 0) setCode(null);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  const generateCode = async () => {
     setIsGenerating(true);
     try {
       const res = await fetch("/api/auth/mobile-token", {
@@ -535,28 +548,22 @@ function MobileLinkCard() {
       });
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "Failed to generate token");
+        alert(data.error || "Failed to generate code");
         return;
       }
       const data = await res.json();
-      setDeepLink(data.deep_link);
+      setCode(data.code);
       setExpiresAt(data.expires_at);
     } catch (error) {
-      console.error("Error generating mobile token:", error);
-      alert("Failed to generate token");
+      console.error("Error generating mobile code:", error);
+      alert("Failed to generate code");
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const copyLink = async () => {
-    if (!deepLink) return;
-    await navigator.clipboard.writeText(deepLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const isExpired = expiresAt ? new Date(expiresAt) < new Date() : false;
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
 
   return (
     <Card>
@@ -564,60 +571,55 @@ function MobileLinkCard() {
         <CardTitle className="text-base font-semibold">Mobile App</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Generate a one-time link to sign in to the N3Q mobile app. The link
-          expires after 5 minutes.
-        </p>
-
-        {!deepLink || isExpired ? (
-          <Button
-            onClick={generateToken}
-            disabled={isGenerating}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            {isGenerating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Smartphone className="h-4 w-4" />
-            )}
-            Generate Login Link
-          </Button>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 rounded bg-muted p-3">
-              <code className="flex-1 text-xs break-all">{deepLink}</code>
-              <button
-                onClick={copyLink}
-                className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Open this link on your phone, or paste it in the N3Q mobile app.
-              {expiresAt && (
-                <>
-                  {" "}Expires at{" "}
-                  {new Date(expiresAt).toLocaleTimeString()}.
-                </>
-              )}
+        {!code ? (
+          <>
+            <p className="text-sm text-muted-foreground">
+              Generate a one-time code to sign in on the N3Q mobile app.
             </p>
             <Button
-              onClick={generateToken}
+              onClick={generateCode}
               disabled={isGenerating}
-              variant="ghost"
+              variant="outline"
               size="sm"
               className="gap-2"
             >
-              <RefreshCw className="h-3 w-3" />
-              Generate New Link
+              {isGenerating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Smartphone className="h-4 w-4" />
+              )}
+              Generate Login Code
             </Button>
+          </>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Enter this code in the N3Q mobile app:
+            </p>
+            <div className="relative py-5 border border-amber-500/25 bg-amber-500/[0.03]">
+              <span className="absolute top-0 left-0 w-1.5 h-1.5 bg-amber-500/40" />
+              <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-amber-500/40" />
+              <span className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-amber-500/40" />
+              <span className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-amber-500/40" />
+              <p className="text-center font-departure text-3xl tracking-[0.5em] text-amber-400/90">
+                {code}
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground text-center font-departure uppercase tracking-[0.15em]">
+              Expires in {minutes}:{seconds.toString().padStart(2, "0")}
+            </p>
+            <div className="flex justify-center">
+              <Button
+                onClick={generateCode}
+                disabled={isGenerating}
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+              >
+                <RefreshCw className="h-3 w-3" />
+                Generate New Code
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>
