@@ -7,6 +7,7 @@ import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
 const tabs = [
   { name: "feed", title: "Knowledge", icon: "book" as const },
+  { name: "projects", title: "Projects", icon: "rocket" as const },
   { name: "events", title: "Events", icon: "calendar" as const },
   { name: "voting", title: "Voting", icon: "check-square-o" as const },
   { name: "directory", title: "Directory", icon: "users" as const },
@@ -53,6 +54,7 @@ export default function TabLayout() {
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="feed" />
+      <Tabs.Screen name="projects" />
       <Tabs.Screen name="events" />
       <Tabs.Screen name="voting" />
       <Tabs.Screen name="directory" />

@@ -47,6 +47,7 @@ export default function EventsLayout() {
         name="index"
         options={{
           headerTitle: () => <HeaderBar />,
+          // @ts-ignore
           headerTitleContainerStyle: { left: 12, right: 12 },
           headerLeft: () => null,
         }}

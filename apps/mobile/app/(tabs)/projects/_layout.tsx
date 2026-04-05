@@ -1,6 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import { Pressable, StyleSheet, View, Text } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { Plus } from "lucide-react-native";
 
 function PixelArrow() {
   return (
@@ -21,16 +22,20 @@ function BackButton() {
 }
 
 function HeaderBar() {
+  const router = useRouter();
+
   return (
     <View style={styles.headerRow}>
       <View style={{ width: 28 }} />
-      <Text style={styles.headerTitle}>Directory</Text>
-      <View style={{ width: 28 }} />
+      <Text style={styles.headerTitle}>Projects</Text>
+      <Pressable onPress={() => router.push("/(tabs)/projects/create")} style={styles.plusBox}>
+        <Plus size={16} color="#f5a623" strokeWidth={2.5} />
+      </Pressable>
     </View>
   );
 }
 
-export default function DirectoryLayout() {
+export default function ProjectsLayout() {
   return (
     <Stack
       screenOptions={{
@@ -42,12 +47,11 @@ export default function DirectoryLayout() {
         name="index"
         options={{
           headerTitle: () => <HeaderBar />,
-          // @ts-ignore
-          headerTitleContainerStyle: { left: 12, right: 12 },
           headerLeft: () => null,
         }}
       />
       <Stack.Screen name="[id]" options={{ title: "", headerBackVisible: false, headerLeft: () => null, headerTitle: () => <BackButton /> }} />
+      <Stack.Screen name="create" options={{ title: "Create Project", presentation: "modal", headerTransparent: false, headerStyle: { backgroundColor: "#0a0a0a" }, headerTintColor: "#fff" }} />
     </Stack>
   );
 }
@@ -76,5 +80,14 @@ const styles = StyleSheet.create({
     fontFamily: "DepartureMono",
     fontSize: 14,
     color: "#6A6B60",
+  },
+  plusBox: {
+    width: 28,
+    height: 28,
+    backgroundColor: "#0a0a0a",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.2)",
   },
 });
