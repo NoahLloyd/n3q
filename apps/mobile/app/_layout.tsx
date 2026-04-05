@@ -9,6 +9,7 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import { AuthProvider, useAuth } from "@/src/lib/auth/context";
+import { useNotifications } from "@/src/lib/notifications";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -52,7 +53,8 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, userId } = useAuth();
+  useNotifications(isAuthenticated ? userId : null);
 
   if (isLoading) {
     return null;

@@ -7,6 +7,7 @@ import type { PollType } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
+import { notifyAll } from "@/src/lib/notify";
 
 export default function CreatePollScreen() {
   const { userId } = useAuth();
@@ -60,6 +61,7 @@ export default function CreatePollScreen() {
 
       await createPoll(supabase, userId, title.trim(), description.trim() || null, pollType, validOptions);
 
+      notifyAll("New Vote", title.trim());
       queryClient.invalidateQueries({ queryKey: ["polls"] });
       router.back();
     } catch (error) {

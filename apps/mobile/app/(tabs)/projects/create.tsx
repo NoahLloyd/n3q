@@ -7,6 +7,7 @@ import type { ProjectStatus } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
+import { notifyAll } from "@/src/lib/notify";
 
 const STATUSES: { value: ProjectStatus; label: string }[] = [
   { value: "idea", label: "Idea" },
@@ -36,6 +37,9 @@ export default function CreateProjectScreen() {
     setIsSubmitting(true);
     try {
       await createProject(supabase, userId, title.trim(), description.trim() || null, status, isPublic);
+      if (status === "looking_for_help") {
+        notifyAll("Help Wanted", `${title.trim()} is looking for help`);
+      }
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       router.back();
     } catch (error) {
