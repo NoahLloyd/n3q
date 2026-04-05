@@ -63,8 +63,8 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   tabBarWrapper: {
     position: "absolute",
-    left: 24,
-    right: 24,
+    left: 14,
+    right: 14,
     height: 60,
     overflow: "hidden",
   },
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: 10,
   },
   tabItem: {
     alignItems: "center",
