@@ -84,14 +84,15 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-around",
+    justifyContent: "center",
+    gap: 8,
   },
   tabItem: {
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
     paddingVertical: 6,
-    flex: 1,
+    paddingHorizontal: 10,
   },
   tabLabel: {
     fontSize: 11,
