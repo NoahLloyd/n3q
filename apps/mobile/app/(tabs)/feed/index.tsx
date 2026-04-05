@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.pageBg,
   },
   list: {
-    padding: 12,
+    padding: 14,
   },
   card: {
     backgroundColor: colors.card,

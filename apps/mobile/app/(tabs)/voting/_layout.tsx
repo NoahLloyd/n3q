@@ -1,62 +1,62 @@
 import { Stack, useRouter } from "expo-router";
-import { TouchableOpacity, StyleSheet } from "react-native";
-import { BlurView } from "expo-blur";
+import { Pressable, StyleSheet, View, Text } from "react-native";
 import { Plus } from "lucide-react-native";
 
-function GlassButton({ onPress, children }: { onPress: () => void; children: React.ReactNode }) {
+function HeaderBar() {
+  const router = useRouter();
+
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={styles.glassTouchable}>
-      <BlurView intensity={40} tint="dark" style={styles.glassButton}>
-        {children}
-      </BlurView>
-    </TouchableOpacity>
+    <View style={styles.headerRow}>
+      <View style={{ width: 28 }} />
+      <Text style={styles.headerTitle}>Voting</Text>
+      <Pressable onPress={() => router.push("/(tabs)/voting/create")} style={styles.plusBox}>
+        <Plus size={16} color="#f5a623" strokeWidth={2.5} />
+      </Pressable>
+    </View>
   );
 }
 
 export default function VotingLayout() {
-  const router = useRouter();
-
   return (
     <Stack
       screenOptions={{
         headerTransparent: true,
-        headerTitleStyle: { color: "#f5a623", fontSize: 18, fontFamily: "DepartureMono" },
         headerStyle: { backgroundColor: "transparent" },
       }}
     >
       <Stack.Screen
         name="index"
         options={{
-          title: "Voting",
-          headerRightContainerStyle: { justifyContent: "center" },
-          headerRight: () => (
-            <GlassButton onPress={() => router.push("/(tabs)/voting/create")}>
-              <Plus size={18} color="#f5a623" strokeWidth={2.5} />
-            </GlassButton>
-          ),
+          headerTitle: () => <HeaderBar />,
+          headerTitleContainerStyle: { left: 12, right: 12 },
+          headerLeft: () => null,
         }}
       />
-      <Stack.Screen name="[id]" options={{ title: "" }} />
+      <Stack.Screen name="[id]" options={{ title: "", headerTintColor: "#fff" }} />
       <Stack.Screen name="create" options={{ title: "Create Poll", presentation: "modal", headerTransparent: false, headerStyle: { backgroundColor: "#0a0a0a" }, headerTintColor: "#fff" }} />
     </Stack>
   );
 }
 
 const styles = StyleSheet.create({
-  glassTouchable: {
-    width: 36,
-    height: 36,
+  headerRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    width: "100%",
   },
-  glassButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  headerTitle: {
+    color: "#f5a623",
+    fontSize: 18,
+    fontFamily: "DepartureMono",
+  },
+  plusBox: {
+    width: 28,
+    height: 28,
+    backgroundColor: "#0a0a0a",
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.18)",
+    borderColor: "rgba(255,255,255,0.2)",
   },
 });

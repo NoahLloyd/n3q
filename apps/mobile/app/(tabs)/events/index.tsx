@@ -121,7 +121,7 @@ export default function EventsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.pageBg },
-  filterRow: { flexDirection: "row", paddingHorizontal: 12, paddingBottom: 8, gap: 8 },
+  filterRow: { flexDirection: "row", paddingHorizontal: 14, paddingBottom: 8, gap: 8 },
   filterBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
   filterText: { color: colors.mutedForeground, fontSize: 12, fontWeight: "500" },
   filterTextActive: { color: colors.amber },
-  list: { paddingHorizontal: 12 },
+  list: { paddingHorizontal: 14 },
   card: {
     backgroundColor: colors.card,
     borderWidth: 1,

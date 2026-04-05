@@ -1,20 +1,10 @@
 import { Stack, useRouter } from "expo-router";
-import { TouchableOpacity, StyleSheet, Image, View, Text } from "react-native";
-import { BlurView } from "expo-blur";
+import { Pressable, StyleSheet, Image, View, Text } from "react-native";
 import { Plus } from "lucide-react-native";
 import { useAuth } from "@/src/lib/auth/context";
 
-function GlassButton({ onPress, children }: { onPress: () => void; children: React.ReactNode }) {
-  return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={styles.glassTouchable}>
-      <BlurView intensity={40} tint="dark" style={styles.glassButton}>
-        {children}
-      </BlurView>
-    </TouchableOpacity>
-  );
-}
-
-function ProfileButton({ onPress }: { onPress: () => void }) {
+function HeaderBar() {
+  const router = useRouter();
   const { profile } = useAuth();
   const avatarUrl = profile?.avatar_url;
   const initials = profile?.display_name
@@ -22,98 +12,84 @@ function ProfileButton({ onPress }: { onPress: () => void }) {
     : "?";
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.1} style={styles.profileTouchable}>
-      <View style={styles.profileButton}>
+    <View style={styles.headerRow}>
+      <Pressable onPress={() => router.push("/profile")}>
         {avatarUrl ? (
-          <Image source={{ uri: avatarUrl }} style={styles.profileImage} />
+          <Image source={{ uri: avatarUrl }} style={styles.avatar} />
         ) : (
-          <View style={styles.profileFallback}>
-            <Text style={styles.profileInitials}>{initials}</Text>
+          <View style={[styles.avatar, styles.avatarFallback]}>
+            <Text style={styles.avatarInitials}>{initials}</Text>
           </View>
         )}
-      </View>
-    </TouchableOpacity>
+      </Pressable>
+
+      <Text style={styles.headerTitle}>Knowledge</Text>
+
+      <Pressable onPress={() => router.push("/(tabs)/feed/add")} style={styles.plusBox}>
+        <Plus size={16} color="#f5a623" strokeWidth={2.5} />
+      </Pressable>
+    </View>
   );
 }
 
 export default function FeedLayout() {
-  const router = useRouter();
-
   return (
     <Stack
       screenOptions={{
         headerTransparent: true,
-        headerTitleStyle: { color: "#f5a623", fontSize: 18, fontFamily: "DepartureMono" },
         headerStyle: { backgroundColor: "transparent" },
       }}
     >
       <Stack.Screen
         name="index"
         options={{
-          title: "Knowledge",
-          headerLeftContainerStyle: { justifyContent: "center" },
-          headerRightContainerStyle: { justifyContent: "center" },
-          headerLeft: () => (
-            <ProfileButton onPress={() => router.push("/profile")} />
-          ),
-          headerRight: () => (
-            <GlassButton onPress={() => router.push("/(tabs)/feed/add")}>
-              <Plus size={18} color="#f5a623" strokeWidth={2.5} />
-            </GlassButton>
-          ),
+          headerTitle: () => <HeaderBar />,
+          headerTitleContainerStyle: { left: 12, right: 12 },
+          headerLeft: () => null,
         }}
       />
-      <Stack.Screen name="[id]" options={{ title: "" }} />
+      <Stack.Screen name="[id]" options={{ title: "", headerTintColor: "#fff" }} />
       <Stack.Screen name="add" options={{ title: "Add Content", presentation: "modal", headerTransparent: false, headerStyle: { backgroundColor: "#0a0a0a" }, headerTintColor: "#fff" }} />
     </Stack>
   );
 }
 
 const styles = StyleSheet.create({
-  glassTouchable: {
-    width: 36,
-    height: 36,
+  headerRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-  },
-  glassButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.18)",
-  },
-  profileTouchable: {
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  profileButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    overflow: "hidden",
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.25)",
-  },
-  profileImage: {
+    justifyContent: "space-between",
     width: "100%",
-    height: "100%",
   },
-  profileFallback: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(255,255,255,0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  profileInitials: {
+  headerTitle: {
     color: "#f5a623",
-    fontSize: 12,
+    fontSize: 18,
+    fontFamily: "DepartureMono",
+  },
+  avatar: {
+    width: 28,
+    height: 28,
+    backgroundColor: "#1c1c1c",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.2)",
+  },
+  avatarFallback: {
+    backgroundColor: "#1c1c1c",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarInitials: {
+    color: "#f5a623",
+    fontSize: 11,
     fontWeight: "600",
+  },
+  plusBox: {
+    width: 28,
+    height: 28,
+    backgroundColor: "#0a0a0a",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.2)",
   },
 });

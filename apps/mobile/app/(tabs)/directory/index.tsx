@@ -76,7 +76,7 @@ export default function DirectoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.pageBg },
-  list: { padding: 12 },
+  list: { padding: 14 },
   card: {
     backgroundColor: colors.card,
     borderWidth: 1,
