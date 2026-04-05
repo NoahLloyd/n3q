@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { Tabs } from "expo-router";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BookOpen, Rocket, CalendarDays, Vote, Users } from "lucide-react-native";
@@ -14,6 +16,40 @@ const tabs: { name: string; title: string; Icon: LucideIcon }[] = [
   { name: "directory", title: "Directory", Icon: Users },
 ];
 
+function TabItem({ tab, isActive, onPress }: { tab: typeof tabs[0]; isActive: boolean; onPress: () => void }) {
+  const progress = useSharedValue(isActive ? 1 : 0);
+
+  useEffect(() => {
+    progress.value = withTiming(isActive ? 1 : 0, { duration: 250 });
+  }, [isActive]);
+
+  const clipStyle = useAnimatedStyle(() => ({
+    maxWidth: progress.value * 100,
+    opacity: progress.value,
+  }));
+
+  const slideStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: (1 - progress.value) * -20 }],
+  }));
+
+  const color = isActive ? "#f5a623" : "rgba(255, 255, 255, 0.4)";
+
+  return (
+    <TouchableOpacity
+      style={styles.tabItem}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <tab.Icon size={18} color={color} strokeWidth={2.2} />
+      <Animated.View style={[styles.labelClip, clipStyle]}>
+        <Animated.Text style={[styles.tabLabel, slideStyle]} numberOfLines={1}>
+          {tab.title}
+        </Animated.Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
+
 function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
@@ -26,22 +62,14 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       <View style={[styles.corner, { bottom: 0, right: 0 }]} />
 
       <View style={styles.tabRow}>
-        {tabs.map((tab, index) => {
-          const isActive = state.index === index;
-          const color = isActive ? "#f5a623" : "rgba(255, 255, 255, 0.4)";
-
-          return (
-            <TouchableOpacity
-              key={tab.name}
-              style={styles.tabItem}
-              onPress={() => navigation.navigate(tab.name)}
-              activeOpacity={0.8}
-            >
-              <tab.Icon size={18} color={color} strokeWidth={2.2} />
-              {isActive && <Text style={styles.tabLabel}>{tab.title}</Text>}
-            </TouchableOpacity>
-          );
-        })}
+        {tabs.map((tab, index) => (
+          <TabItem
+            key={tab.name}
+            tab={tab}
+            isActive={state.index === index}
+            onPress={() => navigation.navigate(tab.name)}
+          />
+        ))}
       </View>
     </View>
   );
@@ -95,6 +123,9 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 6,
+  },
+  labelClip: {
+    overflow: "hidden",
   },
   tabLabel: {
     fontSize: 11,
