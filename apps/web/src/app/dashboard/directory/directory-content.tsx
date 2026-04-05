@@ -77,7 +77,10 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
         const res = await fetch("/api/members/pending");
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          console.error("[directory] Error fetching pending members:", err);
+          // Service role key may not be configured — this is expected in some environments
+          if (res.status !== 500) {
+            console.error("[directory] Error fetching pending members:", err);
+          }
           setPending([]);
           setPendingCount(0);
           setPendingLoading(false);

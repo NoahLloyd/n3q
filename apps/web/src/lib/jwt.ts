@@ -1,6 +1,6 @@
 import { createHmac } from "crypto";
 
-const JWT_SECRET = process.env.SUPABASE_JWT_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const JWT_SECRET = process.env.MOBILE_JWT_SECRET!;
 
 function base64url(input: string | Buffer): string {
   const buf = typeof input === "string" ? Buffer.from(input) : input;
