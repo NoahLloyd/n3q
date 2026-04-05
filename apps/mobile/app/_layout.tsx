@@ -64,7 +64,7 @@ function RootLayoutNav() {
         {isAuthenticated ? (
           <>
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="profile" options={{ headerShown: true, title: "Profile" }} />
+            <Stack.Screen name="profile" options={{ headerShown: true, title: "Profile", headerBackVisible: false }} />
           </>
         ) : (
           <Stack.Screen name="index" />
