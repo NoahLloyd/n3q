@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
@@ -12,6 +13,9 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 export default function PollDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { userId } = useAuth();
+  const insets = useSafeAreaInsets();
+  const headerHeight = 44 + insets.top;
+  const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
   const queryClient = useQueryClient();
 
   const { data: poll } = useQuery({
@@ -57,7 +61,7 @@ export default function PollDetailScreen() {
     : (poll.options || []).reduce((sum, o) => sum + o.vote_count, 0);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}>
       <View style={[styles.statusBadge, isClosed && styles.closedBadge]}>
         <Text style={[styles.statusText, isClosed && styles.closedText]}>
           {isClosed ? "Closed" : "Active"}

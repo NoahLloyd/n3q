@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
@@ -8,6 +9,9 @@ import { formatDistanceToNow } from "@n3q/shared";
 
 export default function ContentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const insets = useSafeAreaInsets();
+  const headerHeight = 44 + insets.top;
+  const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
 
   const { data: item } = useQuery({
     queryKey: ["content", id],
@@ -39,7 +43,7 @@ export default function ContentDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}>
       <View style={styles.typeBadge}>
         <Text style={styles.typeBadgeText}>{item.type}</Text>
       </View>

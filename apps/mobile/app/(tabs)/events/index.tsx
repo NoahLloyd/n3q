@@ -32,6 +32,7 @@ export default function EventsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const headerHeight = 44 + insets.top;
+  const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
 
   const { data: events = [], isLoading, refetch } = useQuery({
@@ -106,7 +107,7 @@ export default function EventsScreen() {
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 12 }]}
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>

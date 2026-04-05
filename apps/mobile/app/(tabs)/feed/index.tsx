@@ -13,6 +13,7 @@ export default function FeedScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const headerHeight = 44 + insets.top;
+  const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
 
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ["feed"],
@@ -97,7 +98,7 @@ export default function FeedScreen() {
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
-        contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12 }]}
+        contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>

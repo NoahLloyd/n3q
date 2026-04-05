@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, Image, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/src/lib/supabase/client";
@@ -6,6 +7,9 @@ import type { Profile } from "@n3q/shared";
 
 export default function MemberProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const insets = useSafeAreaInsets();
+  const headerHeight = 44 + insets.top;
+  const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
 
   const { data: profile } = useQuery({
     queryKey: ["profile", id],
@@ -30,7 +34,7 @@ export default function MemberProfileScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}>
       <View style={styles.header}>
         {profile.avatar_url ? (
           <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />

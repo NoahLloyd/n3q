@@ -11,6 +11,7 @@ export default function DirectoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const headerHeight = 44 + insets.top;
+  const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
 
   const { data: members = [], isLoading, refetch } = useQuery({
     queryKey: ["directory"],
@@ -61,7 +62,7 @@ export default function DirectoryScreen() {
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
-        contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12 }]}
+        contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>

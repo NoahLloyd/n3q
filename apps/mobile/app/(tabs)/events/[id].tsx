@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchEvent, rsvpEvent, cancelRsvp } from "@n3q/shared";
@@ -8,6 +9,9 @@ import { useAuth } from "@/src/lib/auth/context";
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { userId } = useAuth();
+  const insets = useSafeAreaInsets();
+  const headerHeight = 44 + insets.top;
+  const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
   const queryClient = useQueryClient();
 
   const { data: event } = useQuery({
@@ -50,7 +54,7 @@ export default function EventDetailScreen() {
   });
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}>
       <Text style={styles.title}>{event.title}</Text>
       <Text style={styles.date}>{dateStr}</Text>
       {event.event_time && (
