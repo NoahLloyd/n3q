@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { createPoll } from "@n3q/shared";
 import type { PollType } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
+import { colors } from "@/src/lib/theme";
 
 export default function CreatePollScreen() {
   const { userId } = useAuth();
@@ -70,8 +71,6 @@ export default function CreatePollScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>Create Poll</Text>
-
       <View style={styles.field}>
         <Text style={styles.label}>Title *</Text>
         <TextInput
@@ -100,22 +99,22 @@ export default function CreatePollScreen() {
       <View style={styles.field}>
         <Text style={styles.label}>Type</Text>
         <View style={styles.typeRow}>
-          <TouchableOpacity
+          <Pressable
             style={[styles.typeBtn, pollType === "yes_no_abstain" && styles.typeBtnActive]}
             onPress={() => setPollType("yes_no_abstain")}
           >
             <Text style={[styles.typeText, pollType === "yes_no_abstain" && styles.typeTextActive]}>
               Yes / No / Abstain
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             style={[styles.typeBtn, pollType === "multiple_choice" && styles.typeBtnActive]}
             onPress={() => setPollType("multiple_choice")}
           >
             <Text style={[styles.typeText, pollType === "multiple_choice" && styles.typeTextActive]}>
               Multiple Choice
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
@@ -132,21 +131,21 @@ export default function CreatePollScreen() {
                 onChangeText={(v) => updateOption(index, v)}
               />
               {options.length > 2 && (
-                <TouchableOpacity style={styles.removeBtn} onPress={() => removeOption(index)}>
+                <Pressable style={styles.removeBtn} onPress={() => removeOption(index)}>
                   <Text style={styles.removeBtnText}>x</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             </View>
           ))}
           {options.length < 10 && (
-            <TouchableOpacity style={styles.addOptionBtn} onPress={addOption}>
+            <Pressable style={styles.addOptionBtn} onPress={addOption}>
               <Text style={styles.addOptionText}>+ Add Option</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       )}
 
-      <TouchableOpacity
+      <Pressable
         style={[styles.submitButton, isSubmitting && styles.submitDisabled]}
         onPress={handleSubmit}
         disabled={isSubmitting}
@@ -154,30 +153,40 @@ export default function CreatePollScreen() {
         <Text style={styles.submitText}>
           {isSubmitting ? "Creating..." : "Create Poll"}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0a" },
+  container: { flex: 1, backgroundColor: colors.pageBg },
   content: { padding: 20 },
-  heading: { color: "#fff", fontSize: 22, fontWeight: "bold", marginBottom: 24 },
+  heading: { color: colors.foreground, fontSize: 22, fontWeight: "bold", marginBottom: 24 },
   field: { marginBottom: 20 },
-  label: { color: "#aaa", fontSize: 13, fontWeight: "600", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
-  input: { backgroundColor: "#1a1a1a", borderWidth: 1, borderColor: "#333", borderRadius: 8, padding: 14, color: "#fff", fontSize: 15 },
+  label: { color: colors.mutedForeground, fontSize: 13, fontWeight: "600", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
+  input: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder, padding: 14, color: colors.foreground, fontSize: 15 },
   textArea: { minHeight: 80 },
   typeRow: { flexDirection: "row", gap: 8 },
-  typeBtn: { flex: 1, backgroundColor: "#1a1a1a", borderWidth: 1, borderColor: "#333", borderRadius: 8, padding: 12, alignItems: "center" },
-  typeBtnActive: { backgroundColor: "#f5a623", borderColor: "#f5a623" },
-  typeText: { color: "#888", fontSize: 13, fontWeight: "500" },
-  typeTextActive: { color: "#000" },
+  typeBtn: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    padding: 12,
+    alignItems: "center",
+  },
+  typeBtnActive: {
+    backgroundColor: colors.amberMuted,
+    borderColor: colors.amberBorder,
+  },
+  typeText: { color: colors.mutedForeground, fontSize: 13, fontWeight: "500" },
+  typeTextActive: { color: colors.amber },
   optionRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
-  removeBtn: { width: 36, height: 36, backgroundColor: "#2a2a2a", borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  removeBtnText: { color: "#888", fontSize: 16 },
+  removeBtn: { width: 36, height: 36, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder, alignItems: "center", justifyContent: "center" },
+  removeBtnText: { color: colors.mutedForeground, fontSize: 16 },
   addOptionBtn: { padding: 12, alignItems: "center" },
-  addOptionText: { color: "#f5a623", fontSize: 14, fontWeight: "500" },
-  submitButton: { backgroundColor: "#f5a623", borderRadius: 8, padding: 14, alignItems: "center", marginTop: 8 },
+  addOptionText: { color: colors.amber, fontSize: 14, fontWeight: "500" },
+  submitButton: { backgroundColor: "#FFA236", padding: 14, alignItems: "center", marginTop: 8 },
   submitDisabled: { opacity: 0.6 },
-  submitText: { color: "#000", fontSize: 16, fontWeight: "600" },
+  submitText: { fontFamily: "DepartureMono", color: "#171717", fontSize: 16, letterSpacing: 1 },
 });

@@ -47,8 +47,6 @@ export default function CreateProjectScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>Create Project</Text>
-
       <View style={styles.field}>
         <Text style={styles.label}>Title *</Text>
         <TextInput

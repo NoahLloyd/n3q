@@ -51,7 +51,7 @@ export default function ProjectsLayout() {
         }}
       />
       <Stack.Screen name="[id]" options={{ title: "", headerBackVisible: false, headerLeft: () => null, headerTitle: () => <BackButton /> }} />
-      <Stack.Screen name="create" options={{ title: "Create Project", presentation: "modal", headerTransparent: false, headerStyle: { backgroundColor: "#0a0a0a" }, headerTintColor: "#fff" }} />
+      <Stack.Screen name="create" options={{ title: "Create Project", presentation: "modal", headerTransparent: false, headerStyle: { backgroundColor: "#0a0a0a" }, headerTintColor: "#fff", headerTitleStyle: { color: "#FFA236", fontFamily: "DepartureMono", fontSize: 16 } }} />
     </Stack>
   );
 }

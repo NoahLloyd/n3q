@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
+import { colors } from "@/src/lib/theme";
 import { CONTENT_TYPE_OPTIONS, CONTENT_TYPE_LABELS } from "@n3q/shared";
 import type { ContentType } from "@n3q/shared";
 
@@ -47,8 +48,6 @@ export default function AddContentScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>Add Content</Text>
-
       <View style={styles.field}>
         <Text style={styles.label}>URL</Text>
         <TextInput
@@ -76,16 +75,16 @@ export default function AddContentScreen() {
 
       <View style={styles.field}>
         <Text style={styles.label}>Type</Text>
-        <TouchableOpacity
+        <Pressable
           style={styles.pickerButton}
           onPress={() => setShowTypePicker(!showTypePicker)}
         >
           <Text style={styles.pickerText}>{CONTENT_TYPE_LABELS[type]}</Text>
-        </TouchableOpacity>
+        </Pressable>
         {showTypePicker && (
           <View style={styles.pickerList}>
             {CONTENT_TYPE_OPTIONS.map((t) => (
-              <TouchableOpacity
+              <Pressable
                 key={t}
                 style={[styles.pickerOption, t === type && styles.pickerOptionActive]}
                 onPress={() => { setType(t); setShowTypePicker(false); }}
@@ -93,40 +92,40 @@ export default function AddContentScreen() {
                 <Text style={[styles.pickerOptionText, t === type && styles.pickerOptionTextActive]}>
                   {CONTENT_TYPE_LABELS[t]}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         )}
       </View>
 
-      <TouchableOpacity
+      <Pressable
         style={[styles.submitButton, isSubmitting && styles.submitDisabled]}
         onPress={handleSubmit}
         disabled={isSubmitting}
       >
         <Text style={styles.submitText}>
-          {isSubmitting ? "Adding..." : "Add to Feed"}
+          {isSubmitting ? "Adding..." : "Add to Knowledge"}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0a0a0a" },
+  container: { flex: 1, backgroundColor: colors.pageBg },
   content: { padding: 20 },
-  heading: { color: "#fff", fontSize: 22, fontWeight: "bold", marginBottom: 24 },
+  heading: { color: colors.foreground, fontSize: 22, fontWeight: "bold", marginBottom: 24 },
   field: { marginBottom: 20 },
-  label: { color: "#aaa", fontSize: 13, fontWeight: "600", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
-  input: { backgroundColor: "#1a1a1a", borderWidth: 1, borderColor: "#333", borderRadius: 8, padding: 14, color: "#fff", fontSize: 15 },
-  pickerButton: { backgroundColor: "#1a1a1a", borderWidth: 1, borderColor: "#333", borderRadius: 8, padding: 14 },
-  pickerText: { color: "#fff", fontSize: 15 },
-  pickerList: { backgroundColor: "#1a1a1a", borderWidth: 1, borderColor: "#333", borderRadius: 8, marginTop: 4, maxHeight: 200 },
-  pickerOption: { padding: 12, borderBottomWidth: 1, borderBottomColor: "#222" },
-  pickerOptionActive: { backgroundColor: "#2a2a1a" },
-  pickerOptionText: { color: "#ccc", fontSize: 14 },
-  pickerOptionTextActive: { color: "#f5a623", fontWeight: "600" },
-  submitButton: { backgroundColor: "#f5a623", borderRadius: 8, padding: 14, alignItems: "center", marginTop: 8 },
+  label: { color: colors.mutedForeground, fontSize: 13, fontWeight: "600", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
+  input: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder, padding: 14, color: colors.foreground, fontSize: 15 },
+  pickerButton: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder, padding: 14 },
+  pickerText: { color: colors.foreground, fontSize: 15 },
+  pickerList: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder, marginTop: 4 },
+  pickerOption: { padding: 12, borderBottomWidth: 1, borderBottomColor: colors.cardBorder },
+  pickerOptionActive: { backgroundColor: colors.amberMuted },
+  pickerOptionText: { color: colors.mutedForeground, fontSize: 14 },
+  pickerOptionTextActive: { color: colors.amber, fontWeight: "600" },
+  submitButton: { backgroundColor: "#FFA236", padding: 14, alignItems: "center", marginTop: 8 },
   submitDisabled: { opacity: 0.6 },
-  submitText: { color: "#000", fontSize: 16, fontWeight: "600" },
+  submitText: { fontFamily: "DepartureMono", color: "#171717", fontSize: 16, letterSpacing: 1 },
 });
