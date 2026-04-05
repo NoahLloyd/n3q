@@ -23,6 +23,7 @@ const queryClient = new QueryClient();
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    DepartureMono: require("../assets/fonts/DepartureMono-Regular.otf"),
     ...FontAwesome.font,
   });
 
