@@ -18,6 +18,11 @@ export default function FeedLayout() {
         name="index"
         options={{
           title: "Feed",
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.push("/profile")} style={{ marginLeft: 8 }}>
+              <FontAwesome name="user-circle-o" size={22} color="#888" />
+            </TouchableOpacity>
+          ),
           headerRight: () => (
             <TouchableOpacity onPress={() => router.push("/(tabs)/feed/add")} style={{ marginRight: 8 }}>
               <FontAwesome name="plus" size={18} color="#f5a623" />
