@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter @n3q/web",
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && pnpm install",
+  "build": {
+    "env": {
+      "VERCEL_FORCE_NO_BUILD_CACHE": "1"
+    }
+  }
+}
