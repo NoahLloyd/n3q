@@ -31,6 +31,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const stored = window.localStorage.getItem("n3q-theme") as Theme | null;
 
     if (stored === "light" || stored === "dark") {
@@ -46,6 +48,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const handler = (event: MediaQueryListEvent) => {
       if (theme === null) {
         const next: Theme = event.matches ? "dark" : "light";
@@ -60,6 +64,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "j") {
         event.preventDefault();
@@ -80,7 +86,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme((prev) => {
       const next: Theme = prev === "dark" ? "light" : "dark";
       applyThemeClass(next);
-      window.localStorage.setItem("n3q-theme", next);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("n3q-theme", next);
+      }
       return next;
     });
   }, []);
