@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
@@ -42,6 +43,7 @@ export default function VotingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const headerHeight = 44 + insets.top;
+  const [filter, setFilter] = useState<"active" | "closed">("active");
 
   const { data: polls = [], isLoading, refetch } = useQuery({
     queryKey: ["polls"],
@@ -49,8 +51,7 @@ export default function VotingScreen() {
     enabled: !!userId,
   });
 
-  const activePolls = polls.filter((p) => p.status === "active");
-  const closedPolls = polls.filter((p) => p.status === "closed").slice(0, 5);
+  const filteredPolls = polls.filter((p) => p.status === filter);
 
   function renderPoll({ item }: { item: Poll }) {
     const isClosed = item.status === "closed";
@@ -114,15 +115,29 @@ export default function VotingScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: headerHeight }]}>
+      <View style={styles.filterRow}>
+        {(["active", "closed"] as const).map((f) => (
+          <TouchableOpacity
+            key={f}
+            style={[styles.filterBtn, filter === f && styles.filterActive]}
+            onPress={() => setFilter(f)}
+          >
+            <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
+              {f === "active" ? "Active" : "Past"}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <FlatList
-        data={[...activePolls, ...closedPolls]}
+        data={filteredPolls}
         renderItem={renderPoll}
         keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
-        contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12 }]}
+        contentContainerStyle={styles.list}
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.empty}>
@@ -137,7 +152,21 @@ export default function VotingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.pageBg },
-  list: { padding: 14 },
+  filterRow: { flexDirection: "row", paddingHorizontal: 14, paddingBottom: 8, gap: 8 },
+  filterBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    backgroundColor: colors.card,
+  },
+  filterActive: {
+    backgroundColor: colors.amberMuted,
+    borderColor: colors.amberBorder,
+  },
+  filterText: { color: colors.mutedForeground, fontSize: 12, fontWeight: "500" },
+  filterTextActive: { color: colors.amber },
+  list: { paddingHorizontal: 14 },
   card: {
     backgroundColor: colors.card,
     borderWidth: 1,
