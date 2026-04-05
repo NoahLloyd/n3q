@@ -51,7 +51,19 @@ export default function ProjectsLayout() {
         }}
       />
       <Stack.Screen name="[id]" options={{ title: "", headerBackVisible: false, headerLeft: () => null, headerTitle: () => <BackButton /> }} />
-      <Stack.Screen name="create" options={{ title: "Create Project", presentation: "modal", headerTransparent: false, headerStyle: { backgroundColor: "#0a0a0a" }, headerTintColor: "#fff", headerTitleStyle: { color: "#FFA236", fontFamily: "DepartureMono", fontSize: 16 } }} />
+      <Stack.Screen name="create" options={{
+        presentation: "modal",
+        headerTransparent: false,
+        headerStyle: { backgroundColor: "#0a0a0a" },
+        headerTintColor: "#fff",
+        headerLeft: () => null,
+        headerTitle: () => (
+          <View style={styles.modalHeader}>
+            <View style={styles.grabber} />
+            <Text style={styles.modalTitle}>Create Project</Text>
+          </View>
+        ),
+      }} />
     </Stack>
   );
 }
@@ -80,6 +92,22 @@ const styles = StyleSheet.create({
     fontFamily: "DepartureMono",
     fontSize: 14,
     color: "#6A6B60",
+  },
+  modalHeader: {
+    alignItems: "center",
+    paddingTop: 5,
+    gap: 20,
+  },
+  grabber: {
+    width: 36,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  modalTitle: {
+    color: "#FFA236",
+    fontSize: 16,
+    fontFamily: "DepartureMono",
   },
   plusBox: {
     width: 28,
