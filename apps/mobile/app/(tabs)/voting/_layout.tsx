@@ -20,7 +20,7 @@ export default function VotingLayout() {
     <Stack
       screenOptions={{
         headerTransparent: true,
-        headerTitleStyle: { color: "#fff", fontSize: 16, fontWeight: "600" },
+        headerTitleStyle: { color: "#f5a623", fontSize: 18, fontFamily: "DepartureMono" },
         headerStyle: { backgroundColor: "transparent" },
       }}
     >
