@@ -97,7 +97,7 @@ PostgreSQL via Supabase with Row Level Security (RLS). Key tables: `profiles`, `
 - **EAS Update** (`.github/workflows/mobile-update.yml`): Auto-triggers on push to `main` when `apps/mobile/**` or `packages/shared/**` change. Publishes OTA update to production branch.
 - All workflows use `pnpm install --frozen-lockfile` and require `EXPO_TOKEN` secret for EAS.
 
-## EAS Build
+## EAS Build & App Store Submission
 
 Build profiles in `apps/mobile/eas.json`:
 - **development**: Dev client, internal distribution, iOS simulator
@@ -105,6 +105,15 @@ Build profiles in `apps/mobile/eas.json`:
 - **production**: Auto-incrementing version, store submission
 
 Runtime version uses fingerprint policy. EAS project ID: `cdb8a70f-0945-45dc-89d1-f358e5a80009`, owner: `n3q`.
+
+**Important: App Store / Play Store submissions are manual.** OTA updates (JS-only changes) are auto-published, but any change that requires a native rebuild needs:
+1. Manual EAS Build via GitHub Actions or `eas build`
+2. Manual submission via `eas submit` or App Store Connect / Google Play Console
+3. App Store review (~24-48 hours for iOS)
+
+Changes that require a native rebuild: Expo SDK upgrades, new native modules, app icon/splash changes, permission changes, `app.json` modifications. See `RELEASES.md` for the full decision table.
+
+**Supabase migrations are also manual** — trigger via GitHub Actions → "Supabase Migrate" → type "migrate" to confirm. Never auto-run on merge.
 
 ## Environment Variables
 
