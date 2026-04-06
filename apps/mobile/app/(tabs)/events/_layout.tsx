@@ -42,7 +42,7 @@ function HeaderBar() {
 
   return (
     <View style={styles.headerRow}>
-      <View style={{ width: 28 }} />
+      <View style={{ width: 64 }} />
       <Text style={styles.headerTitle}>Events</Text>
       <View style={styles.rightButtons}>
         <SubscribeButton />
