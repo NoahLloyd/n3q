@@ -8,6 +8,14 @@ function broadcast(title: string, body: string, data?: Record<string, unknown>) 
   }).catch(() => {});
 }
 
+function notifyUser(userId: string, title: string, body: string, data?: Record<string, unknown>) {
+  fetch(`${API_URL}/api/notify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "user", userId, title, body, data }),
+  }).catch(() => {});
+}
+
 // ── Helpers ────────────────────────────────────────────
 
 function formatTime(time: string): string {
@@ -51,6 +59,12 @@ export function notifyEventOneHour(title: string) {
 
 export function notifyEventStarting(title: string) {
   broadcast("Happening now", `"${title}" is starting.`);
+}
+
+// ── Knowledge ──────────────────────────────────────────
+
+export function notifyNewComment(creatorId: string, commenterName: string, postTitle: string) {
+  notifyUser(creatorId, "New comment", `${commenterName} commented on "${postTitle}".`);
 }
 
 // ── Projects ───────────────────────────────────────────

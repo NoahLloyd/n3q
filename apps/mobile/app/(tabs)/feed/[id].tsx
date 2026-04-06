@@ -8,6 +8,7 @@ import * as Haptics from "expo-haptics";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
+import { notifyNewComment } from "@/src/lib/notify";
 import type { ContentItem, ContentInteraction } from "@n3q/shared";
 import { formatDistanceToNow, CONTENT_TYPE_LABELS } from "@n3q/shared";
 
@@ -20,7 +21,7 @@ interface FeedDetail extends ContentItem {
 
 export default function ContentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { userId } = useAuth();
+  const { userId, profile } = useAuth();
   const insets = useSafeAreaInsets();
   const headerHeight = 44 + insets.top;
   const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
@@ -230,6 +231,11 @@ export default function ContentDetailScreen() {
                 style={styles.commentSend}
                 onPress={() => {
                   upsertMutation.mutate({ comment: commentText.trim() });
+                  // Notify post creator (don't notify yourself)
+                  if (item.creator_id !== userId) {
+                    const myName = profile?.display_name || "Someone";
+                    notifyNewComment(item.creator_id, myName, item.ai_title || item.title);
+                  }
                   setCommentText("");
                 }}
               >
