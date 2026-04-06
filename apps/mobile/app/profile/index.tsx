@@ -7,6 +7,8 @@ import * as Notifications from "expo-notifications";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
+import { daysSince } from "@/src/lib/days";
+import { TradingCard } from "@/src/components/TradingCard";
 
 function PixelArrow() {
   return (
@@ -22,6 +24,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = 44 + insets.top;
   const [pushEnabled, setPushEnabled] = useState(false);
+  const [cardVisible, setCardVisible] = useState(false);
 
   const checkPushStatus = useCallback(async () => {
     const { status } = await Notifications.getPermissionsAsync();
@@ -107,13 +110,15 @@ export default function ProfileScreen() {
       />
       <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: headerHeight + 12 }]}>
         <View style={styles.header}>
-          {profile?.avatar_url ? (
-            <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Text style={styles.avatarText}>{initials}</Text>
-            </View>
-          )}
+          <Pressable onPress={() => setCardVisible(true)}>
+            {profile?.avatar_url ? (
+              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Text style={styles.avatarText}>{initials}</Text>
+              </View>
+            )}
+          </Pressable>
           <Text style={styles.name}>{profile?.display_name || "Anonymous"}</Text>
           {profile?.email && <Text style={styles.email}>{profile.email}</Text>}
         </View>
@@ -134,14 +139,7 @@ export default function ProfileScreen() {
 
         {profile?.created_at && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Member Since</Text>
-            <Text style={styles.sectionText}>
-              {new Date(profile.created_at).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </Text>
+            <Text style={styles.dayCount}>day {daysSince(profile.created_at)}</Text>
           </View>
         )}
 
@@ -162,6 +160,15 @@ export default function ProfileScreen() {
           <Text style={styles.signOutText}>Sign Out</Text>
         </Pressable>
       </ScrollView>
+
+      <TradingCard
+        visible={cardVisible}
+        onClose={() => setCardVisible(false)}
+        name={profile?.display_name || "Anonymous"}
+        avatarUrl={profile?.avatar_url ?? null}
+        initials={initials}
+        dayCount={profile?.created_at ? daysSince(profile.created_at) : 1}
+      />
     </>
   );
 }
@@ -216,4 +223,10 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   signOutText: { color: "#f87171", fontSize: 14, fontFamily: "DepartureMono", letterSpacing: 1 },
+  dayCount: {
+    color: colors.amber,
+    fontSize: 14,
+    fontFamily: "DepartureMono",
+    letterSpacing: 3,
+  },
 });

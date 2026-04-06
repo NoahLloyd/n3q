@@ -1,9 +1,12 @@
-import { View, Text, ScrollView, Image, StyleSheet } from "react-native";
+import { useState } from "react";
+import { View, Text, ScrollView, Image, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/src/lib/supabase/client";
 import { colors } from "@/src/lib/theme";
+import { daysSince } from "@/src/lib/days";
+import { TradingCard } from "@/src/components/TradingCard";
 import type { Profile } from "@n3q/shared";
 
 export default function MemberProfileScreen() {
@@ -11,6 +14,7 @@ export default function MemberProfileScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = 44 + insets.top;
   const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
+  const [cardVisible, setCardVisible] = useState(false);
 
   const { data: profile } = useQuery({
     queryKey: ["profile", id],
@@ -39,15 +43,18 @@ export default function MemberProfileScreen() {
     : "?";
 
   return (
+    <>
     <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}>
       <View style={styles.header}>
-        {profile.avatar_url ? (
-          <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Text style={styles.avatarText}>{initials}</Text>
-          </View>
-        )}
+        <Pressable onPress={() => setCardVisible(true)}>
+          {profile.avatar_url ? (
+            <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <Text style={styles.avatarText}>{initials}</Text>
+            </View>
+          )}
+        </Pressable>
         <Text style={styles.name}>{profile.display_name || "Anonymous"}</Text>
         {profile.email && <Text style={styles.email}>{profile.email}</Text>}
       </View>
@@ -68,17 +75,20 @@ export default function MemberProfileScreen() {
 
       {profile.created_at && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Member Since</Text>
-          <Text style={styles.sectionText}>
-            {new Date(profile.created_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </Text>
+          <Text style={styles.dayCount}>day {daysSince(profile.created_at)}</Text>
         </View>
       )}
     </ScrollView>
+
+    <TradingCard
+      visible={cardVisible}
+      onClose={() => setCardVisible(false)}
+      name={profile.display_name || "Anonymous"}
+      avatarUrl={profile.avatar_url}
+      initials={initials}
+      dayCount={profile.created_at ? daysSince(profile.created_at) : 1}
+    />
+    </>
   );
 }
 
@@ -96,4 +106,10 @@ const styles = StyleSheet.create({
   sectionTitle: { color: colors.mutedForeground, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
   sectionText: { color: colors.foreground, fontSize: 14, lineHeight: 21 },
   wallet: { color: colors.mutedForeground, fontSize: 13, fontFamily: "SpaceMono" },
+  dayCount: {
+    color: colors.amber,
+    fontSize: 14,
+    fontFamily: "DepartureMono",
+    letterSpacing: 3,
+  },
 });
