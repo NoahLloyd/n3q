@@ -47,7 +47,7 @@ export default function CreateEventScreen() {
         endTime.trim() || null
       );
 
-      notifyNewEvent(title.trim());
+      notifyNewEvent(title.trim(), date.trim(), time.trim() || null);
       queryClient.invalidateQueries({ queryKey: ["events"] });
       router.back();
     } catch (error) {
