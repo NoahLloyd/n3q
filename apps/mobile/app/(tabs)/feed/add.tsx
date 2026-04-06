@@ -61,7 +61,7 @@ export default function AddContentScreen() {
       <View style={styles.content}>
         <TextInput
           style={styles.input}
-          placeholder="https://..."
+          placeholder="Paste a link"
           placeholderTextColor="#555"
           value={url}
           onChangeText={setUrl}
