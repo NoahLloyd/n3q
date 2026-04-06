@@ -8,236 +8,218 @@ N3Q (Nine Three Quarters) is a DAO community hub for builders. The visual identi
 
 **Tagline:** "a free lab for builders"
 
-### Brand Assets (`apps/web/public/`)
+### Brand Assets
 
-| Asset | File | Usage |
-|---|---|---|
-| Pixel logo | `n3q-favicon.png` | Sidebar, login page, favicons. Always render with `image-rendering: crisp-edges` |
-| Wordmark | `Logo-text.png` | Login page. Max width 220px, `image-rendering: crisp-edges` |
-| Favicons | `favicon-16.png`, `favicon-32.png` | Browser tab |
+| Asset | Web | Mobile | Usage |
+|---|---|---|---|
+| Pixel logo (SVG) | N/A | Inline SVG in `app/index.tsx` | Mobile login screen |
+| Pixel logo (PNG) | `apps/web/public/n3q-favicon.png` | `assets/images/n3q-favicon.png` | Sidebar, splash screen |
+| Wordmark | `apps/web/public/Logo-text.png` | `assets/images/Logo-text.png` | Login screen |
+| App icon | N/A | `assets/images/icon.png` (1024x1024) | App Store, home screen |
+| Favicons | `apps/web/public/favicon-16.png`, `favicon-32.png` | N/A | Browser tab |
+
+Always render pixel art with `image-rendering: crisp-edges` (web) or nearest-neighbor scaling.
 
 ## Color System
 
-All colors use the **OKLCH** color space via CSS custom properties. The palette is intentionally **achromatic** (zero saturation) for the core UI, with amber as the only chromatic accent.
+All colors use the **OKLCH** color space on web via CSS custom properties. The mobile app uses hex equivalents defined in `apps/mobile/src/lib/theme.ts`.
 
 ### Core Tokens (dark mode — the default)
 
-```
---background:         oklch(0.145 0 0)    /* near-black */
---foreground:         oklch(0.985 0 0)    /* near-white */
---card:               oklch(0.205 0 0)    /* slightly lighter than bg */
---card-foreground:    oklch(0.985 0 0)
---primary:            oklch(0.922 0 0)    /* light gray (buttons, emphasis) */
---primary-foreground: oklch(0.205 0 0)    /* dark text on primary */
---secondary:          oklch(0.269 0 0)    /* dark gray */
---muted:              oklch(0.269 0 0)    /* same as secondary */
---muted-foreground:   oklch(0.708 0 0)    /* mid-gray for captions */
---border:             oklch(1 0 0 / 10%)  /* white at 10% — very subtle */
---input:              oklch(1 0 0 / 15%)
---destructive:        oklch(0.704 0.191 22.216)  /* warm red */
-```
-
-### Light Mode Overrides
-
-Light mode inverts the grayscale. `--primary` becomes near-black, `--background` becomes white. The structure is identical — just swapped luminance values.
+| Token | Web (OKLCH) | Mobile (hex) | Usage |
+|---|---|---|---|
+| Background | `oklch(0.145 0 0)` | `#0a0a0a` | Page background |
+| Card | `oklch(0.205 0 0)` | `#1c1c1c` | Card surfaces |
+| Foreground | `oklch(0.985 0 0)` | `#fafafa` | Primary text |
+| Muted foreground | `oklch(0.708 0 0)` | `#a1a1a1` | Secondary text, captions |
+| Muted | `oklch(0.269 0 0)` | `#333` | Subtle backgrounds |
+| Border | `oklch(1 0 0 / 10%)` | `rgba(255,255,255,0.10)` | Card borders |
+| Input | `oklch(1 0 0 / 15%)` | N/A | Input borders |
+| Destructive | `oklch(0.704 0.191 22.216)` | `#f87171` | Delete, errors |
 
 ### Amber Accent
 
-Amber is the brand color, used sparingly for:
-- **Wallet/crypto actions** on login: `text-amber-400`, `border-amber-500/25`, `bg-amber-500/[0.03]`
-- **Active status badges**: `bg-amber-500/20 text-amber-500 border-amber-500/30`
-- **Membership indicators**: `border-amber-500/30 bg-amber-500/10` with a `h-2 w-2 rounded-full bg-amber-500` dot
-- **Login page ambient glow**: `bg-amber-500/[0.04] blur-[120px]`
-- **Pixel grid overlay**: `rgba(255,162,54,0.5)` at 3% opacity
+Amber is the brand color (`#f5a623` / `#FFA236`), used for:
+- **Active states**: Badges, tab highlights, selected filters
+- **Buttons (mobile)**: Solid `#FFA236` background with `#171717` text
+- **Badges**: `bg-amber-500/20 text-amber-500 border-amber-500/30`
+- **Header titles (mobile)**: Departure Mono in `#f5a623`
+- **Login page glow**: SVG radial gradients with amber stops
+- **Switch toggles**: Amber track color when enabled
 
-Amber is NOT used for general primary actions — those use the achromatic `primary` token.
-
-### Mobile Colors
-
-The mobile app uses hex equivalents:
-- Background: `#0a0a0a`
-- Card: `#1a1a1a`
-- Borders: `#333`, `#222`
-- Amber accent: `#f5a623`
-- Text: `#fff`, `#aaa` (muted), `#888` (subtle), `#666` (placeholder)
+Amber is NOT used for general primary actions on web — those use the achromatic `primary` token.
 
 ### Data Visualization Colors (polls)
 
-Poll voting bars use distinct Tailwind colors:
-- Yes: `amber-500`
-- No: `red-500`
-- Abstain: `zinc-500`
-- Multiple choice options cycle through: `blue-500`, `purple-500`, `pink-500`, `cyan-500`
+| Choice | Color |
+|---|---|
+| Yes | `amber-500` / `#f5a623` |
+| No | `red-500` / `#f87171` |
+| Abstain | `zinc-500` / `#a1a1a1` |
+| Multiple choice options | Cycle: `#f5a623`, `#60a5fa`, `#4ade80`, `#a78bfa`, `#f472b6` |
 
 ## Typography
 
 ### Font Stack
 
-| Font | CSS | Usage |
-|---|---|---|
-| **Departure Mono** | `font-departure` (custom class) | Brand typography — login page, button labels on login, status badges, section labels |
-| **Geist Sans** | `font-sans` (default) | All body text, card content, navigation labels |
-| **Geist Mono** | `font-mono` | Code, wallet addresses, technical data |
+| Font | Web | Mobile | Usage |
+|---|---|---|---|
+| **Departure Mono** | `font-departure` | `fontFamily: "DepartureMono"` | Brand typography — titles, buttons, labels, tab bar, login |
+| **Geist Sans** | `font-sans` | N/A | Body text, card content (web) |
+| **Geist Mono** | `font-mono` | N/A | Code, wallet addresses (web) |
+| **SpaceMono** | N/A | `fontFamily: "SpaceMono"` | Wallet addresses, technical data (mobile) |
+| **System** | N/A | Default | Body text, card content (mobile) |
 
-Departure Mono is loaded as a custom `@font-face` from `/fonts/DepartureMono-Regular.otf`. The mobile app uses **SpaceMono** as its monospace font.
+### Mobile Type Scale
 
-### Type Scale
-
-| Role | Classes | Example |
-|---|---|---|
-| Page title | `text-xl font-semibold tracking-tight` | Dashboard section headers |
-| Card title | `text-sm font-medium leading-tight` | Feed items, poll titles |
-| Section label | `text-sm font-medium text-muted-foreground` | Card headers |
-| Body text | `text-sm text-muted-foreground` | Descriptions, sidebar copy |
-| Caption | `text-xs text-muted-foreground` | Timestamps, meta info |
-| Brand label | `font-departure text-[11px] uppercase tracking-[0.2em]` | Login page text, status badges |
-| Brand micro | `font-departure text-[10px] uppercase tracking-[0.2em]` | Dividers, smallest brand text |
-
-**Key pattern:** Departure Mono is always paired with `uppercase tracking-[0.2em]` for the distinctive wide-spaced brand look.
-
-## Spacing & Layout
-
-### Dashboard Layout
-
-- **Sidebar:** Fixed `w-72`, `sticky top-0 h-screen`, hidden on mobile (`hidden sm:flex`)
-- **Main content:** `flex-1 px-4 py-4 sm:px-6 sm:py-6`
-- **Content max-width:** `max-w-5xl`
-- **Section gaps:** `space-y-4`
-- **Card grid:** Responsive columns with `gap-4`
-
-### Sidebar Navigation Items
-
-Each nav item is a card-like block:
-```
-border border-border/60 bg-background/60 px-3 py-3
-```
-With a `h-12 w-12` icon container (`bg-muted`) and title + description below it.
-
-Active state: `border-sidebar-accent bg-sidebar-accent text-sidebar-foreground`
-Hover: `hover:border-sidebar-ring hover:bg-muted/60`
-
-### Mobile Spacing
-
-- Screen padding: `24px` (login), `16px` (content screens)
-- Card padding: `16-24px`
-- Card gaps: `marginBottom: 12`
-- Touch targets: minimum `padding: 14` on buttons
+| Role | Style |
+|---|---|
+| Header title | `fontFamily: "DepartureMono"`, `fontSize: 18`, `color: "#f5a623"` |
+| Card title | `fontSize: 14`, `fontWeight: "500"`, `color: colors.foreground` |
+| Badge text | `fontSize: 10`, `fontWeight: "600"` |
+| Section title | `fontSize: 11`, `fontWeight: "600"`, `textTransform: "uppercase"`, `letterSpacing: 1` |
+| Body text | `fontSize: 14`, `color: colors.foreground` |
+| Meta/caption | `fontSize: 11-12`, `color: colors.mutedForeground` |
+| Button text | `fontFamily: "DepartureMono"`, `fontSize: 16`, `color: "#171717"` |
+| Tab label | `fontFamily: "DepartureMono"`, `fontSize: 11`, `color: "#f5a623"` |
+| Back button | `fontFamily: "DepartureMono"`, `fontSize: 14`, `color: "#6A6B60"` |
+| Login text | `fontFamily: "DepartureMono"`, `fontSize: 11`, `color: "#6A6B60"`, `letterSpacing: 3` |
 
 ## Border & Corner Treatment
 
-### Web
+**Sharp corners everywhere.** This is the core design principle.
 
-- **Border radius:** `--radius: 0rem` — **all cards and containers have sharp corners** by default. This is a deliberate design choice maintaining the retro aesthetic.
-- **Exception:** shadcn components like badges use `rounded-full`, buttons use `rounded-md` — these are component-level overrides, not the global default.
-- **Border color:** `border-border` or `border-border/60` (muted)
-- **Shadows:** Minimal — `shadow-xs` on inputs, `shadow-sm` on cards
+### Web
+- `--radius: 0rem` — all cards and containers have zero border radius
+- Cards: `rounded-none` explicitly
+- Exception: shadcn badges use `rounded-full`, some buttons use `rounded-md`
 
 ### Mobile
+- Cards: No border radius (square)
+- Buttons: No border radius (square)
+- Inputs: No border radius (square)
+- Badges: No border radius (square)
+- Avatars: No border radius (square) — including profile and directory
+- Tab bar corner squares: 5x5px white accent squares at each corner
+- Only exception: Tab bar grabber pill uses `borderRadius: 3`
 
-- Cards use rounded corners: `borderRadius: 10-12`
-- Inputs: `borderRadius: 8`
-- Buttons: `borderRadius: 8`
+## Spacing & Layout
+
+### Web Dashboard
+- **Sidebar:** Fixed `w-72`, `sticky top-0 h-screen`, hidden on mobile
+- **Main content:** `flex-1 px-4 py-4 sm:px-6 sm:py-6`, `max-w-5xl`
+- **Card grid:** `gap-4`, responsive columns
+
+### Mobile
+- **Content padding:** `14px` (list screens), `20px` (create/form screens)
+- **Card padding:** `14px`
+- **Card gap:** `marginBottom: 8`
+- **Header alignment:** `headerTitleContainerStyle: { left: 12, right: 12 }` to align with content
+- **Safe areas:** All screens account for transparent header (`44 + insets.top`) and floating tab bar (`60 + insets.bottom`)
 
 ## Component Patterns
 
-### Buttons
+### Buttons (Mobile)
 
-Web buttons use shadcn/CVA variants:
+| Type | Style |
+|---|---|
+| Primary action | Solid `#FFA236`, text `#171717`, Departure Mono 16px, square |
+| Secondary action | `backgroundColor: colors.card`, `borderColor: colors.cardBorder`, muted text |
+| Destructive | `backgroundColor: colors.card`, text `#f87171`, Departure Mono |
+| Filter tab (active) | `backgroundColor: colors.amberMuted`, `borderColor: colors.amberBorder`, amber text |
+| Filter tab (inactive) | `backgroundColor: colors.card`, `borderColor: colors.cardBorder`, muted text |
 
-| Variant | Style | Usage |
-|---|---|---|
-| `default` | `bg-primary text-primary-foreground` | Primary actions |
-| `outline` | `border bg-background shadow-xs` | Secondary actions, icon buttons |
-| `ghost` | `hover:bg-accent` | Inline/toolbar actions |
-| `secondary` | `bg-secondary` | Tertiary actions |
-| `destructive` | `bg-destructive text-white` | Delete, dangerous actions |
-| `link` | `text-primary underline` | Inline links |
+### Cards (Mobile)
 
-Sizes: `sm` (h-8), `default` (h-9), `lg` (h-10), `icon` (9x9), `icon-sm` (8x8), `icon-lg` (10x10)
+All cards follow the same structure:
+```
+backgroundColor: colors.card (#1c1c1c)
+borderWidth: 1
+borderColor: colors.cardBorder (rgba(255,255,255,0.10))
+padding: 14
+marginBottom: 8
+```
+With a footer separated by `borderTopWidth: 1` containing timestamp and creator.
 
-**Login page buttons** are custom — NOT shadcn. They use a distinct pattern:
-- Outer `<span>` with border overlay and bg tint
-- Four corner accent dots (`w-1.5 h-1.5`) at each corner
-- `font-departure text-xs uppercase tracking-[0.2em]`
-- White variant for Google, amber variant for wallet
+### Header Bar (Mobile)
 
-### Cards
+Custom `headerTitle` component (not headerLeft/headerRight, which add their own wrapping styles):
+- Left: Square profile avatar (28x28) with `#1c1c1c` background
+- Center: Departure Mono title in `#f5a623`
+- Right: Square plus icon box (28x28) with `#0a0a0a` background, hairline border
+- All positioned via a single flex row with `justifyContent: "space-between"`
 
-Standard shadcn Card with `rounded-xl border pt-6 pb-6 shadow-sm`. In practice, many dashboard cards override with `rounded-none` or custom styling.
+### Back Button (Mobile)
 
-### Badges
+Custom pixel arrow SVG (from `←.svg`) + "back" text in Departure Mono `#6A6B60`. Rendered as `headerTitle` with `headerLeft: () => null` and `headerBackVisible: false` to avoid native button wrapper styling.
 
-Rounded-full pills (`rounded-full border px-2 py-0.5 text-xs`). Variants: default, secondary, destructive, outline.
+### Tab Bar (Mobile)
 
-Custom status badges used in voting/events:
-- Active: `bg-amber-500/20 text-amber-500 border-amber-500/30`
-- Closed/Past: muted gray styling
+Floating glass container with blur backdrop:
+- Position: `absolute`, inset 14px from edges, just above home indicator
+- Background: `BlurView intensity={50}` + `rgba(255,255,255,0.06)` fill + `rgba(255,255,255,0.12)` border
+- Corner squares: 5x5px at each corner, `rgba(255,255,255,0.25)`
+- Icons: Lucide (`BookOpen`, `Rocket`, `CalendarDays`, `Vote`, `Users`), `strokeWidth: 2.2`
+- Active tab: Icon + inline label (Departure Mono 11px, amber), animated slide-in
+- Inactive tabs: Icon only, `rgba(255,255,255,0.4)`
+- Animation: Label clips from `maxWidth: 0` to `100` (350ms bezier ease-out), slides from `-16px` translate, opacity delayed 100ms. Collapse: 150ms width, 80ms opacity fade.
 
-### Inputs
+### Modals (Mobile)
 
-`h-9 px-3 py-1 border border-input bg-transparent shadow-xs`. Focus ring: `focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]`.
+- Presentation: `"modal"` (not `formSheet`, to avoid double grabber in production)
+- Header: `#0a0a0a` background, custom `headerTitle` with grabber pill + Departure Mono title
+- Grabber: 36x5px pill, `borderRadius: 3`, `rgba(255,255,255,0.2)`, `paddingTop: 5`, `gap: 20` to title
+- Title: `#FFA236`, Departure Mono 16px
+- No native `headerLeft` — set to `() => null`
 
-### Avatars
+### Login Screen (Mobile)
 
-Radix Avatar with fallback initials. Stacked avatar groups use `-space-x-1.5` overlap with `border border-background` rings. Sizes: `h-5 w-5` (stacked), `h-7 w-7` (sidebar), standard for profile.
+Mirrors the web login aesthetic:
+- SVG radial gradient background glow (full-screen, centered at 38%)
+- Glass card: `rgba(255,255,255,0.04)` fill, `rgba(255,255,255,0.08)` border, top highlight line
+- N3Q logo rendered as inline SVG with radial gradient glow behind it
+- Wordmark image below logo
+- 6-digit code input in amber-bordered container with corner squares
+- All text in Departure Mono
 
-### Icons
+### Empty States (Mobile)
 
-**Lucide React** for web. Standard sizes: `h-3 w-3` (small UI), `h-4 w-4` (inline), `h-5 w-5` (navigation/sidebar). Color inherits from parent, typically `text-muted-foreground`.
+Centered Departure Mono text in `colors.mutedForeground`, `paddingTop: 60`.
 
-**FontAwesome** (`@expo/vector-icons`) for mobile.
+### Loading Skeletons (Mobile)
+
+Animated pulsing blocks (`opacity: 0.3 → 0.7`, 800ms repeat) in `colors.muted`. Card skeleton matches card layout (title, badge, body, footer). Member skeleton shows avatar block + text lines.
 
 ## Animation & Motion
 
-### Login Page Effects
+### Mobile Tab Bar
+- **Expand:** 350ms bezier `(0.25, 0.1, 0.25, 1)`, text opacity delayed 100ms
+- **Collapse:** 150ms width, 80ms text opacity — fast exit
+- **Principle:** Reduce simultaneous motion. Old label collapses quickly, icons settle, then new label slides in
 
-| Animation | Duration | Purpose |
-|---|---|---|
-| `animate-fade-up` | 0.6s ease-out | Staggered entrance of elements (delays: 0.1s, 0.12s, 0.15s, 0.18s, 0.2s, 0.3s) |
-| `animate-pixel-flicker` | 6s step-end infinite | Subtle opacity flicker on logo (92-98% keyframes) |
-| `animate-scan-line` | 8s linear infinite | Horizontal line sweeping down the viewport |
-| `animate-logo-glow` | 4s ease-in-out infinite | Pulsing glow behind logo (scale + opacity) |
+### Login Page (Web)
+- `animate-fade-up`: 0.6s ease-out, staggered entrance
+- `animate-pixel-flicker`: 6s step-end infinite, subtle logo flicker
+- `animate-scan-line`: 8s linear infinite, horizontal sweep
+- `animate-logo-glow`: 4s ease-in-out infinite, pulsing glow
 
-### Ambient Effects (Login)
-
-- **Pixel grid:** `background-size: 8px 8px` with amber gridlines at 3% opacity
-- **Scan line:** 2px gradient line (`via-amber-500/10`) animating vertically
-- **Warm glow:** 600px blur circle at viewport center (`bg-amber-500/[0.04] blur-[120px]`)
-- **Glass card:** `backdrop-blur-xl bg-white/[0.04] border border-white/[0.08]`
-- **Inner glow:** 1px gradient at card top edge (`via-white/20`)
-
-### Dashboard Interactions
-
-- Hover transitions: `transition-colors` (default Tailwind duration)
-- Loading spinner: `animate-spin` on circular border element
-- Poll bars: `transition-all duration-300` for width changes
-- Button hover: `duration-300` on login page custom buttons
+### Dashboard (Web)
+- Hover transitions: `transition-colors`
+- Poll bars: `transition-all duration-300`
 
 ## Dark Mode
 
-Dark mode is the **default** (set in `ThemeProvider` if no stored preference). Toggle via `Cmd/Ctrl + J` or the sidebar toggle button. Implementation uses a `.dark` class on `<html>` with CSS variable overrides.
+Dark mode is the **default**. Web supports light mode toggle (`Cmd/Ctrl + J`). Mobile is dark-only.
 
-Storage key: `n3q-theme` in `localStorage`.
-
-## RainbowKit Theme
-
-The wallet connection modal uses a separate emerald accent (not amber):
-```js
-darkTheme({
-  accentColor: "#10b981",        // emerald-500
-  accentColorForeground: "white",
-  borderRadius: "small",
-  fontStack: "system",
-})
-```
-
-This is intentional — the wallet UI has its own crypto-native identity distinct from the N3Q brand palette.
+Storage key: `n3q-theme` in `localStorage` (web).
 
 ## Design Principles
 
-1. **Dark-first:** Design for dark mode, light mode is secondary
-2. **Achromatic core:** Use the grayscale token system for 95% of the UI. Reserve amber for brand moments and status indicators
-3. **Sharp geometry:** Zero border radius at the layout level (cards, containers). Only component-level elements (badges, buttons) get rounding
-4. **Departure Mono = brand voice:** Use it for anything that should feel distinctly "N3Q" — always uppercase with wide tracking
-5. **Restraint over decoration:** Minimal shadows, subtle borders at low opacity, no gradients in the dashboard UI
-6. **Retro-tech login, clean dashboard:** The login page is atmospheric (glass, glows, pixel effects). The dashboard is utilitarian and content-focused
+1. **Dark-first:** Design for dark mode. Light mode is secondary (web only).
+2. **Achromatic core:** Grayscale for 95% of the UI. Amber for brand moments and status indicators only.
+3. **Sharp geometry:** Zero border radius everywhere — cards, buttons, inputs, avatars, badges. The only exceptions are the tab bar grabber pill and shadcn badge components.
+4. **Departure Mono = brand voice:** Headers, buttons, labels, tab bar, login. Always the brand font for anything that should feel "N3Q".
+5. **Solid amber buttons:** Mobile primary actions use solid `#FFA236` with `#171717` text. Not outlined, not muted.
+6. **Restraint over decoration:** Minimal shadows, subtle borders at low opacity, no gradients in content UI.
+7. **Retro-tech login, clean dashboard:** Login is atmospheric (glass, glows, pixel effects). Dashboard/app screens are utilitarian and content-focused.
+8. **Consistent cross-platform:** Same colors, same sharp corners, same font, same card structure on web and mobile.
