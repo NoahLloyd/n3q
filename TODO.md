@@ -12,6 +12,7 @@
 
 ## Setup required (needs repo admin)
 - [ ] Add `EXPO_TOKEN` secret to GitHub repo → Settings → Secrets → Actions (token: generated from @n3q robot user `github-actions` on expo.dev)
+- [ ] Link GitHub repo to Expo project → expo.dev → n3q → n3q → Settings → GitHub
 
 ## Done
 - [x] Monorepo setup (pnpm + Turborepo)
