@@ -9,10 +9,9 @@
 ## Blocked (needs Apple Developer account)
 - [ ] Fill in `eas.json` submit credentials (appleId, ascAppId, appleTeamId)
 - [ ] First EAS Build + TestFlight submission
-- [ ] Update EAS Update URL in app.json with real project ID
 
-## Setup required
-- [ ] Add `EXPO_TOKEN` secret to GitHub repo (from expo.dev/accounts/n3q/settings/access-tokens)
+## Setup required (needs repo admin)
+- [ ] Add `EXPO_TOKEN` secret to GitHub repo → Settings → Secrets → Actions (token: generated from @n3q robot user `github-actions` on expo.dev)
 
 ## Done
 - [x] Monorepo setup (pnpm + Turborepo)
