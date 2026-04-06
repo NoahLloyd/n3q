@@ -43,6 +43,9 @@ Google Play requires a one-time $25 registration fee.
   - Add `SUPABASE_ACCESS_TOKEN` secret to GitHub repo
   - Add `SUPABASE_PROJECT_ID` secret (value: `kwjoxtcubwekahthwgsk`)
 
+## To discuss
+- [ ] Should we give backers of N3Q access to the web app and mobile app? If so, what level of access? Read-only (public pages) or full member access? Requires a backer verification flow or a separate role.
+
 ## Merge checklist (before merging feature/mobile-app → main)
 - [ ] Supabase migrations applied (mobile_auth_tokens, mobile_refresh_tokens, push_tokens)
 - [ ] End-to-end login code flow tested
