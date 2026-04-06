@@ -36,6 +36,201 @@ interface TradingCardProps {
   dayCount: number;
 }
 
+// Deterministic pseudo-random from seed for consistent scratches/marks
+function seededRandom(seed: number) {
+  const x = Math.sin(seed * 9301 + 49297) * 49297;
+  return x - Math.floor(x);
+}
+
+/** Paper texture, edge wear, scratches, and vignette overlays */
+function CardTexture() {
+  // Generate surface scratches — thin lines at slight angles
+  const scratches = Array.from({ length: 14 }, (_, i) => {
+    const r = seededRandom(i + 7);
+    const r2 = seededRandom(i + 31);
+    const r3 = seededRandom(i + 53);
+    return {
+      top: `${r * 90 + 5}%` as const,
+      left: `${r2 * 80 + 5}%` as const,
+      width: 20 + r3 * 50,
+      rotation: -30 + r * 60,
+      opacity: 0.02 + r3 * 0.04,
+    };
+  });
+
+  // Small scuff marks / spots
+  const scuffs = Array.from({ length: 20 }, (_, i) => {
+    const r = seededRandom(i + 100);
+    const r2 = seededRandom(i + 200);
+    const r3 = seededRandom(i + 300);
+    return {
+      top: `${r * 95 + 2}%` as const,
+      left: `${r2 * 92 + 3}%` as const,
+      size: 1.5 + r3 * 4,
+      opacity: 0.03 + r3 * 0.06,
+      isLight: r > 0.5,
+    };
+  });
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {/* Edge vignette — darkening from all four edges inward */}
+      <LinearGradient
+        colors={["rgba(0,0,0,0.5)", "transparent"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0.15, y: 0 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={["rgba(0,0,0,0.5)", "transparent"]}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0.85, y: 0 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={["rgba(0,0,0,0.45)", "transparent"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.12 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={["rgba(0,0,0,0.45)", "transparent"]}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0.88 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* Corner shadow/wear — extra darkening at corners */}
+      <LinearGradient
+        colors={["rgba(0,0,0,0.4)", "transparent"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0.3, y: 0.2 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={["rgba(0,0,0,0.4)", "transparent"]}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0.7, y: 0.2 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={["rgba(0,0,0,0.35)", "transparent"]}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0.3, y: 0.8 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={["rgba(0,0,0,0.35)", "transparent"]}
+        start={{ x: 1, y: 1 }}
+        end={{ x: 0.7, y: 0.8 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* Surface scratches */}
+      {scratches.map((s, i) => (
+        <View
+          key={`s${i}`}
+          style={{
+            position: "absolute",
+            top: s.top,
+            left: s.left,
+            width: s.width,
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: `rgba(255,240,200,${s.opacity})`,
+            transform: [{ rotate: `${s.rotation}deg` }],
+          }}
+        />
+      ))}
+
+      {/* Scuff marks */}
+      {scuffs.map((s, i) => (
+        <View
+          key={`m${i}`}
+          style={{
+            position: "absolute",
+            top: s.top,
+            left: s.left,
+            width: s.size,
+            height: s.size,
+            borderRadius: s.size / 2,
+            backgroundColor: s.isLight
+              ? `rgba(255,240,200,${s.opacity})`
+              : `rgba(0,0,0,${s.opacity + 0.05})`,
+          }}
+        />
+      ))}
+
+      {/* Subtle paper grain — horizontal fiber lines */}
+      {Array.from({ length: 8 }, (_, i) => (
+        <View
+          key={`g${i}`}
+          style={{
+            position: "absolute",
+            top: `${12 + i * 11}%`,
+            left: 0,
+            right: 0,
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: `rgba(180,150,90,${0.015 + seededRandom(i + 400) * 0.02})`,
+          }}
+        />
+      ))}
+    </View>
+  );
+}
+
+/** Worn/chipped corner overlays for physical card feel */
+function CornerWear() {
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {/* Top-left corner wear */}
+      <View style={[wearStyles.corner, { top: -1, left: -1, borderTopLeftRadius: BORDER_RADIUS }]}>
+        <LinearGradient
+          colors={["rgba(60,50,30,0.6)", "transparent"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
+      {/* Top-right */}
+      <View style={[wearStyles.corner, { top: -1, right: -1, borderTopRightRadius: BORDER_RADIUS }]}>
+        <LinearGradient
+          colors={["rgba(60,50,30,0.5)", "transparent"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
+      {/* Bottom-left */}
+      <View style={[wearStyles.corner, { bottom: -1, left: -1, borderBottomLeftRadius: BORDER_RADIUS }]}>
+        <LinearGradient
+          colors={["rgba(50,40,25,0.7)", "transparent"]}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
+      {/* Bottom-right — most worn */}
+      <View style={[wearStyles.corner, { bottom: -1, right: -1, borderBottomRightRadius: BORDER_RADIUS }]}>
+        <LinearGradient
+          colors={["rgba(50,40,25,0.8)", "transparent"]}
+          start={{ x: 1, y: 1 }}
+          end={{ x: 0, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
+    </View>
+  );
+}
+
+const wearStyles = StyleSheet.create({
+  corner: {
+    position: "absolute",
+    width: 35,
+    height: 35,
+    overflow: "hidden",
+  },
+});
+
 export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCount }: TradingCardProps) {
   const rotateX = useSharedValue(0);
   const rotateY = useSharedValue(0);
@@ -92,7 +287,7 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
     opacity: interpolate(
       Math.abs(shimmerX.value - 0.5) + Math.abs(shimmerY.value - 0.5),
       [0, 0.5, 1],
-      [0.05, 0.18, 0.35],
+      [0.05, 0.22, 0.45],
       Extrapolation.CLAMP,
     ),
   }));
@@ -102,108 +297,135 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
   return (
     <Modal transparent animationType="none" visible={visible} onRequestClose={handleClose}>
       <Pressable style={styles.backdrop} onPress={handleClose}>
-        <Animated.View style={[styles.cardOuter, cardStyle]}>
-          {/* Outer glow */}
-          <View style={styles.glowLayer} />
+        {/* Shadow wrapper — separate from clipped card so glow renders */}
+        <Animated.View style={[styles.shadowWrap, cardStyle]}>
+          <View style={styles.cardOuter}>
+            {/* Card edge — dark worn border */}
+            <View style={styles.cardEdge}>
+              {/* Gold trim border */}
+              <View style={styles.goldTrim}>
+                {/* Inner card body */}
+                <LinearGradient
+                  colors={["#1a1610", "#14110d", "#0f0d0a", "#14110d", "#1a1610"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.cardBody}
+                >
+                  {/* Inner decorative border */}
+                  <View style={styles.innerBorderTop} />
+                  <View style={styles.innerBorderBottom} />
+                  <View style={styles.innerBorderLeft} />
+                  <View style={styles.innerBorderRight} />
 
-          {/* Card edge — dark worn border */}
-          <View style={styles.cardEdge}>
-            {/* Gold trim border */}
-            <View style={styles.goldTrim}>
-              {/* Inner card body */}
-              <LinearGradient
-                colors={["#1a1610", "#12100c", "#0e0c09", "#12100c", "#1a1610"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.cardBody}
-              >
-                {/* Top decorative border line */}
-                <View style={styles.innerBorderTop} />
-                <View style={styles.innerBorderBottom} />
-                <View style={styles.innerBorderLeft} />
-                <View style={styles.innerBorderRight} />
+                  {/* Corner diamonds */}
+                  <View style={[styles.diamond, styles.diamondTL]} />
+                  <View style={[styles.diamond, styles.diamondTR]} />
+                  <View style={[styles.diamond, styles.diamondBL]} />
+                  <View style={[styles.diamond, styles.diamondBR]} />
 
-                {/* Corner diamonds */}
-                <View style={[styles.diamond, styles.diamondTL]} />
-                <View style={[styles.diamond, styles.diamondTR]} />
-                <View style={[styles.diamond, styles.diamondBL]} />
-                <View style={[styles.diamond, styles.diamondBR]} />
+                  {/* Title banner */}
+                  <View style={styles.titleBanner}>
+                    <LinearGradient
+                      colors={["rgba(180,130,50,0.12)", "rgba(180,130,50,0.28)", "rgba(180,130,50,0.12)"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.titleGradient}
+                    >
+                      <View style={styles.titleBorderTop} />
+                      <View style={styles.titleBorderBottom} />
+                      <Text style={styles.cardName} numberOfLines={1}>{name}</Text>
+                    </LinearGradient>
+                  </View>
 
-                {/* Title banner */}
-                <View style={styles.titleBanner}>
-                  <LinearGradient
-                    colors={["rgba(180,130,50,0.15)", "rgba(180,130,50,0.3)", "rgba(180,130,50,0.15)"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.titleGradient}
-                  >
-                    <View style={styles.titleBorderTop} />
-                    <View style={styles.titleBorderBottom} />
-                    <Text style={styles.cardName} numberOfLines={1}>{name}</Text>
-                  </LinearGradient>
-                </View>
-
-                {/* Portrait frame */}
-                <View style={styles.portraitOuter}>
-                  <View style={styles.portraitGoldBorder}>
-                    <View style={styles.portraitDarkInset}>
-                      {avatarUrl ? (
-                        <Image source={{ uri: avatarUrl }} style={styles.portrait} />
-                      ) : (
-                        <View style={[styles.portrait, styles.portraitPlaceholder]}>
-                          <Text style={styles.portraitInitials}>{initials}</Text>
-                        </View>
-                      )}
+                  {/* Portrait frame */}
+                  <View style={styles.portraitOuter}>
+                    <View style={styles.portraitGoldBorder}>
+                      <View style={styles.portraitDarkInset}>
+                        {avatarUrl ? (
+                          <Image source={{ uri: avatarUrl }} style={styles.portrait} />
+                        ) : (
+                          <View style={[styles.portrait, styles.portraitPlaceholder]}>
+                            <Text style={styles.portraitInitials}>{initials}</Text>
+                          </View>
+                        )}
+                        {/* Inner shadow on portrait */}
+                        <LinearGradient
+                          colors={["rgba(0,0,0,0.5)", "transparent", "transparent", "rgba(0,0,0,0.3)"]}
+                          locations={[0, 0.15, 0.85, 1]}
+                          style={StyleSheet.absoluteFill}
+                        />
+                      </View>
                     </View>
                   </View>
-                </View>
 
-                {/* Type label between portrait and info */}
-                <View style={styles.typeLabel}>
-                  <View style={styles.typeLine} />
-                  <Text style={styles.typeText}>builder</Text>
-                  <View style={styles.typeLine} />
-                </View>
+                  {/* Type label */}
+                  <View style={styles.typeLabel}>
+                    <View style={styles.typeLine} />
+                    <Text style={styles.typeText}>builder</Text>
+                    <View style={styles.typeLine} />
+                  </View>
 
-                {/* Info parchment area */}
-                <View style={styles.parchment}>
-                  <LinearGradient
-                    colors={["#2a2318", "#231e15", "#1e1a12", "#231e15"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={styles.parchmentGradient}
-                  >
-                    <View style={styles.parchmentBorder} />
-                    <Text style={styles.dayLabel}>day {dayCount}</Text>
-                    <View style={styles.parchmentDivider} />
-                    <View style={styles.bottomDetail}>
-                      <View style={styles.detailDiamond} />
-                      <Text style={styles.detailText}>nine three quarters</Text>
-                      <View style={styles.detailDiamond} />
-                    </View>
-                  </LinearGradient>
-                </View>
-              </LinearGradient>
+                  {/* Info parchment area */}
+                  <View style={styles.parchment}>
+                    <LinearGradient
+                      colors={["#2c2418", "#251f15", "#201b12", "#251f15"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 0, y: 1 }}
+                      style={styles.parchmentGradient}
+                    >
+                      <View style={styles.parchmentBorder} />
+                      {/* Parchment inner vignette */}
+                      <LinearGradient
+                        colors={["rgba(0,0,0,0.3)", "transparent", "transparent", "rgba(0,0,0,0.2)"]}
+                        locations={[0, 0.2, 0.8, 1]}
+                        style={[StyleSheet.absoluteFill, { borderRadius: 3 }]}
+                      />
+                      <Text style={styles.dayLabel}>day {dayCount}</Text>
+                      <View style={styles.parchmentDivider} />
+                      <View style={styles.bottomDetail}>
+                        <View style={styles.detailDiamond} />
+                        <Text style={styles.detailText}>nine three quarters</Text>
+                        <View style={styles.detailDiamond} />
+                      </View>
+                    </LinearGradient>
+                  </View>
+                </LinearGradient>
+              </View>
             </View>
-          </View>
 
-          {/* Holographic shimmer overlay */}
-          <Animated.View style={styles.shimmerContainer} pointerEvents="none">
-            <Animated.View style={[styles.shimmerGlow, shimmerStyle]}>
-              <LinearGradient
-                colors={[
-                  "transparent",
-                  "rgba(200,160,60,0.06)",
-                  "rgba(255,240,200,0.14)",
-                  "rgba(200,160,60,0.06)",
-                  "transparent",
-                ]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.shimmerGradient}
-              />
+            {/* Paper texture & imperfections overlay */}
+            <CardTexture />
+
+            {/* Corner wear overlay */}
+            <CornerWear />
+
+            {/* Edge highlight — light catching the top edge */}
+            <LinearGradient
+              colors={["rgba(200,170,100,0.12)", "transparent"]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 0.04 }}
+              style={[StyleSheet.absoluteFill, { borderRadius: BORDER_RADIUS }]}
+              pointerEvents="none"
+            />
+
+            {/* Holographic shimmer */}
+            <Animated.View style={styles.shimmerContainer} pointerEvents="none">
+              <Animated.View style={[styles.shimmerGlow, shimmerStyle]}>
+                <LinearGradient
+                  colors={[
+                    "transparent",
+                    "rgba(220,180,80,0.05)",
+                    "rgba(255,245,210,0.16)",
+                    "rgba(220,180,80,0.05)",
+                    "transparent",
+                  ]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.shimmerGradient}
+                />
+              </Animated.View>
             </Animated.View>
-          </Animated.View>
+          </View>
         </Animated.View>
       </Pressable>
     </Modal>
@@ -215,23 +437,25 @@ const INNER_PADDING = 14;
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.9)",
+    backgroundColor: "rgba(0,0,0,0.92)",
     justifyContent: "center",
     alignItems: "center",
   },
-  cardOuter: {
+
+  // Shadow sits outside the clipped card so glow renders
+  shadowWrap: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
+    shadowColor: "#c89b37",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.30,
+    shadowRadius: 20,
+    elevation: 24,
+  },
+  cardOuter: {
+    flex: 1,
     borderRadius: BORDER_RADIUS,
     overflow: "hidden",
-  },
-  glowLayer: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: BORDER_RADIUS,
-    shadowColor: "#b4822f",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 30,
   },
   cardEdge: {
     flex: 1,
