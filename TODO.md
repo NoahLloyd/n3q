@@ -33,7 +33,6 @@ Google Play requires a one-time $25 registration fee.
 - [ ] Test push notifications on physical device
 
 ## Setup required (needs repo admin)
-- [ ] Add `EXPO_TOKEN` secret to GitHub repo → Settings → Secrets → Actions (token: generated from @n3q robot user `github-actions` on expo.dev)
 - [ ] Link GitHub repo to Expo project → expo.dev → n3q → n3q → Settings → GitHub
 - [ ] Enable branch protection on `main`:
   - Require 1 approval on PRs
@@ -77,3 +76,4 @@ Google Play requires a one-time $25 registration fee.
 - [x] CD: EAS Update workflow (auto OTA on push to main)
 - [x] Shared navigation components (PixelArrow, BackButton, ModalHeader, PlusButton)
 - [x] Developer docs (CLAUDE.md, CONTRIBUTING.md, RELEASES.md, DESIGN.md, README.md)
+- [x] Add `EXPO_TOKEN` secret to GitHub repo → Settings → Secrets → Actions (token: generated from @n3q robot user `github-actions` on expo.dev)
