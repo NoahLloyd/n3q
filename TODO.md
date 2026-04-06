@@ -13,7 +13,10 @@
 ## Setup required (needs repo admin)
 - [ ] Add `EXPO_TOKEN` secret to GitHub repo → Settings → Secrets → Actions (token: generated from @n3q robot user `github-actions` on expo.dev)
 - [ ] Link GitHub repo to Expo project → expo.dev → n3q → n3q → Settings → GitHub
-- [ ] Enable Supabase auto-migrations (workflow already created at `.github/workflows/migrate.yml`):
+- [ ] Enable branch protection on `main`:
+  - Require 1 approval on PRs
+  - Do NOT require CI to pass (informational only)
+- [ ] Enable Supabase migrations (workflow at `.github/workflows/migrate.yml`, manual dispatch only):
   - Generate a Supabase access token at supabase.com/dashboard/account/tokens
   - Add `SUPABASE_ACCESS_TOKEN` secret to GitHub repo
   - Add `SUPABASE_PROJECT_ID` secret (value: `kwjoxtcubwekahthwgsk`)

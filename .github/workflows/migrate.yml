@@ -1,15 +1,17 @@
 name: Supabase Migrate
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "apps/web/supabase/migrations/**"
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'migrate' to confirm"
+        required: true
 
 jobs:
   migrate:
     name: Run Migrations
     runs-on: ubuntu-latest
+    if: inputs.confirm == 'migrate'
     steps:
       - uses: actions/checkout@v4
 

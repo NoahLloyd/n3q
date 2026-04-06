@@ -17,10 +17,12 @@ PR opened → CI runs (typecheck + lint) → Review → Merge to main → Vercel
 
 ### When migrations are involved
 
-If your PR adds a file to `apps/web/supabase/migrations/`:
-1. The `migrate.yml` workflow runs `supabase db push` automatically on merge
-2. Migrations run **before** the new code goes live (Vercel deploy takes ~60s, migration is instant)
-3. If the migration fails, check the GitHub Actions log — the web deploy will still proceed, so coordinate with a team member if the migration is required for the new code
+Migrations are **never auto-run**. They require a manual trigger:
+
+1. Merge the PR that adds the migration file
+2. Go to GitHub Actions → "Supabase Migrate" → Run workflow → type `migrate` to confirm
+3. Verify the migration succeeded in the Actions log
+4. The web deploy happens in parallel via Vercel — coordinate timing if the new code depends on the migration
 
 ## Mobile App (EAS)
 
