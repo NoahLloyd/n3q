@@ -1,30 +1,52 @@
-## Nine Three Quarters (n3q)
+# Nine Three Quarters
 
-The n3q internal hub built with Next.js 16, TypeScript, Tailwind v4, shadcn/ui, Supabase, and wallet-based NFT authentication.
+The internal hub for N3Q — a community of technical founders building together.
 
-### Local setup
+Web app + mobile app in a monorepo. Knowledge sharing, voting, events, projects, and a member directory.
 
-1. Create a Supabase project.
-2. In the Supabase SQL editor, run `supabase/schema.sql` from this repo.
-3. Copy `env.example` to `.env.local` and fill in the values.
+## Stack
 
-Then install and run:
+- **Web**: Next.js 16, Tailwind v4, shadcn/ui, RainbowKit (wallet auth), Google OAuth
+- **Mobile**: Expo SDK 54, React Native, Expo Router
+- **Shared**: TypeScript types and Supabase queries shared between both apps
+- **Database**: Supabase (PostgreSQL + RLS)
+- **Chain**: Base (NFT-gated membership)
+
+## Quick start
 
 ```bash
-npm install --legacy-peer-deps
-npm run dev
+pnpm install
+pnpm dev
 ```
 
-The app runs at `http://localhost:3000`.
+Web runs at `localhost:3000`. Mobile opens Expo Go.
 
-### Authentication
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions.
 
-Access requires an N3Q Membership NFT on Base. Connect your wallet to log in.
+## What's in the app
 
-### Main flows
+- **Knowledge** — Curate high-signal content (articles, podcasts, papers, tools). AI-enriched summaries and tagging.
+- **Projects** — Track what members are building. Find collaborators.
+- **Events** — Sessions, dinners, and things worth showing up for. RSVP and calendar export.
+- **Voting** — Polls and governance decisions. Yes/no/abstain or multiple choice with auto-close.
+- **Directory** — All members and what they're working on.
 
-- `/` – wallet connect login (requires N3Q NFT)
-- `/app` – shared high-signal content feed (add items, save/done, rate, comment, history)
-- `/app/profile` – wallet and membership info
-- `/app/directory` – all DAO members from the blockchain
-- `/app/projects`, `/app/events` – placeholders for upcoming sections
+## Auth
+
+**Web**: Connect your wallet (requires N3Q Membership NFT on Base) or sign in with Google (requires member verification).
+
+**Mobile**: Generate a 6-digit code on the web app, enter it on your phone.
+
+## Contributing
+
+This is a volunteer-run project. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get started.
+
+## Repo structure
+
+```
+n3q/
+├── apps/web/          # Next.js web app
+├── apps/mobile/       # Expo mobile app
+├── packages/shared/   # Shared types, queries, utils
+└── .github/workflows/ # CI + mobile build/update
+```
