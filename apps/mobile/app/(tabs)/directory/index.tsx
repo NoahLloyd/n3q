@@ -3,6 +3,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { colors } from "@/src/lib/theme";
+import { SkeletonMemberList } from "@/src/components/Skeleton";
+import { EmptyState } from "@/src/components/EmptyState";
 import type { Profile } from "@n3q/shared";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -63,12 +65,9 @@ export default function DirectoryScreen() {
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}
+        ListHeaderComponent={isLoading && members.length === 0 ? <SkeletonMemberList /> : null}
         ListEmptyComponent={
-          !isLoading ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyText}>No members found</Text>
-            </View>
-          ) : null
+          !isLoading ? <EmptyState message="No members found" /> : null
         }
       />
     </View>

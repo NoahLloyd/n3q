@@ -7,6 +7,8 @@ import { fetchEvents } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
+import { SkeletonList } from "@/src/components/Skeleton";
+import { EmptyState } from "@/src/components/EmptyState";
 import type { Event } from "@n3q/shared";
 
 function formatEventDate(dateStr: string): string {
@@ -108,12 +110,9 @@ export default function EventsScreen() {
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 12 }]}
+        ListHeaderComponent={isLoading && events.length === 0 ? <SkeletonList /> : null}
         ListEmptyComponent={
-          !isLoading ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyText}>No {filter} events</Text>
-            </View>
-          ) : null
+          !isLoading ? <EmptyState message={`No ${filter} events`} /> : null
         }
       />
     </View>

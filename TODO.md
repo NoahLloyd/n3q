@@ -7,7 +7,6 @@
 - [ ] Test push notifications on physical device
 
 ## Mobile App
-- [ ] App icon + splash screen with N3Q branding
 - [ ] EAS Build setup for TestFlight distribution
 - [ ] Loading skeletons / empty states polish
 - [ ] Offline: show cached TanStack Query data
@@ -28,3 +27,4 @@
 - [x] Custom back button with pixel arrow
 - [x] Modal grabbers
 - [x] Safe area insets on all screens
+- [x] App icon + splash screen with N3Q branding

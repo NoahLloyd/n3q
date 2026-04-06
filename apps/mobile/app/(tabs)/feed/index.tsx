@@ -5,6 +5,8 @@ import { useRouter } from "expo-router";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
+import { SkeletonList } from "@/src/components/Skeleton";
+import { EmptyState } from "@/src/components/EmptyState";
 import type { ContentItem } from "@n3q/shared";
 import { formatDistanceToNow, CONTENT_TYPE_LABELS } from "@n3q/shared";
 
@@ -99,12 +101,9 @@ export default function FeedScreen() {
           <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}
+        ListHeaderComponent={isLoading && items.length === 0 ? <SkeletonList /> : null}
         ListEmptyComponent={
-          !isLoading ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyText}>No content yet</Text>
-            </View>
-          ) : null
+          !isLoading ? <EmptyState message="No content yet" /> : null
         }
       />
     </View>
