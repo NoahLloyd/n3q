@@ -25,7 +25,11 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.n3q.app"
+      "package": "com.n3q.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -42,8 +46,20 @@
         }
       ]
     ],
+    "updates": {
+      "url": "https://u.expo.dev/cdb8a70f-0945-45dc-89d1-f358e5a80009"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "cdb8a70f-0945-45dc-89d1-f358e5a80009"
+      }
     }
   }
 }

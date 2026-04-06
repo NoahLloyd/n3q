@@ -6,8 +6,13 @@
 - [ ] Test "Generate Login Code" flow end-to-end (web → mobile token exchange)
 - [ ] Test push notifications on physical device
 
-## Mobile App
-- [ ] EAS Build setup for TestFlight distribution
+## Blocked (needs Apple Developer account)
+- [ ] Fill in `eas.json` submit credentials (appleId, ascAppId, appleTeamId)
+- [ ] First EAS Build + TestFlight submission
+- [ ] Update EAS Update URL in app.json with real project ID
+
+## Setup required
+- [ ] Add `EXPO_TOKEN` secret to GitHub repo (from expo.dev/accounts/n3q/settings/access-tokens)
 
 ## Done
 - [x] Monorepo setup (pnpm + Turborepo)
@@ -28,3 +33,6 @@
 - [x] App icon + splash screen with N3Q branding
 - [x] Loading skeletons / empty states polish
 - [x] Offline: persisted TanStack Query cache via AsyncStorage
+- [x] CI: GitHub Actions typecheck + lint on PRs
+- [x] CD: EAS Build workflow (manual trigger, dev/preview/prod profiles)
+- [x] CD: EAS Update workflow (auto OTA on push to main)
