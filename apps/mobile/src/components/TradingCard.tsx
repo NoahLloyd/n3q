@@ -304,7 +304,7 @@ const INNER_PADDING = 14;
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.95)",
+    backgroundColor: "rgba(0,0,0,1)",
     justifyContent: "center",
     alignItems: "center",
   },
