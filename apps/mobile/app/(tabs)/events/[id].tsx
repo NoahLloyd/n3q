@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchEvent, rsvpEvent, cancelRsvp } from "@n3q/shared";
+import * as Calendar from "expo-calendar";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
@@ -22,12 +23,53 @@ export default function EventDetailScreen() {
     enabled: !!userId,
   });
 
+  async function promptAddToCalendar() {
+    if (!event) return;
+    Alert.alert("Add to calendar?", "Add this event to your calendar so you don't miss it.", [
+      { text: "Not now", style: "cancel" },
+      {
+        text: "Add",
+        onPress: async () => {
+          const { status } = await Calendar.requestCalendarPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission needed", "Allow calendar access in Settings to add events.");
+            return;
+          }
+
+          const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+          const defaultCal = calendars.find((c) => c.allowsModifications) || calendars[0];
+          if (!defaultCal) return;
+
+          const startDate = event.event_time
+            ? new Date(`${event.event_date}T${event.event_time}`)
+            : new Date(`${event.event_date}T00:00:00`);
+
+          const endDate = event.event_end_time
+            ? new Date(`${event.event_date}T${event.event_end_time}`)
+            : new Date(startDate.getTime() + 60 * 60 * 1000); // default 1 hour
+
+          await Calendar.createEventAsync(defaultCal.id, {
+            title: event.title,
+            startDate,
+            endDate,
+            location: event.location || undefined,
+            notes: event.description || undefined,
+            allDay: !event.event_time,
+          });
+
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        },
+      },
+    ]);
+  }
+
   const rsvpMutation = useMutation({
     mutationFn: () => rsvpEvent(supabase, id, userId!),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       queryClient.invalidateQueries({ queryKey: ["event", id] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      promptAddToCalendar();
     },
     onError: (err: Error) => Alert.alert("Error", err.message),
   });

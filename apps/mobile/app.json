@@ -44,6 +44,12 @@
         {
           "cameraPermission": "Allow N3Q to use your camera to scan QR codes for login."
         }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Allow N3Q to add events to your calendar."
+        }
       ]
     ],
     "updates": {
