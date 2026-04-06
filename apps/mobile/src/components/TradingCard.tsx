@@ -24,7 +24,8 @@ import { colors } from "@/src/lib/theme";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = SCREEN_WIDTH * 0.88;
 const CARD_HEIGHT = CARD_WIDTH * 1.45;
-const MAX_TILT = 12; // degrees
+const BORDER_RADIUS = 12;
+const MAX_TILT = 12;
 
 interface TradingCardProps {
   visible: boolean;
@@ -52,16 +53,14 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
 
     const subscription = DeviceMotion.addListener(({ rotation }) => {
       if (!rotation) return;
-      // beta = front-back tilt, gamma = left-right tilt
       const { beta, gamma } = rotation;
       rotateX.value = withSpring(beta * MAX_TILT, { damping: 20, stiffness: 100 });
       rotateY.value = withSpring(gamma * MAX_TILT, { damping: 20, stiffness: 100 });
-      // Map tilt to shimmer position (0-1)
       shimmerX.value = interpolate(gamma, [-1, 1], [0, 1], Extrapolation.CLAMP);
       shimmerY.value = interpolate(beta, [-1, 1], [0, 1], Extrapolation.CLAMP);
     });
 
-    DeviceMotion.setUpdateInterval(32); // ~30fps
+    DeviceMotion.setUpdateInterval(32);
 
     return () => {
       subscription.remove();
@@ -93,7 +92,7 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
     opacity: interpolate(
       Math.abs(shimmerX.value - 0.5) + Math.abs(shimmerY.value - 0.5),
       [0, 0.5, 1],
-      [0.08, 0.2, 0.35],
+      [0.05, 0.18, 0.35],
       Extrapolation.CLAMP,
     ),
   }));
@@ -103,54 +102,100 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
   return (
     <Modal transparent animationType="none" visible={visible} onRequestClose={handleClose}>
       <Pressable style={styles.backdrop} onPress={handleClose}>
-        <Animated.View style={[styles.card, cardStyle]}>
-          {/* Corner accents */}
-          <View style={[styles.corner, styles.cornerTL]} />
-          <View style={[styles.corner, styles.cornerTR]} />
-          <View style={[styles.corner, styles.cornerBL]} />
-          <View style={[styles.corner, styles.cornerBR]} />
+        <Animated.View style={[styles.cardOuter, cardStyle]}>
+          {/* Outer glow */}
+          <View style={styles.glowLayer} />
 
-          {/* Top border accent line */}
-          <View style={styles.topLine} />
+          {/* Card edge — dark worn border */}
+          <View style={styles.cardEdge}>
+            {/* Gold trim border */}
+            <View style={styles.goldTrim}>
+              {/* Inner card body */}
+              <LinearGradient
+                colors={["#1a1610", "#12100c", "#0e0c09", "#12100c", "#1a1610"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.cardBody}
+              >
+                {/* Top decorative border line */}
+                <View style={styles.innerBorderTop} />
+                <View style={styles.innerBorderBottom} />
+                <View style={styles.innerBorderLeft} />
+                <View style={styles.innerBorderRight} />
 
-          {/* Portrait area */}
-          <View style={styles.portraitFrame}>
-            <View style={styles.portraitInnerBorder}>
-              {avatarUrl ? (
-                <Image source={{ uri: avatarUrl }} style={styles.portrait} />
-              ) : (
-                <View style={[styles.portrait, styles.portraitPlaceholder]}>
-                  <Text style={styles.portraitInitials}>{initials}</Text>
+                {/* Corner diamonds */}
+                <View style={[styles.diamond, styles.diamondTL]} />
+                <View style={[styles.diamond, styles.diamondTR]} />
+                <View style={[styles.diamond, styles.diamondBL]} />
+                <View style={[styles.diamond, styles.diamondBR]} />
+
+                {/* Title banner */}
+                <View style={styles.titleBanner}>
+                  <LinearGradient
+                    colors={["rgba(180,130,50,0.15)", "rgba(180,130,50,0.3)", "rgba(180,130,50,0.15)"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.titleGradient}
+                  >
+                    <View style={styles.titleBorderTop} />
+                    <View style={styles.titleBorderBottom} />
+                    <Text style={styles.cardName} numberOfLines={1}>{name}</Text>
+                  </LinearGradient>
                 </View>
-              )}
+
+                {/* Portrait frame */}
+                <View style={styles.portraitOuter}>
+                  <View style={styles.portraitGoldBorder}>
+                    <View style={styles.portraitDarkInset}>
+                      {avatarUrl ? (
+                        <Image source={{ uri: avatarUrl }} style={styles.portrait} />
+                      ) : (
+                        <View style={[styles.portrait, styles.portraitPlaceholder]}>
+                          <Text style={styles.portraitInitials}>{initials}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                </View>
+
+                {/* Type label between portrait and info */}
+                <View style={styles.typeLabel}>
+                  <View style={styles.typeLine} />
+                  <Text style={styles.typeText}>builder</Text>
+                  <View style={styles.typeLine} />
+                </View>
+
+                {/* Info parchment area */}
+                <View style={styles.parchment}>
+                  <LinearGradient
+                    colors={["#2a2318", "#231e15", "#1e1a12", "#231e15"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    style={styles.parchmentGradient}
+                  >
+                    <View style={styles.parchmentBorder} />
+                    <Text style={styles.dayLabel}>day {dayCount}</Text>
+                    <View style={styles.parchmentDivider} />
+                    <View style={styles.bottomDetail}>
+                      <View style={styles.detailDiamond} />
+                      <Text style={styles.detailText}>nine three quarters</Text>
+                      <View style={styles.detailDiamond} />
+                    </View>
+                  </LinearGradient>
+                </View>
+              </LinearGradient>
             </View>
           </View>
 
-          {/* Name */}
-          <Text style={styles.cardName} numberOfLines={1}>{name}</Text>
-
-          {/* Divider */}
-          <View style={styles.divider} />
-
-          {/* Day count */}
-          <Text style={styles.dayLabel}>day {dayCount}</Text>
-
-          {/* Bottom detail line */}
-          <View style={styles.bottomDetail}>
-            <View style={styles.detailDot} />
-            <Text style={styles.detailText}>nine three quarters</Text>
-            <View style={styles.detailDot} />
-          </View>
-
           {/* Holographic shimmer overlay */}
-          <Animated.View style={[styles.shimmerContainer]} pointerEvents="none">
+          <Animated.View style={styles.shimmerContainer} pointerEvents="none">
             <Animated.View style={[styles.shimmerGlow, shimmerStyle]}>
               <LinearGradient
                 colors={[
                   "transparent",
-                  "rgba(245,166,35,0.08)",
-                  "rgba(255,255,255,0.15)",
-                  "rgba(245,166,35,0.08)",
+                  "rgba(200,160,60,0.06)",
+                  "rgba(255,240,200,0.14)",
+                  "rgba(200,160,60,0.06)",
                   "transparent",
                 ]}
                 start={{ x: 0, y: 0 }}
@@ -165,112 +210,251 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
   );
 }
 
+const INNER_PADDING = 14;
+
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.85)",
+    backgroundColor: "rgba(0,0,0,0.9)",
     justifyContent: "center",
     alignItems: "center",
   },
-  card: {
+  cardOuter: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
-    backgroundColor: "#111111",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "center",
+    borderRadius: BORDER_RADIUS,
     overflow: "hidden",
   },
-  corner: {
+  glowLayer: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: BORDER_RADIUS,
+    shadowColor: "#b4822f",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 30,
+  },
+  cardEdge: {
+    flex: 1,
+    backgroundColor: "#1c1812",
+    borderRadius: BORDER_RADIUS,
+    padding: 3,
+  },
+  goldTrim: {
+    flex: 1,
+    borderRadius: BORDER_RADIUS - 2,
+    borderWidth: 1.5,
+    borderColor: "rgba(180,130,50,0.5)",
+    padding: 2,
+    overflow: "hidden",
+  },
+  cardBody: {
+    flex: 1,
+    borderRadius: BORDER_RADIUS - 4,
+    padding: INNER_PADDING,
+    overflow: "hidden",
+  },
+
+  // Inner decorative border lines
+  innerBorderTop: {
     position: "absolute",
-    width: 6,
-    height: 6,
-    backgroundColor: "rgba(245,166,35,0.5)",
+    top: 8,
+    left: 8,
+    right: 8,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(180,130,50,0.25)",
+  },
+  innerBorderBottom: {
+    position: "absolute",
+    bottom: 8,
+    left: 8,
+    right: 8,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(180,130,50,0.25)",
+  },
+  innerBorderLeft: {
+    position: "absolute",
+    top: 8,
+    bottom: 8,
+    left: 8,
+    width: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(180,130,50,0.25)",
+  },
+  innerBorderRight: {
+    position: "absolute",
+    top: 8,
+    bottom: 8,
+    right: 8,
+    width: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(180,130,50,0.25)",
+  },
+
+  // Corner diamond accents
+  diamond: {
+    position: "absolute",
+    width: 8,
+    height: 8,
+    backgroundColor: "rgba(200,155,55,0.6)",
+    transform: [{ rotate: "45deg" }],
     zIndex: 2,
   },
-  cornerTL: { top: 0, left: 0 },
-  cornerTR: { top: 0, right: 0 },
-  cornerBL: { bottom: 0, left: 0 },
-  cornerBR: { bottom: 0, right: 0 },
-  topLine: {
+  diamondTL: { top: 4.5, left: 4.5 },
+  diamondTR: { top: 4.5, right: 4.5 },
+  diamondBL: { bottom: 4.5, left: 4.5 },
+  diamondBR: { bottom: 4.5, right: 4.5 },
+
+  // Title banner
+  titleBanner: {
+    marginTop: 6,
+    marginBottom: 10,
+    marginHorizontal: 4,
+  },
+  titleGradient: {
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  titleBorderTop: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: 1,
-    backgroundColor: "rgba(245,166,35,0.3)",
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(200,155,55,0.5)",
   },
-  portraitFrame: {
-    width: CARD_WIDTH - 56,
-    aspectRatio: 0.82,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-    padding: 4,
-    marginBottom: 20,
+  titleBorderBottom: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(200,155,55,0.5)",
   },
-  portraitInnerBorder: {
+  cardName: {
+    color: "#d4a84b",
+    fontSize: 19,
+    fontFamily: "DepartureMono",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    textAlign: "center",
+    textShadowColor: "rgba(200,155,55,0.4)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+
+  // Portrait
+  portraitOuter: {
+    flex: 1,
+    marginHorizontal: 4,
+    marginBottom: 8,
+  },
+  portraitGoldBorder: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: "rgba(180,130,50,0.45)",
+    borderRadius: 4,
+    padding: 3,
+  },
+  portraitDarkInset: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "rgba(245,166,35,0.15)",
+    borderColor: "rgba(0,0,0,0.6)",
+    borderRadius: 2,
+    overflow: "hidden",
   },
   portrait: {
     width: "100%",
     height: "100%",
   },
   portraitPlaceholder: {
-    backgroundColor: colors.card,
+    backgroundColor: "#1a1610",
     alignItems: "center",
     justifyContent: "center",
   },
   portraitInitials: {
-    color: colors.amber,
-    fontSize: 48,
+    color: "#d4a84b",
+    fontSize: 52,
     fontWeight: "bold",
     fontFamily: "DepartureMono",
+    textShadowColor: "rgba(200,155,55,0.3)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   },
-  cardName: {
-    color: colors.foreground,
-    fontSize: 18,
-    fontFamily: "DepartureMono",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    textAlign: "center",
+
+  // Type label
+  typeLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginHorizontal: 4,
     marginBottom: 8,
   },
-  divider: {
-    width: 40,
-    height: 1,
-    backgroundColor: "rgba(245,166,35,0.3)",
-    marginBottom: 10,
+  typeLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(180,130,50,0.35)",
+  },
+  typeText: {
+    color: "#c89b37",
+    fontSize: 10,
+    fontFamily: "DepartureMono",
+    letterSpacing: 4,
+    textTransform: "uppercase",
+  },
+
+  // Parchment info area
+  parchment: {
+    marginHorizontal: 4,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  parchmentGradient: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: "center",
+  },
+  parchmentBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 1,
+    borderColor: "rgba(180,130,50,0.25)",
+    borderRadius: 3,
   },
   dayLabel: {
-    color: colors.amber,
-    fontSize: 13,
+    color: "#d4a84b",
+    fontSize: 16,
     fontFamily: "DepartureMono",
-    letterSpacing: 3,
-    marginBottom: 16,
+    letterSpacing: 4,
+    textShadowColor: "rgba(200,155,55,0.3)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 6,
+  },
+  parchmentDivider: {
+    width: 50,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(180,130,50,0.3)",
+    marginVertical: 10,
   },
   bottomDetail: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
   },
-  detailDot: {
-    width: 3,
-    height: 3,
-    backgroundColor: "rgba(245,166,35,0.4)",
+  detailDiamond: {
+    width: 4,
+    height: 4,
+    backgroundColor: "rgba(200,155,55,0.5)",
+    transform: [{ rotate: "45deg" }],
   },
   detailText: {
-    color: "rgba(255,255,255,0.25)",
-    fontSize: 9,
+    color: "rgba(200,155,55,0.4)",
+    fontSize: 8,
     fontFamily: "DepartureMono",
     letterSpacing: 2,
     textTransform: "uppercase",
   },
+
+  // Shimmer
   shimmerContainer: {
     ...StyleSheet.absoluteFillObject,
+    borderRadius: BORDER_RADIUS,
     overflow: "hidden",
   },
   shimmerGlow: {
