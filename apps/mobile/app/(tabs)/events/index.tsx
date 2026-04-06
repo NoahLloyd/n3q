@@ -1,5 +1,6 @@
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -93,7 +94,7 @@ export default function EventsScreen() {
           <TouchableOpacity
             key={f}
             style={[styles.filterBtn, filter === f && styles.filterActive]}
-            onPress={() => setFilter(f)}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setFilter(f); }}
           >
             <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
               {f.charAt(0).toUpperCase() + f.slice(1)}

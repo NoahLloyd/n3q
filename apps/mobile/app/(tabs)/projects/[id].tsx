@@ -6,6 +6,7 @@ import { fetchProject, joinProject, leaveProject } from "@n3q/shared";
 import type { ProjectStatus } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
+import * as Haptics from "expo-haptics";
 import { colors } from "@/src/lib/theme";
 import { formatDistanceToNow } from "@n3q/shared";
 
@@ -33,6 +34,7 @@ export default function ProjectDetailScreen() {
   const joinMutation = useMutation({
     mutationFn: () => joinProject(supabase, id, userId!),
     onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       queryClient.invalidateQueries({ queryKey: ["project", id] });
       queryClient.invalidateQueries({ queryKey: ["projects"] });
     },

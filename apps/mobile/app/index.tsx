@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import Svg, { Defs, RadialGradient, Stop, Rect, Circle } from "react-native-svg";
 import * as WebBrowser from "expo-web-browser";
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/src/lib/auth/context";
 
@@ -92,6 +93,10 @@ export default function LoginScreen() {
     const newDigits = [...digits];
     newDigits[index] = digit;
     setDigits(newDigits);
+
+    if (digit) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
 
     // Auto-advance to next input
     if (digit && index < CODE_LENGTH - 1) {

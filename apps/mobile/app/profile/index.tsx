@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, Stack } from "expo-router";
 import Svg, { Path } from "react-native-svg";
 import * as Notifications from "expo-notifications";
+import * as Haptics from "expo-haptics";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
 
@@ -66,6 +67,7 @@ export default function ProfileScreen() {
         text: "Sign Out",
         style: "destructive",
         onPress: async () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
           await signOut();
           router.replace("/");
         },

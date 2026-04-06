@@ -3,6 +3,7 @@ import { Tabs } from "expo-router";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, Easing } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BookOpen, Rocket, CalendarDays, Vote, Users } from "lucide-react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
@@ -79,7 +80,7 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             key={tab.name}
             tab={tab}
             isActive={state.index === index}
-            onPress={() => navigation.navigate(tab.name)}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); navigation.navigate(tab.name); }}
           />
         ))}
       </View>
