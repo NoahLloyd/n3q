@@ -16,10 +16,12 @@ Web app + mobile app in a monorepo. Knowledge sharing, voting, events, projects,
 
 ```bash
 pnpm install
-pnpm dev
-```
+pnpm dev          # starts both web and mobile
 
-Web runs at `localhost:3000`. Mobile opens Expo Go.
+# Or run individually:
+pnpm --filter @n3q/web dev       # web at localhost:3000
+pnpm --filter @n3q/mobile start  # mobile in Expo Go
+```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions.
 
