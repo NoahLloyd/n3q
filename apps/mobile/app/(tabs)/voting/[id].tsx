@@ -2,12 +2,12 @@ import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import * as Haptics from "expo-haptics";
 import { fetchPoll, castVote } from "@n3q/shared";
 import type { YesNoAbstainVote } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
+import * as Haptics from "expo-haptics";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 

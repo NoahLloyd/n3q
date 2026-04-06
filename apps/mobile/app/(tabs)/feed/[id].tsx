@@ -4,11 +4,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
-import * as Haptics from "expo-haptics";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
 import { notifyNewComment } from "@/src/lib/notify";
+import * as Haptics from "expo-haptics";
 import type { ContentItem, ContentInteraction } from "@n3q/shared";
 import { formatDistanceToNow, CONTENT_TYPE_LABELS } from "@n3q/shared";
 

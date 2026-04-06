@@ -5,8 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchEvent, rsvpEvent, cancelRsvp } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
-import * as Haptics from "expo-haptics";
 import { colors } from "@/src/lib/theme";
+import * as Haptics from "expo-haptics";
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
