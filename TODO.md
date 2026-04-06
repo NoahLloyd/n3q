@@ -13,6 +13,12 @@
 ## Setup required (needs repo admin)
 - [ ] Add `EXPO_TOKEN` secret to GitHub repo → Settings → Secrets → Actions (token: generated from @n3q robot user `github-actions` on expo.dev)
 - [ ] Link GitHub repo to Expo project → expo.dev → n3q → n3q → Settings → GitHub
+- [ ] Add Supabase CI migration workflow:
+  - Generate a Supabase access token at supabase.com/dashboard/account/tokens
+  - Add `SUPABASE_ACCESS_TOKEN` secret to GitHub repo
+  - Add `SUPABASE_PROJECT_ID` secret (value: `kwjoxtcubwekahthwgsk`)
+  - Create `.github/workflows/migrate.yml` that runs `supabase db push` on merge to main when `apps/web/supabase/migrations/**` changes
+  - Link the Supabase project: `supabase link --project-ref kwjoxtcubwekahthwgsk` (needs to be run once locally by someone with access)
 
 ## Done
 - [x] Monorepo setup (pnpm + Turborepo)
