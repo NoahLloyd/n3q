@@ -10,6 +10,7 @@ import {
   Users,
   LogOut,
   Vote,
+  Ticket,
   ExternalLink,
 } from "lucide-react";
 import { useDisconnect } from "wagmi";
@@ -69,7 +70,7 @@ export function Sidebar({
 
   const itemClasses = (href: string) =>
     cn(
-      "group flex flex-col items-start gap-2 border border-border/60 bg-background/60 px-3 py-3 shadow-sm transition-colors",
+      "group flex flex-row items-center gap-2 border border-border/60 bg-background/60 px-3 py-3 shadow-sm transition-colors",
       isActive(href)
         ? "border-sidebar-accent bg-sidebar-accent text-sidebar-foreground"
         : "hover:border-sidebar-ring hover:bg-muted/60"
@@ -77,7 +78,7 @@ export function Sidebar({
 
   const iconClasses = (href: string) =>
     cn(
-      "flex h-12 w-12 items-center justify-center bg-muted text-foreground",
+      "flex h-10 w-10 shrink-0 items-center justify-center bg-muted text-foreground",
       isActive(href) && "border border-border/60"
     );
 
@@ -164,6 +165,20 @@ export function Sidebar({
             <div className="text-sm font-medium text-foreground">Voting</div>
             <p className="text-xs text-muted-foreground">
               Polls and governance decisions
+            </p>
+          </div>
+        </Link>
+        <Link
+          href={`${basePath}/credits`}
+          className={itemClasses(`${basePath}/credits`)}
+        >
+          <div className={iconClasses(`${basePath}/credits`)}>
+            <Ticket className="h-5 w-5" />
+          </div>
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-foreground">Credits</div>
+            <p className="text-xs text-muted-foreground">
+              Perks and offers from our partners
             </p>
           </div>
         </Link>

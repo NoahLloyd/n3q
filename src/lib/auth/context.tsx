@@ -57,6 +57,28 @@ export function useAuth(): AuthState {
 
 const supabase = createSupabaseBrowserClient();
 
+// Dev-only bypass: skip real auth on localhost
+const DEV_BYPASS =
+  process.env.NODE_ENV === "development" &&
+  typeof window !== "undefined" &&
+  window.location.hostname === "localhost";
+
+const DEV_PROFILE: Profile = {
+  id: "dev-user",
+  display_name: "Dev Member",
+  avatar_url: null,
+  email: "dev@localhost",
+  auth_method: "google",
+  is_verified: true,
+  verified_by: null,
+  verified_at: new Date().toISOString(),
+  google_user_id: null,
+  wallet_address: null,
+  bio: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { isConnected, isReconnecting, address } = useAccount();
   const {
@@ -69,6 +91,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [supabaseLoading, setSupabaseLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
+
+  // Dev bypass: immediately return authenticated member state
+  if (DEV_BYPASS) {
+    const value: AuthState = {
+      userId: "dev-user",
+      authMethod: "google",
+      isAuthenticated: true,
+      isLoading: false,
+      isMember: true,
+      isPendingVerification: false,
+      profile: DEV_PROFILE,
+      refreshProfile: async () => {},
+      walletAddress: undefined,
+      tokenId: undefined,
+      isWalletConnected: false,
+      supabaseUser: null,
+      email: "dev@localhost",
+      signOut: async () => {},
+      linkWallet: async () => {},
+    };
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  }
 
   // Listen for Supabase auth state
   useEffect(() => {
