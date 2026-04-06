@@ -21,6 +21,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { colors } from "@/src/lib/theme";
 
+const TEX_CARD = require("@/assets/images/textures/card-texture.jpg");
+
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = SCREEN_WIDTH * 0.88;
 const CARD_HEIGHT = CARD_WIDTH * 1.45;
@@ -36,200 +38,48 @@ interface TradingCardProps {
   dayCount: number;
 }
 
-// Deterministic pseudo-random from seed for consistent scratches/marks
-function seededRandom(seed: number) {
-  const x = Math.sin(seed * 9301 + 49297) * 49297;
-  return x - Math.floor(x);
-}
-
-/** Paper texture, edge wear, scratches, and vignette overlays */
+/** Card surface texture overlay using blend modes */
 function CardTexture() {
-  // Generate surface scratches — thin lines at slight angles
-  const scratches = Array.from({ length: 14 }, (_, i) => {
-    const r = seededRandom(i + 7);
-    const r2 = seededRandom(i + 31);
-    const r3 = seededRandom(i + 53);
-    return {
-      top: `${r * 90 + 5}%` as const,
-      left: `${r2 * 80 + 5}%` as const,
-      width: 20 + r3 * 50,
-      rotation: -30 + r * 60,
-      opacity: 0.02 + r3 * 0.04,
-    };
-  });
-
-  // Small scuff marks / spots
-  const scuffs = Array.from({ length: 20 }, (_, i) => {
-    const r = seededRandom(i + 100);
-    const r2 = seededRandom(i + 200);
-    const r3 = seededRandom(i + 300);
-    return {
-      top: `${r * 95 + 2}%` as const,
-      left: `${r2 * 92 + 3}%` as const,
-      size: 1.5 + r3 * 4,
-      opacity: 0.03 + r3 * 0.06,
-      isLight: r > 0.5,
-    };
-  });
-
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      {/* Edge vignette — darkening from all four edges inward */}
+      {/* Screen blend — dark parts vanish, grain/noise shows through */}
+      <View style={[StyleSheet.absoluteFill, { experimental_blendMode: "screen" } as any]}>
+        <Image source={TEX_CARD} style={[StyleSheet.absoluteFill, { opacity: 0.05 }]} resizeMode="cover" />
+      </View>
+
+      {/* Soft light pass — adds subtle contrast and depth variation */}
+      <View style={[StyleSheet.absoluteFill, { experimental_blendMode: "softLight" } as any]}>
+        <Image source={TEX_CARD} style={[StyleSheet.absoluteFill, { opacity: 0.05 }]} resizeMode="cover" />
+      </View>
+
+      {/* Edge vignette */}
       <LinearGradient
         colors={["rgba(0,0,0,0.5)", "transparent"]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0.15, y: 0 }}
+        end={{ x: 0.18, y: 0 }}
         style={StyleSheet.absoluteFill}
       />
       <LinearGradient
         colors={["rgba(0,0,0,0.5)", "transparent"]}
         start={{ x: 1, y: 0 }}
-        end={{ x: 0.85, y: 0 }}
-        style={StyleSheet.absoluteFill}
-      />
-      <LinearGradient
-        colors={["rgba(0,0,0,0.45)", "transparent"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.12 }}
-        style={StyleSheet.absoluteFill}
-      />
-      <LinearGradient
-        colors={["rgba(0,0,0,0.45)", "transparent"]}
-        start={{ x: 0, y: 1 }}
-        end={{ x: 0, y: 0.88 }}
-        style={StyleSheet.absoluteFill}
-      />
-
-      {/* Corner shadow/wear — extra darkening at corners */}
-      <LinearGradient
-        colors={["rgba(0,0,0,0.4)", "transparent"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.3, y: 0.2 }}
+        end={{ x: 0.82, y: 0 }}
         style={StyleSheet.absoluteFill}
       />
       <LinearGradient
         colors={["rgba(0,0,0,0.4)", "transparent"]}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0.7, y: 0.2 }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.1 }}
         style={StyleSheet.absoluteFill}
       />
       <LinearGradient
-        colors={["rgba(0,0,0,0.35)", "transparent"]}
+        colors={["rgba(0,0,0,0.4)", "transparent"]}
         start={{ x: 0, y: 1 }}
-        end={{ x: 0.3, y: 0.8 }}
+        end={{ x: 0, y: 0.9 }}
         style={StyleSheet.absoluteFill}
       />
-      <LinearGradient
-        colors={["rgba(0,0,0,0.35)", "transparent"]}
-        start={{ x: 1, y: 1 }}
-        end={{ x: 0.7, y: 0.8 }}
-        style={StyleSheet.absoluteFill}
-      />
-
-      {/* Surface scratches */}
-      {scratches.map((s, i) => (
-        <View
-          key={`s${i}`}
-          style={{
-            position: "absolute",
-            top: s.top,
-            left: s.left,
-            width: s.width,
-            height: StyleSheet.hairlineWidth,
-            backgroundColor: `rgba(255,240,200,${s.opacity})`,
-            transform: [{ rotate: `${s.rotation}deg` }],
-          }}
-        />
-      ))}
-
-      {/* Scuff marks */}
-      {scuffs.map((s, i) => (
-        <View
-          key={`m${i}`}
-          style={{
-            position: "absolute",
-            top: s.top,
-            left: s.left,
-            width: s.size,
-            height: s.size,
-            borderRadius: s.size / 2,
-            backgroundColor: s.isLight
-              ? `rgba(255,240,200,${s.opacity})`
-              : `rgba(0,0,0,${s.opacity + 0.05})`,
-          }}
-        />
-      ))}
-
-      {/* Subtle paper grain — horizontal fiber lines */}
-      {Array.from({ length: 8 }, (_, i) => (
-        <View
-          key={`g${i}`}
-          style={{
-            position: "absolute",
-            top: `${12 + i * 11}%`,
-            left: 0,
-            right: 0,
-            height: StyleSheet.hairlineWidth,
-            backgroundColor: `rgba(180,150,90,${0.015 + seededRandom(i + 400) * 0.02})`,
-          }}
-        />
-      ))}
     </View>
   );
 }
-
-/** Worn/chipped corner overlays for physical card feel */
-function CornerWear() {
-  return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      {/* Top-left corner wear */}
-      <View style={[wearStyles.corner, { top: -1, left: -1, borderTopLeftRadius: BORDER_RADIUS }]}>
-        <LinearGradient
-          colors={["rgba(60,50,30,0.6)", "transparent"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
-      {/* Top-right */}
-      <View style={[wearStyles.corner, { top: -1, right: -1, borderTopRightRadius: BORDER_RADIUS }]}>
-        <LinearGradient
-          colors={["rgba(60,50,30,0.5)", "transparent"]}
-          start={{ x: 1, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
-      {/* Bottom-left */}
-      <View style={[wearStyles.corner, { bottom: -1, left: -1, borderBottomLeftRadius: BORDER_RADIUS }]}>
-        <LinearGradient
-          colors={["rgba(50,40,25,0.7)", "transparent"]}
-          start={{ x: 0, y: 1 }}
-          end={{ x: 1, y: 0 }}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
-      {/* Bottom-right — most worn */}
-      <View style={[wearStyles.corner, { bottom: -1, right: -1, borderBottomRightRadius: BORDER_RADIUS }]}>
-        <LinearGradient
-          colors={["rgba(50,40,25,0.8)", "transparent"]}
-          start={{ x: 1, y: 1 }}
-          end={{ x: 0, y: 0 }}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
-    </View>
-  );
-}
-
-const wearStyles = StyleSheet.create({
-  corner: {
-    position: "absolute",
-    width: 35,
-    height: 35,
-    overflow: "hidden",
-  },
-});
 
 export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCount }: TradingCardProps) {
   const rotateX = useSharedValue(0);
@@ -374,7 +224,6 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
                       style={styles.parchmentGradient}
                     >
                       <View style={styles.parchmentBorder} />
-                      {/* Parchment inner vignette */}
                       <LinearGradient
                         colors={["rgba(0,0,0,0.3)", "transparent", "transparent", "rgba(0,0,0,0.2)"]}
                         locations={[0, 0.2, 0.8, 1]}
@@ -393,11 +242,8 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
               </View>
             </View>
 
-            {/* Paper texture & imperfections overlay */}
+            {/* Texture overlays — grain, scratches, dust, vignette */}
             <CardTexture />
-
-            {/* Corner wear overlay */}
-            <CornerWear />
 
             {/* Edge highlight — light catching the top edge */}
             <LinearGradient
@@ -437,12 +283,11 @@ const INNER_PADDING = 14;
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.92)",
+    backgroundColor: "rgba(0,0,0,0.95)",
     justifyContent: "center",
     alignItems: "center",
   },
 
-  // Shadow sits outside the clipped card so glow renders
   shadowWrap: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
