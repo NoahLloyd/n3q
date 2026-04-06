@@ -225,7 +225,7 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={styles.devButton}
           onPress={async () => {
-            await devLogin("0x75aa27A40651A2aAf3a114f27460060BCC5cA511");
+            await devLogin(process.env.EXPO_PUBLIC_DEV_USER_ID!);
             router.replace("/(tabs)/feed");
           }}
         >
