@@ -120,6 +120,9 @@ export default function ProfileScreen() {
             )}
           </Pressable>
           <Text style={styles.name}>{profile?.display_name || "Anonymous"}</Text>
+          {profile?.created_at && (
+            <Text style={styles.dayCount}>day {daysSince(profile.created_at)}</Text>
+          )}
           {profile?.email && <Text style={styles.email}>{profile.email}</Text>}
         </View>
 
@@ -134,12 +137,6 @@ export default function ProfileScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Wallet</Text>
             <Text style={styles.wallet} numberOfLines={1}>{profile.wallet_address}</Text>
-          </View>
-        )}
-
-        {profile?.created_at && (
-          <View style={styles.section}>
-            <Text style={styles.dayCount}>day {daysSince(profile.created_at)}</Text>
           </View>
         )}
 
@@ -225,8 +222,9 @@ const styles = StyleSheet.create({
   signOutText: { color: "#f87171", fontSize: 14, fontFamily: "DepartureMono", letterSpacing: 1 },
   dayCount: {
     color: colors.amber,
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "DepartureMono",
     letterSpacing: 3,
+    marginTop: 4,
   },
 });
