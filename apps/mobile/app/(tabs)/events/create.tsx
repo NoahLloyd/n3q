@@ -6,7 +6,7 @@ import { createEvent } from "@n3q/shared";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
-import { notifyAll } from "@/src/lib/notify";
+import { notifyNewEvent } from "@/src/lib/notify";
 
 export default function CreateEventScreen() {
   const { userId } = useAuth();
@@ -47,7 +47,7 @@ export default function CreateEventScreen() {
         endTime.trim() || null
       );
 
-      notifyAll("New Event", title.trim());
+      notifyNewEvent(title.trim());
       queryClient.invalidateQueries({ queryKey: ["events"] });
       router.back();
     } catch (error) {
