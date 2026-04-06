@@ -16,11 +16,11 @@ Web app + mobile app in a monorepo. Knowledge sharing, voting, events, projects,
 
 ```bash
 pnpm install
-pnpm dev          # starts both web and mobile
+pnpm dev            # starts both web and mobile
 
 # Or run individually:
-pnpm --filter @n3q/web dev       # web at localhost:3000
-pnpm --filter @n3q/mobile start  # mobile in Expo Go
+pnpm dev:web        # web at localhost:3000
+pnpm dev:mobile     # mobile in Expo Go
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions.
@@ -39,6 +39,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions.
 
 **Mobile**: Generate a 6-digit code on the web app, enter it on your phone.
 
+## Releases
+
+**Web**: Merging to `main` auto-deploys to production via Vercel.
+
+**Mobile**: JS changes auto-publish as OTA updates via EAS Update. Native changes require a manual EAS Build + App Store submission.
+
+See [RELEASES.md](RELEASES.md) for the full pipeline.
+
 ## Contributing
 
 This is a volunteer-run project. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get started.
@@ -52,3 +60,10 @@ n3q/
 ├── packages/shared/   # Shared types, queries, utils
 └── .github/workflows/ # CI + mobile build/update
 ```
+
+## Docs
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Setup, conventions, how to add features
+- [RELEASES.md](RELEASES.md) — Release pipeline for web and mobile
+- [DESIGN.md](DESIGN.md) — Design system, colors, typography, components
+- [CLAUDE.md](CLAUDE.md) — Context for Claude Code sessions
