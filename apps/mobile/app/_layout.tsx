@@ -82,6 +82,7 @@ function RootLayoutNav() {
           <>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="profile" options={{ headerShown: true, title: "Profile", headerBackVisible: false }} />
+            <Stack.Screen name="notifications" options={{ headerShown: true, headerBackVisible: false }} />
           </>
         ) : (
           <Stack.Screen name="index" />

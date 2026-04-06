@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
-import { Alert, Platform } from "react-native";
+import { Alert } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import * as SecureStore from "expo-secure-store";
 import { supabase } from "./supabase/client";
+import { addNotification } from "./notification-store";
 
 const PROMPT_KEY = "n3q_push_prompted";
 
@@ -30,11 +31,9 @@ async function registerForPushNotifications(): Promise<string | null> {
     return tokenData.data;
   }
 
-  // Check if we already prompted
   const prompted = await SecureStore.getItemAsync(PROMPT_KEY);
   if (prompted === "true") return null;
 
-  // Show a pre-prompt explaining why
   return new Promise((resolve) => {
     Alert.alert(
       "Stay in the loop",
@@ -83,5 +82,19 @@ export function useNotifications(userId: string | null) {
 
       tokenSaved.current = true;
     })();
+  }, [userId]);
+
+  // Listen for incoming notifications and save to local store
+  useEffect(() => {
+    if (!userId) return;
+
+    const subscription = Notifications.addNotificationReceivedListener((notification) => {
+      const { title, body } = notification.request.content;
+      if (title || body) {
+        addNotification(title || "", body || "");
+      }
+    });
+
+    return () => subscription.remove();
   }, [userId]);
 }
