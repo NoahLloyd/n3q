@@ -42,7 +42,10 @@ function HeaderBar() {
 
       <Text style={styles.headerTitle}>Knowledge</Text>
 
-      <PlusButton onPress={() => router.push("/(tabs)/feed/add")} />
+      <View style={styles.rightButtons}>
+        <View style={{ width: 28 }} />
+        <PlusButton onPress={() => router.push("/(tabs)/feed/add")} />
+      </View>
     </View>
   );
 }
@@ -85,6 +88,11 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   leftButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  rightButtons: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
