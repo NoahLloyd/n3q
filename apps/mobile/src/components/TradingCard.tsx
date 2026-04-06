@@ -86,15 +86,27 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
   const rotateY = useSharedValue(0);
   const shimmerX = useSharedValue(0.5);
   const shimmerY = useSharedValue(0.5);
-  const scale = useSharedValue(0.85);
-  const opacity = useSharedValue(0);
+  // Entrance animation values
+  const translateY = useSharedValue(CARD_HEIGHT * 0.6);
+  const entryRotateX = useSharedValue(8); // slight tilt as if drawn from a deck
+  const scale = useSharedValue(0.92);
+  const cardOpacity = useSharedValue(0);
+  const backdropOpacity = useSharedValue(0);
 
   useEffect(() => {
     if (!visible) return;
 
-    scale.value = withSpring(1, { damping: 16, stiffness: 120 });
-    opacity.value = withTiming(1, { duration: 250 });
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Backdrop fades in first
+    backdropOpacity.value = withTiming(1, { duration: 300 });
+
+    // Card rises up, straightens, and settles with a spring
+    translateY.value = withSpring(0, { damping: 18, stiffness: 90, mass: 0.8 });
+    entryRotateX.value = withSpring(0, { damping: 20, stiffness: 100 });
+    scale.value = withSpring(1, { damping: 14, stiffness: 80 });
+    cardOpacity.value = withTiming(1, { duration: 200 });
+
+    // Haptic when the card "lands"
+    setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium), 280);
 
     const subscription = DeviceMotion.addListener(({ rotation }) => {
       if (!rotation) return;
@@ -113,20 +125,28 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
   }, [visible]);
 
   const handleClose = useCallback(() => {
-    scale.value = withTiming(0.85, { duration: 200 });
-    opacity.value = withTiming(0, { duration: 200 });
+    // Card drops away and fades
+    translateY.value = withTiming(CARD_HEIGHT * 0.4, { duration: 250 });
+    scale.value = withTiming(0.9, { duration: 250 });
+    cardOpacity.value = withTiming(0, { duration: 200 });
+    backdropOpacity.value = withTiming(0, { duration: 280 });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setTimeout(onClose, 220);
+    setTimeout(onClose, 300);
   }, [onClose]);
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: backdropOpacity.value,
+  }));
 
   const cardStyle = useAnimatedStyle(() => ({
     transform: [
       { perspective: 800 },
-      { rotateX: `${-rotateX.value}deg` },
+      { translateY: translateY.value },
+      { rotateX: `${entryRotateX.value - rotateX.value}deg` },
       { rotateY: `${rotateY.value}deg` },
       { scale: scale.value },
     ],
-    opacity: opacity.value,
+    opacity: cardOpacity.value,
   }));
 
   const shimmerStyle = useAnimatedStyle(() => ({
@@ -146,7 +166,8 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
 
   return (
     <Modal transparent animationType="none" visible={visible} onRequestClose={handleClose}>
-      <Pressable style={styles.backdrop} onPress={handleClose}>
+      <Animated.View style={[styles.backdrop, backdropStyle]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
         {/* Shadow wrapper — separate from clipped card so glow renders */}
         <Animated.View style={[styles.shadowWrap, cardStyle]}>
           <View style={styles.cardOuter}>
@@ -273,7 +294,7 @@ export function TradingCard({ visible, onClose, name, avatarUrl, initials, dayCo
             </Animated.View>
           </View>
         </Animated.View>
-      </Pressable>
+      </Animated.View>
     </Modal>
   );
 }
