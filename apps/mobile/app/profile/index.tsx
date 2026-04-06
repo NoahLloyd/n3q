@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { View, Text, ScrollView, Image, Pressable, Switch, StyleSheet, Alert, Linking } from "react-native";
+import { View, Text, ScrollView, Image, Pressable, TextInput, Switch, StyleSheet, Alert, Linking, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, Stack } from "expo-router";
 import Svg, { Path } from "react-native-svg";
 import * as Notifications from "expo-notifications";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "@/src/lib/auth/context";
+import { updateProfile } from "@n3q/shared";
+import { supabase } from "@/src/lib/supabase/client";
 import { colors } from "@/src/lib/theme";
 import { daysSince } from "@/src/lib/days";
 import { TradingCard } from "@/src/components/TradingCard";
@@ -19,12 +21,15 @@ function PixelArrow() {
 }
 
 export default function ProfileScreen() {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, userId } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const headerHeight = 44 + insets.top;
   const [pushEnabled, setPushEnabled] = useState(false);
   const [cardVisible, setCardVisible] = useState(false);
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [editBio, setEditBio] = useState("");
+  const [isSavingBio, setIsSavingBio] = useState(false);
 
   const checkPushStatus = useCallback(async () => {
     const { status } = await Notifications.getPermissionsAsync();
@@ -78,6 +83,20 @@ export default function ProfileScreen() {
     ]);
   }
 
+  async function handleSaveBio() {
+    if (!userId) return;
+    setIsSavingBio(true);
+    try {
+      await updateProfile(supabase, userId, { bio: editBio.trim() || null });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setIsEditingBio(false);
+    } catch (error) {
+      Alert.alert("Error", error instanceof Error ? error.message : "Failed to save bio");
+    } finally {
+      setIsSavingBio(false);
+    }
+  }
+
   const initials = profile?.display_name
     ? profile.display_name
         .split(" ")
@@ -126,12 +145,38 @@ export default function ProfileScreen() {
           {profile?.email && <Text style={styles.email}>{profile.email}</Text>}
         </View>
 
-        {profile?.bio && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Bio</Text>
-            <Text style={styles.sectionText}>{profile.bio}</Text>
-          </View>
-        )}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Bio</Text>
+          {isEditingBio ? (
+            <View>
+              <TextInput
+                style={styles.bioInput}
+                value={editBio}
+                onChangeText={setEditBio}
+                multiline
+                autoFocus
+                placeholder="Tell other members about yourself..."
+                placeholderTextColor="#555"
+                textAlignVertical="top"
+                maxLength={500}
+              />
+              <View style={styles.bioActions}>
+                <Pressable onPress={() => setIsEditingBio(false)} style={styles.bioCancel}>
+                  <Text style={styles.bioCancelText}>Cancel</Text>
+                </Pressable>
+                <Pressable onPress={handleSaveBio} style={styles.bioSave} disabled={isSavingBio}>
+                  <Text style={styles.bioSaveText}>{isSavingBio ? "Saving..." : "Save"}</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Pressable onPress={() => { setEditBio(profile?.bio || ""); setIsEditingBio(true); }}>
+              <Text style={profile?.bio ? styles.sectionText : styles.bioPlaceholder}>
+                {profile?.bio || "Tap to add a bio..."}
+              </Text>
+            </Pressable>
+          )}
+        </View>
 
         {profile?.wallet_address && (
           <View style={styles.section}>
@@ -205,6 +250,13 @@ const styles = StyleSheet.create({
   section: { marginBottom: 20 },
   sectionTitle: { color: colors.mutedForeground, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
   sectionText: { color: colors.foreground, fontSize: 14, lineHeight: 21 },
+  bioPlaceholder: { color: colors.mutedForeground, fontSize: 14, fontStyle: "italic" },
+  bioInput: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder, padding: 12, color: colors.foreground, fontSize: 14, lineHeight: 21, minHeight: 100, textAlignVertical: "top" },
+  bioActions: { flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 8 },
+  bioCancel: { padding: 8 },
+  bioCancelText: { fontFamily: "DepartureMono", fontSize: 13, color: colors.mutedForeground },
+  bioSave: { backgroundColor: "#FFA236", paddingHorizontal: 16, paddingVertical: 8 },
+  bioSaveText: { fontFamily: "DepartureMono", fontSize: 13, color: "#171717" },
   wallet: { color: colors.mutedForeground, fontSize: 13, fontFamily: "SpaceMono" },
   switchRow: {
     flexDirection: "row",
