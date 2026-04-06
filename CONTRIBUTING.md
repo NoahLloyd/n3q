@@ -1,6 +1,6 @@
 # Contributing to N3Q
 
-Thanks for contributing to N3Q! This is a volunteer-run project — every contribution matters.
+Thanks for contributing to N3Q!
 
 ## Getting started
 
