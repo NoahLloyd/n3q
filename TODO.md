@@ -8,8 +8,6 @@
 
 ## Mobile App
 - [ ] EAS Build setup for TestFlight distribution
-- [ ] Loading skeletons / empty states polish
-- [ ] Offline: show cached TanStack Query data
 
 ## Done
 - [x] Monorepo setup (pnpm + Turborepo)
@@ -28,3 +26,5 @@
 - [x] Modal grabbers
 - [x] Safe area insets on all screens
 - [x] App icon + splash screen with N3Q branding
+- [x] Loading skeletons / empty states polish
+- [x] Offline: persisted TanStack Query cache via AsyncStorage
