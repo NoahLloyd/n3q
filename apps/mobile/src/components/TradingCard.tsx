@@ -22,7 +22,7 @@ import * as Haptics from "expo-haptics";
 import { colors } from "@/src/lib/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = SCREEN_WIDTH * 0.72;
+const CARD_WIDTH = SCREEN_WIDTH * 0.88;
 const CARD_HEIGHT = CARD_WIDTH * 1.45;
 const MAX_TILT = 12; // degrees
 
