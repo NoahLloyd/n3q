@@ -15,7 +15,9 @@ import * as WebBrowser from "expo-web-browser";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/src/lib/auth/context";
+import { Pressable } from "react-native";
 import { PortalSpinner } from "@/src/components/PortalSpinner";
+import { MaraudersMap } from "@/src/components/MaraudersMap";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CODE_LENGTH = 6;
@@ -71,6 +73,7 @@ function LogoWithGlow() {
 export default function LoginScreen() {
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [isLoading, setIsLoading] = useState(false);
+  const [mapVisible, setMapVisible] = useState(false);
   const inputRefs = useRef<(TextInput | null)[]>([]);
   const { authenticate, devLogin } = useAuth();
   const router = useRouter();
@@ -160,10 +163,17 @@ export default function LoginScreen() {
       <View style={styles.card}>
         <View style={styles.topHighlight} />
 
-        {/* Logo */}
-        <View style={styles.logoContainer}>
+        {/* Logo — long-press to open Marauder's Map */}
+        <Pressable
+          style={styles.logoContainer}
+          onLongPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            setMapVisible(true);
+          }}
+          delayLongPress={800}
+        >
           <LogoWithGlow />
-        </View>
+        </Pressable>
 
         {/* Wordmark */}
         <View style={styles.wordmarkContainer}>
@@ -242,6 +252,8 @@ export default function LoginScreen() {
           Generate code at n3q.house
         </Text>
       </TouchableOpacity>
+
+      <MaraudersMap visible={mapVisible} onClose={() => setMapVisible(false)} />
     </View>
   );
 }

@@ -11,6 +11,7 @@ import { colors } from "@/src/lib/theme";
 import { SkeletonList } from "@/src/components/Skeleton";
 
 import { EmptyState } from "@/src/components/EmptyState";
+import { updateWidgetProjects } from "@/src/lib/widget-data";
 import type { Project, ProjectStatus } from "@n3q/shared";
 import { formatDistanceToNow } from "@n3q/shared";
 
@@ -38,7 +39,18 @@ export default function ProjectsScreen() {
 
   const { data: projects = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ["projects", filter],
-    queryFn: () => fetchProjects(supabase, userId!, filter === "all" ? undefined : filter),
+    queryFn: async () => {
+      const data = await fetchProjects(supabase, userId!, filter === "all" ? undefined : filter);
+      // Update widget with active projects (not completed)
+      const activeProjects = data.filter((p) => p.status !== "completed");
+      updateWidgetProjects(activeProjects.map((p) => ({
+        id: p.id,
+        title: p.title,
+        status: p.status,
+        memberCount: p.member_count || 0,
+      })));
+      return data;
+    },
     enabled: !!userId,
   });
 
