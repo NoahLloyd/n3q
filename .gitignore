@@ -42,3 +42,8 @@ next-env.d.ts
 # turbo
 .turbo
 *.swp
+.gstack/
+.agents/
+.claude/
+.mcp.json
+skills-lock.json

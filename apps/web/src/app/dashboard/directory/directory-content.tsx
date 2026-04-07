@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/context";
 import { useAllMembers } from "@/lib/web3/hooks";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -21,6 +21,16 @@ interface PendingMember {
   created_at: string;
 }
 
+interface DirectoryMember {
+  key: string;
+  displayName: string;
+  avatarUrl: string | null;
+  bio: string | null;
+  walletAddress: string | null;
+  index: number;
+  isYou: boolean;
+}
+
 interface DirectoryContentProps {
   isPublic?: boolean;
 }
@@ -30,6 +40,8 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
   const { members, totalSupply, isLoading } = useAllMembers();
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [profilesLoading, setProfilesLoading] = useState(false);
+  const [googleMembers, setGoogleMembers] = useState<Profile[]>([]);
+  const [googleMembersLoading, setGoogleMembersLoading] = useState(true);
 
   // Pending members state
   const [showPending, setShowPending] = useState(false);
@@ -39,7 +51,7 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
   const [verifying, setVerifying] = useState<string | null>(null);
   const [rejecting, setRejecting] = useState<string | null>(null);
 
-  // Fetch profiles for all members
+  // Fetch profiles for all wallet members
   useEffect(() => {
     if (!members || members.length === 0) return;
 
@@ -47,7 +59,6 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
       setProfilesLoading(true);
       const profilesMap: Record<string, Profile> = {};
 
-      // Fetch profiles for all member addresses
       const { data } = await supabase
         .from("profiles")
         .select("*")
@@ -65,6 +76,30 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
 
     fetchProfiles();
   }, [members]);
+
+  // Fetch verified Google-auth members
+  const fetchGoogleMembers = async () => {
+    setGoogleMembersLoading(true);
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("auth_method", "google")
+        .eq("is_verified", true)
+        .order("created_at", { ascending: true });
+
+      setGoogleMembers(data ?? []);
+    } catch (err) {
+      console.error("[directory] Error fetching Google members:", err);
+      setGoogleMembers([]);
+    } finally {
+      setGoogleMembersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGoogleMembers();
+  }, []);
 
   // Fetch pending members on mount and when expanded (for authenticated members)
   useEffect(() => {
@@ -117,6 +152,8 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
       if (res.ok) {
         setPending((prev) => prev.filter((m) => m.id !== memberId));
         setPendingCount((c) => Math.max(0, c - 1));
+        // Re-fetch Google members so the newly verified member appears in the grid
+        fetchGoogleMembers();
       } else {
         const data = await res.json();
         alert(data.error || "Failed to verify member");
@@ -168,36 +205,63 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
     return "?";
   };
 
-  const getDisplayName = (memberAddress: string) => {
-    const profile = profiles[memberAddress.toLowerCase()];
-    if (profile?.display_name) {
-      return profile.display_name;
-    }
-    return `${memberAddress.slice(0, 6)}...${memberAddress.slice(-4)}`;
-  };
-
-  const getAvatar = (memberAddress: string) => {
-    const profile = profiles[memberAddress.toLowerCase()];
-    return profile?.avatar_url || null;
-  };
-
-  const getBio = (memberAddress: string) => {
-    const profile = profiles[memberAddress.toLowerCase()];
-    return profile?.bio || null;
-  };
-
-  const getInitials = (memberAddress: string) => {
-    const profile = profiles[memberAddress.toLowerCase()];
-    if (profile?.display_name) {
-      return profile.display_name
+  const getInitials = (name: string | null, fallback: string) => {
+    if (name) {
+      return name
         .split(" ")
         .map((n) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2);
     }
-    return memberAddress.slice(2, 4).toUpperCase();
+    return fallback.slice(0, 2).toUpperCase();
   };
+
+  // Build unified member list from wallet + Google sources
+  const directoryMembers = useMemo<DirectoryMember[]>(() => {
+    const result: DirectoryMember[] = [];
+
+    // 1. Wallet members from the smart contract
+    if (members) {
+      for (let i = 0; i < members.length; i++) {
+        const addr = members[i];
+        const profile = profiles[addr.toLowerCase()];
+        result.push({
+          key: addr,
+          displayName: profile?.display_name || `${addr.slice(0, 6)}...${addr.slice(-4)}`,
+          avatarUrl: profile?.avatar_url || null,
+          bio: profile?.bio || null,
+          walletAddress: addr,
+          index: i,
+          isYou: !isPublic && addr.toLowerCase() === address?.toLowerCase(),
+        });
+      }
+    }
+
+    // 2. Verified Google-only members (deduplicate against wallet members)
+    const walletAddressSet = new Set(
+      (members ?? []).map((addr) => addr.toLowerCase())
+    );
+
+    for (const gm of googleMembers) {
+      if (gm.wallet_address && walletAddressSet.has(gm.wallet_address.toLowerCase())) {
+        continue;
+      }
+      result.push({
+        key: gm.id,
+        displayName: gm.display_name || gm.email || "Member",
+        avatarUrl: gm.avatar_url || null,
+        bio: gm.bio || null,
+        walletAddress: gm.wallet_address || null,
+        index: result.length,
+        isYou: !isPublic && gm.id === address,
+      });
+    }
+
+    return result;
+  }, [members, profiles, googleMembers, isPublic, address]);
+
+  const isDataLoading = isLoading || profilesLoading || googleMembersLoading;
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
@@ -206,13 +270,13 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
           Member Directory
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {totalSupply !== undefined
-            ? `${totalSupply} members in the community`
+          {!isDataLoading
+            ? `${directoryMembers.length} members in the community`
             : "Loading..."}
         </p>
       </div>
 
-      {isLoading || profilesLoading ? (
+      {isDataLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse overflow-hidden">
@@ -224,32 +288,28 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
             </Card>
           ))}
         </div>
-      ) : members && members.length > 0 ? (
+      ) : directoryMembers.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {members.map((memberAddress, index) => {
-            const isYou =
-              !isPublic &&
-              memberAddress.toLowerCase() === address?.toLowerCase();
-            const displayName = getDisplayName(memberAddress);
-            const avatarUrl = getAvatar(memberAddress);
-            const bio = getBio(memberAddress);
-            const initials = getInitials(memberAddress);
-            const hasProfile =
-              profiles[memberAddress.toLowerCase()]?.display_name;
+          {directoryMembers.map((member) => {
+            const initials = getInitials(
+              member.displayName !== member.key ? member.displayName : null,
+              member.walletAddress ? member.walletAddress.slice(2) : member.key.slice(0, 2)
+            );
+            const hasName = member.displayName !== `${member.key.slice(0, 6)}...${member.key.slice(-4)}`;
 
             return (
               <Card
-                key={memberAddress}
+                key={member.key}
                 className={`overflow-hidden pt-0 transition-all hover:shadow-lg ${
-                  isYou ? "ring-2 ring-amber-500/50" : ""
+                  member.isYou ? "ring-2 ring-amber-500/50" : ""
                 }`}
               >
                 {/* Square Image */}
                 <div className="relative aspect-square bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
-                  {avatarUrl ? (
+                  {member.avatarUrl ? (
                     <img
-                      src={avatarUrl}
-                      alt={displayName}
+                      src={member.avatarUrl}
+                      alt={member.displayName}
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -261,10 +321,10 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
                   )}
                   {/* Member number badge */}
                   <div className="absolute top-3 left-3 flex h-7 w-7 items-center justify-center rounded-lg bg-black/60 text-xs font-semibold text-white backdrop-blur-sm">
-                    #{index}
+                    #{member.index}
                   </div>
                   {/* You badge */}
-                  {isYou && (
+                  {member.isYou && (
                     <div className="absolute top-3 right-3 rounded-lg bg-amber-500 px-2 py-1 text-xs font-semibold text-white">
                       You
                     </div>
@@ -276,24 +336,26 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
                   <div>
                     <h3
                       className={`font-semibold text-base leading-tight ${
-                        !hasProfile ? "font-mono text-sm" : ""
+                        !hasName ? "font-mono text-sm" : ""
                       }`}
                     >
-                      {displayName}
+                      {member.displayName}
                     </h3>
-                    <a
-                      href={`https://basescan.org/address/${memberAddress}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-muted-foreground font-mono hover:text-amber-500 transition-colors"
-                    >
-                      {memberAddress.slice(0, 6)}...{memberAddress.slice(-4)}
-                    </a>
+                    {member.walletAddress && (
+                      <a
+                        href={`https://basescan.org/address/${member.walletAddress}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-muted-foreground font-mono hover:text-amber-500 transition-colors"
+                      >
+                        {member.walletAddress.slice(0, 6)}...{member.walletAddress.slice(-4)}
+                      </a>
+                    )}
                   </div>
 
                   {/* Bio */}
-                  {bio && (
-                    <p className="text-sm text-muted-foreground">{bio}</p>
+                  {member.bio && (
+                    <p className="text-sm text-muted-foreground">{member.bio}</p>
                   )}
                 </div>
               </Card>
