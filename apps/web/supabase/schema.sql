@@ -356,6 +356,7 @@ create table if not exists public.events (
   event_date date not null,
   event_time time,
   is_public boolean not null default false,
+  ical_uid text unique,
   created_at timestamptz default now()
 );
 
