@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd ../.. && pnpm turbo build --filter @n3q/web",
   "framework": "nextjs",
-  "installCommand": "cd ../.. && corepack enable && pnpm install --filter @n3q/web...",
+  "installCommand": "cd ../.. && pnpm install --filter @n3q/web...",
   "build": {
     "env": {
       "VERCEL_FORCE_NO_BUILD_CACHE": "1"
