@@ -237,14 +237,6 @@ export default function CreateEventPage() {
               </div>
             </div>
 
-            {/* Info box */}
-            <div className="p-3 bg-muted/50 border border-border text-xs text-muted-foreground space-y-1">
-              <p>
-                <strong>Quick tip:</strong> Events can be as simple as &quot;Coffee
-                tomorrow&quot; - you don&apos;t need all the details upfront.
-              </p>
-            </div>
-
             {/* Submit */}
             <div className="flex justify-end gap-3 pt-2">
               <Link href="/dashboard/events">

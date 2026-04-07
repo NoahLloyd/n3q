@@ -6,7 +6,6 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { FeedItem } from "@/lib/feed";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
@@ -363,11 +362,6 @@ export function FeedList({
         const typeLabel =
           item.type.charAt(0).toUpperCase() + item.type.slice(1);
         const summaryText = item.summary ?? item.description ?? null;
-        const topics =
-          item.topics
-            ?.map((topic) => topic?.trim())
-            .filter((topic): topic is string => Boolean(topic)) ?? [];
-        const uniqueTopics = Array.from(new Set(topics)).slice(0, 6);
         const hostname = safeHostname(item.url);
 
         const displayTitle = item.ai_title ?? item.title;
@@ -410,19 +404,6 @@ export function FeedList({
                 <p className="text-sm leading-relaxed text-foreground">
                   {summaryText}
                 </p>
-              )}
-              {uniqueTopics.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {uniqueTopics.map((topic) => (
-                    <Badge
-                      key={`${item.id}-${topic}`}
-                      variant="secondary"
-                      className="text-[10px] uppercase tracking-wide"
-                    >
-                      {topic}
-                    </Badge>
-                  ))}
-                </div>
               )}
               <div className="flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
                 {!isPublic && (

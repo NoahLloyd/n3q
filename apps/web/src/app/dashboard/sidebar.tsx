@@ -70,7 +70,7 @@ export function Sidebar({
 
   const itemClasses = (href: string) =>
     cn(
-      "group flex flex-row items-center gap-2 border border-border/60 bg-background/60 px-3 py-3 shadow-sm transition-colors",
+      "group flex flex-row items-center gap-2.5 border border-border/60 bg-background/60 px-3 py-2.5 shadow-sm transition-colors",
       isActive(href)
         ? "border-sidebar-accent bg-sidebar-accent text-sidebar-foreground"
         : "hover:border-sidebar-ring hover:bg-muted/60"
@@ -78,7 +78,7 @@ export function Sidebar({
 
   const iconClasses = (href: string) =>
     cn(
-      "flex h-10 w-10 shrink-0 items-center justify-center bg-muted text-foreground",
+      "flex h-8 w-8 shrink-0 items-center justify-center bg-muted text-foreground",
       isActive(href) && "border border-border/60"
     );
 
@@ -103,7 +103,7 @@ export function Sidebar({
       <div className="mt-6 space-y-3 text-sm text-muted-foreground">
         <Link href={knowledgePath} className={itemClasses(knowledgePath)}>
           <div className={iconClasses(knowledgePath)}>
-            <BookOpen className="h-5 w-5" />
+            <BookOpen className="h-4 w-4" />
           </div>
           <div className="space-y-1">
             <div className="text-sm font-medium text-foreground">Knowledge</div>
@@ -117,7 +117,7 @@ export function Sidebar({
           className={itemClasses(`${basePath}/directory`)}
         >
           <div className={iconClasses(`${basePath}/directory`)}>
-            <Users className="h-5 w-5" />
+            <Users className="h-4 w-4" />
           </div>
           <div className="space-y-1">
             <div className="text-sm font-medium text-foreground">Directory</div>
@@ -131,7 +131,7 @@ export function Sidebar({
           className={itemClasses(`${basePath}/projects`)}
         >
           <div className={iconClasses(`${basePath}/projects`)}>
-            <Rocket className="h-5 w-5" />
+            <Rocket className="h-4 w-4" />
           </div>
           <div className="space-y-1">
             <div className="text-sm font-medium text-foreground">Projects</div>
@@ -145,7 +145,7 @@ export function Sidebar({
           className={itemClasses(`${basePath}/events`)}
         >
           <div className={iconClasses(`${basePath}/events`)}>
-            <CalendarDays className="h-5 w-5" />
+            <CalendarDays className="h-4 w-4" />
           </div>
           <div className="space-y-1">
             <div className="text-sm font-medium text-foreground">Events</div>
@@ -159,7 +159,7 @@ export function Sidebar({
           className={itemClasses(`${basePath}/voting`)}
         >
           <div className={iconClasses(`${basePath}/voting`)}>
-            <Vote className="h-5 w-5" />
+            <Vote className="h-4 w-4" />
           </div>
           <div className="space-y-1">
             <div className="text-sm font-medium text-foreground">Voting</div>
@@ -173,7 +173,7 @@ export function Sidebar({
           className={itemClasses(`${basePath}/credits`)}
         >
           <div className={iconClasses(`${basePath}/credits`)}>
-            <Ticket className="h-5 w-5" />
+            <Ticket className="h-4 w-4" />
           </div>
           <div className="space-y-1">
             <div className="text-sm font-medium text-foreground">Credits</div>

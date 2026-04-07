@@ -277,7 +277,7 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
       </div>
 
       {isDataLoading ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse overflow-hidden">
               <div className="aspect-square bg-muted" />
@@ -289,7 +289,7 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
           ))}
         </div>
       ) : directoryMembers.length > 0 ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {directoryMembers.map((member) => {
             const initials = getInitials(
               member.displayName !== member.key ? member.displayName : null,
@@ -314,28 +314,28 @@ export function DirectoryContent({ isPublic = false }: DirectoryContentProps) {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-500/20 to-amber-600/10">
-                      <span className="text-5xl font-bold text-amber-500/60">
+                      <span className="text-4xl font-bold text-amber-500/60">
                         {initials}
                       </span>
                     </div>
                   )}
                   {/* Member number badge */}
-                  <div className="absolute top-3 left-3 flex h-7 w-7 items-center justify-center rounded-lg bg-black/60 text-xs font-semibold text-white backdrop-blur-sm">
+                  <div className="absolute top-2 left-2 flex h-6 w-6 items-center justify-center rounded-md bg-black/60 text-[10px] font-semibold text-white backdrop-blur-sm">
                     #{member.index}
                   </div>
                   {/* You badge */}
                   {member.isYou && (
-                    <div className="absolute top-3 right-3 rounded-lg bg-amber-500 px-2 py-1 text-xs font-semibold text-white">
+                    <div className="absolute top-2 right-2 rounded-md bg-amber-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                       You
                     </div>
                   )}
                 </div>
 
                 {/* Member Info */}
-                <div className="p-4 space-y-2">
+                <div className="p-3 space-y-1.5">
                   <div>
                     <h3
-                      className={`font-semibold text-base leading-tight ${
+                      className={`font-semibold text-sm leading-tight ${
                         !hasName ? "font-mono text-sm" : ""
                       }`}
                     >
