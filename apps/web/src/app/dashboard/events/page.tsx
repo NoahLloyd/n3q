@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Plus, Calendar, ChevronLeft, ChevronRight, MapPin, Clock } from "lucide-react";
+import { Plus, Calendar, ChevronLeft, ChevronRight, MapPin, Clock, Mail } from "lucide-react";
 import { useAuth } from "@/lib/auth/context";
 import { fetchEvents } from "@/lib/supabase/events";
 import type { Event } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarGuideModal } from "./components/calendar-guide-modal";
+import { EventDetailModal } from "./components/event-detail-modal";
+import { CreateEventModal } from "./components/create-event-modal";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -67,6 +69,8 @@ export default function EventsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCalendarGuide, setShowCalendarGuide] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [modalEventId, setModalEventId] = useState<string | null>(null);
+  const [createDate, setCreateDate] = useState<string | null>(null);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -78,22 +82,21 @@ export default function EventsPage() {
       ? `${window.location.origin}/api/calendar`
       : "";
 
-  useEffect(() => {
+  const loadEvents = useCallback(async () => {
     if (!address) return;
-
-    const load = async () => {
-      setIsLoading(true);
-      const [upcoming, past] = await Promise.all([
-        fetchEvents(address, "upcoming"),
-        fetchEvents(address, "past"),
-      ]);
-      setAllEvents(upcoming);
-      setPastEvents(past);
-      setIsLoading(false);
-    };
-
-    load();
+    setIsLoading(true);
+    const [upcoming, past] = await Promise.all([
+      fetchEvents(address, "upcoming"),
+      fetchEvents(address, "past"),
+    ]);
+    setAllEvents(upcoming);
+    setPastEvents(past);
+    setIsLoading(false);
   }, [address]);
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
 
   const eventsByDate = useMemo(() => {
     const map: Record<string, Event[]> = {};
@@ -157,6 +160,19 @@ export default function EventsPage() {
       })
     : "Upcoming";
 
+  const handleDayDoubleClick = (date: Date) => {
+    setCreateDate(dateKey(date));
+  };
+
+  const handleEventCreated = () => {
+    setCreateDate(null);
+    loadEvents();
+  };
+
+  const handleEventDeleted = () => {
+    loadEvents();
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
@@ -178,6 +194,15 @@ export default function EventsPage() {
             </Button>
           </Link>
         </div>
+      </div>
+
+      {/* Email invite hint */}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 border border-border px-3 py-2">
+        <Mail className="h-3.5 w-3.5 shrink-0" />
+        <span>
+          Invite <code className="bg-muted px-1 py-0.5 font-mono text-[11px]">events@n3q.house</code> to
+          any calendar event to automatically add it here.
+        </span>
       </div>
 
       {isLoading ? (
@@ -233,6 +258,7 @@ export default function EventsPage() {
                     key={i}
                     type="button"
                     onClick={() => setSelectedDate(date)}
+                    onDoubleClick={() => handleDayDoubleClick(date)}
                     className={`relative min-h-[72px] border-b border-r border-border p-1.5 text-left transition-colors ${
                       !inMonth ? "bg-muted/20 text-muted-foreground/40" : ""
                     } ${isSelected ? "bg-accent" : "hover:bg-muted/40"} ${
@@ -253,7 +279,11 @@ export default function EventsPage() {
                         {dayEvents.slice(0, 2).map((ev) => (
                           <div
                             key={ev.id}
-                            className="truncate rounded-sm bg-amber-500/15 px-1 py-0.5 text-[10px] leading-tight text-amber-600 dark:text-amber-400"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setModalEventId(ev.id);
+                            }}
+                            className="truncate rounded-sm bg-amber-500/15 px-1 py-0.5 text-[10px] leading-tight text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 cursor-pointer"
                           >
                             {ev.title}
                           </div>
@@ -291,22 +321,24 @@ export default function EventsPage() {
                   {selectedDate ? "No events this day" : "No upcoming events"}
                 </p>
                 {selectedDate && (
-                  <Link
-                    href={`/dashboard/events/create`}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => handleDayDoubleClick(selectedDate)}
                   >
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Plus className="h-3 w-3" />
-                      Create one
-                    </Button>
-                  </Link>
+                    <Plus className="h-3 w-3" />
+                    Create one
+                  </Button>
                 )}
               </div>
             ) : (
               sidebarEvents.map((event) => (
-                <Link
+                <button
                   key={event.id}
-                  href={`/dashboard/events/${event.id}`}
-                  className="block border border-border p-3 hover:border-foreground/20 transition-colors space-y-2"
+                  type="button"
+                  onClick={() => setModalEventId(event.id)}
+                  className="block w-full border border-border p-3 hover:border-foreground/20 transition-colors space-y-2 text-left"
                 >
                   <div className="text-sm font-medium leading-tight">
                     {event.title}
@@ -358,7 +390,7 @@ export default function EventsPage() {
                       </span>
                     </div>
                   )}
-                </Link>
+                </button>
               ))
             )}
           </div>
@@ -369,6 +401,18 @@ export default function EventsPage() {
         isOpen={showCalendarGuide}
         onClose={() => setShowCalendarGuide(false)}
         calendarUrl={calendarUrl}
+      />
+
+      <EventDetailModal
+        eventId={modalEventId}
+        onClose={() => setModalEventId(null)}
+        onDeleted={handleEventDeleted}
+      />
+
+      <CreateEventModal
+        initialDate={createDate}
+        onClose={() => setCreateDate(null)}
+        onCreated={handleEventCreated}
       />
     </div>
   );
