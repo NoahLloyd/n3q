@@ -9,6 +9,7 @@ import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
 import { SkeletonList } from "@/src/components/Skeleton";
+
 import { EmptyState } from "@/src/components/EmptyState";
 import type { Event } from "@n3q/shared";
 
@@ -38,7 +39,7 @@ export default function EventsScreen() {
   const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
   const [filter, setFilter] = useState<"upcoming" | "past">("upcoming");
 
-  const { data: events = [], isLoading, refetch } = useQuery({
+  const { data: events = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ["events", filter],
     queryFn: () => fetchEvents(supabase, userId!, filter),
     enabled: !!userId,
@@ -108,7 +109,7 @@ export default function EventsScreen() {
         renderItem={renderEvent}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 12 }]}
         ListHeaderComponent={isLoading && events.length === 0 ? <SkeletonList /> : null}

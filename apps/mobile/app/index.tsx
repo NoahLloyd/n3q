@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator,
   Image,
   Dimensions,
   Keyboard,
@@ -16,6 +15,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/src/lib/auth/context";
+import { PortalSpinner } from "@/src/components/PortalSpinner";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CODE_LENGTH = 6;
@@ -214,7 +214,7 @@ export default function LoginScreen() {
         {/* Loading state */}
         {isLoading && (
           <View style={styles.loadingRow}>
-            <ActivityIndicator color="rgba(245,166,35,0.9)" size="small" />
+            <PortalSpinner size={20} />
             <Text style={styles.loadingText}>Verifying...</Text>
           </View>
         )}

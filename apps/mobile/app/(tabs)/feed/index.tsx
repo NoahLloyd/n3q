@@ -8,6 +8,7 @@ import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
 import { SkeletonList } from "@/src/components/Skeleton";
+
 import { EmptyState } from "@/src/components/EmptyState";
 import type { ContentItem } from "@n3q/shared";
 import { formatDistanceToNow, CONTENT_TYPE_LABELS } from "@n3q/shared";
@@ -29,7 +30,7 @@ export default function FeedScreen() {
   const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
   const [sort, setSort] = useState<SortMode>("hot");
 
-  const { data: items = [], isLoading, refetch } = useQuery({
+  const { data: items = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ["feed"],
     queryFn: async (): Promise<ScoredItem[]> => {
       const { data, error } = await supabase
@@ -166,7 +167,7 @@ export default function FeedScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 12 }]}
         ListHeaderComponent={isLoading && items.length === 0 ? <SkeletonList /> : null}

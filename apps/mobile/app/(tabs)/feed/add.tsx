@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, Alert, ActivityIndicator, Keyboard } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, Alert, Keyboard } from "react-native";
 import * as Haptics from "expo-haptics";
+import { PortalSpinner } from "@/src/components/PortalSpinner";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/src/lib/auth/context";
@@ -80,7 +81,7 @@ export default function AddContentScreen() {
         >
           {isSubmitting ? (
             <View style={styles.loadingRow}>
-              <ActivityIndicator size="small" color="#171717" />
+              <PortalSpinner size={18} />
               <Text style={styles.submitText}>Enriching...</Text>
             </View>
           ) : (
