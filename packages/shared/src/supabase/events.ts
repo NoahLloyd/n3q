@@ -175,14 +175,21 @@ export async function deleteEvent(
   eventId: string,
   userId: string
 ): Promise<boolean> {
-  // Verify ownership
+  // Verify ownership (email-ingested events with ical_uid can be deleted by anyone)
   const { data: event } = await supabase
     .from("events")
-    .select("creator_id")
+    .select("creator_id, ical_uid")
     .eq("id", eventId)
     .single();
 
-  if (!event || event.creator_id.toLowerCase() !== userId.toLowerCase()) {
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  const isCreator = event.creator_id.toLowerCase() === userId.toLowerCase();
+  const isEmailIngested = !!event.ical_uid;
+
+  if (!isCreator && !isEmailIngested) {
     throw new Error("Only the event creator can delete this event");
   }
 

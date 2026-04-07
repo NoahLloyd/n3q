@@ -19,6 +19,7 @@ interface PostmarkInboundPayload {
 }
 
 interface ParsedEvent {
+  method: string | null;
   uid: string | null;
   summary: string | null;
   description: string | null;
@@ -43,6 +44,7 @@ function parseICS(icsContent: string): ParsedEvent {
 
   let inEvent = false;
   const event: ParsedEvent = {
+    method: null,
     uid: null,
     summary: null,
     description: null,
@@ -57,7 +59,6 @@ function parseICS(icsContent: string): ParsedEvent {
       continue;
     }
     if (line === "END:VEVENT") break;
-    if (!inEvent) continue;
 
     // Parse property:value, handling parameters like DTSTART;TZID=...:value
     const colonIdx = line.indexOf(":");
@@ -66,6 +67,14 @@ function parseICS(icsContent: string): ParsedEvent {
     const propWithParams = line.slice(0, colonIdx);
     const value = line.slice(colonIdx + 1);
     const prop = propWithParams.split(";")[0].toUpperCase();
+
+    // METHOD is at the calendar level, not inside VEVENT
+    if (!inEvent && prop === "METHOD") {
+      event.method = value.toUpperCase().trim();
+      continue;
+    }
+
+    if (!inEvent) continue;
 
     switch (prop) {
       case "UID":
@@ -148,6 +157,24 @@ export async function POST(request: NextRequest) {
   const icsContent = Buffer.from(icsAttachment.Content, "base64").toString("utf-8");
   const parsed = parseICS(icsContent);
 
+  // Handle cancellations — delete the matching event by ical_uid
+  if (parsed.method === "CANCEL" && parsed.uid) {
+    const { data: existing } = await client
+      .from("events")
+      .select("id")
+      .eq("ical_uid", parsed.uid)
+      .maybeSingle();
+
+    if (existing) {
+      await client.from("events").delete().eq("id", existing.id);
+      console.log(`Calendar ingest: cancelled event ${existing.id} (uid: ${parsed.uid})`);
+      return NextResponse.json({ status: "cancelled", eventId: existing.id });
+    }
+
+    console.log(`Calendar ingest: cancel for unknown uid ${parsed.uid}, ignoring`);
+    return NextResponse.json({ status: "ignored" });
+  }
+
   if (!parsed.summary || !parsed.dtstart) {
     console.log("Calendar ingest: could not parse event from .ics");
     return NextResponse.json({ error: "Could not parse event" }, { status: 400 });
@@ -191,7 +218,7 @@ export async function POST(request: NextRequest) {
   const start = parseICalDateTime(parsed.dtstart);
   const end = parsed.dtend ? parseICalDateTime(parsed.dtend) : null;
 
-  // Check for duplicate by ical_uid
+  // Check for existing event by ical_uid — update if found, create if not
   if (parsed.uid) {
     const { data: existing } = await client
       .from("events")
@@ -200,12 +227,30 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (existing) {
-      console.log(`Calendar ingest: duplicate event ${parsed.uid}, skipping`);
-      return NextResponse.json({ status: "duplicate", eventId: existing.id });
+      // Update the existing event with new details
+      const { error: updateError } = await client
+        .from("events")
+        .update({
+          title: parsed.summary,
+          description: parsed.description,
+          location: parsed.location,
+          event_date: start.date,
+          event_time: start.time,
+          event_end_time: end?.time ?? null,
+        })
+        .eq("id", existing.id);
+
+      if (updateError) {
+        console.error("Calendar ingest: update error", updateError);
+        return NextResponse.json({ error: "Failed to update event" }, { status: 500 });
+      }
+
+      console.log(`Calendar ingest: updated event ${existing.id} from ${senderEmail}`);
+      return NextResponse.json({ status: "updated", eventId: existing.id });
     }
   }
 
-  // Insert the event
+  // Insert new event
   const { data: event, error } = await client
     .from("events")
     .insert({

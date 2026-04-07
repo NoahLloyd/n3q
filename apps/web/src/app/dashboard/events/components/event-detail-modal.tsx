@@ -180,6 +180,8 @@ export function EventDetailModal({ eventId, onClose, onDeleted }: EventDetailMod
 
   const isCreator =
     address && event?.creator_id.toLowerCase() === address.toLowerCase();
+  const isEmailIngested = !!event?.ical_uid;
+  const canDelete = isCreator || isEmailIngested;
   const hasRsvp = event?.user_has_rsvp;
   const isPast = event ? isEventPast(event.event_date) : false;
 
@@ -431,7 +433,7 @@ export function EventDetailModal({ eventId, onClose, onDeleted }: EventDetailMod
                 Add to Calendar
               </Button>
 
-              {isCreator && (
+              {canDelete && (
                 <>
                   {!showDeleteConfirm ? (
                     <Button

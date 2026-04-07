@@ -174,6 +174,8 @@ export default function EventDetailPage({
 
   const isCreator =
     address && event?.creator_id.toLowerCase() === address.toLowerCase();
+  const isEmailIngested = !!event?.ical_uid;
+  const canDelete = isCreator || isEmailIngested;
   const hasRsvp = event?.user_has_rsvp;
   const isPast = event ? isEventPast(event.event_date) : false;
 
@@ -387,7 +389,7 @@ export default function EventDetailPage({
           Add to Calendar
         </Button>
 
-        {isCreator && (
+        {canDelete && (
           <>
             {!showDeleteConfirm ? (
               <Button

@@ -157,6 +157,7 @@ export interface Event {
   event_time: string | null; // HH:MM:SS or null for all-day
   event_end_time: string | null; // HH:MM:SS or null
   is_public: boolean;
+  ical_uid?: string | null;
   created_at: string;
   creator?: Profile;
   rsvp_count?: number;

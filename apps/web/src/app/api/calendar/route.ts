@@ -64,7 +64,9 @@ END:VTIMEZONE
     };
 
     const summary = escapeText(event.title);
-    const description = escapeText(event.description);
+    const rsvpUrl = `https://n3q.house/dashboard/events/${event.id}/rsvp`;
+    const descriptionWithRsvp = (event.description ? event.description + "\n\n" : "") + rsvpUrl;
+    const description = escapeText(descriptionWithRsvp);
     const location = escapeText(event.location);
 
     ics += `BEGIN:VEVENT
@@ -112,10 +114,8 @@ DTEND;VALUE=DATE:${dtend}
     ics += `SUMMARY:${summary}
 `;
 
-    if (description) {
-      ics += `DESCRIPTION:${description}
+    ics += `DESCRIPTION:${description}
 `;
-    }
 
     if (location) {
       ics += `LOCATION:${location}
