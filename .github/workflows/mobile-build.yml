@@ -1,0 +1,53 @@
+name: Mobile Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "Build profile"
+        required: true
+        default: "preview"
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+      platform:
+        description: "Platform"
+        required: true
+        default: "ios"
+        type: choice
+        options:
+          - ios
+          - android
+          - all
+
+jobs:
+  build:
+    name: EAS Build (${{ inputs.profile }} - ${{ inputs.platform }})
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build
+        run: eas build --profile ${{ inputs.profile }} --platform ${{ inputs.platform }} --non-interactive
