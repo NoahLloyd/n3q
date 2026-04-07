@@ -50,13 +50,6 @@ export default function LoginPage() {
         }}
       />
 
-      {/* Slow scan line effect */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div
-          className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent animate-scan-line"
-        />
-      </div>
-
       {/* Warm ambient glow behind center */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-amber-500/[0.04] blur-[120px] pointer-events-none" />
 
@@ -74,7 +67,7 @@ export default function LoginPage() {
               alt="n3q"
               width={64}
               height={64}
-              className="relative animate-pixel-flicker"
+              className="relative"
               style={{ imageRendering: "crisp-edges" }}
               priority
             />
