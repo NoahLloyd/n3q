@@ -32,3 +32,19 @@ export async function updateWidgetProjects(projects: WidgetProject[]) {
     // Widget data sharing not available
   }
 }
+
+export interface WidgetProfile {
+  displayName: string;
+  initials: string;
+  avatarUrl: string | null;
+  dayCount: number;
+}
+
+export async function updateWidgetProfile(profile: WidgetProfile) {
+  try {
+    await setItem("widget_profile", JSON.stringify(profile), "group.com.n3q.app");
+    reloadAllTimelines();
+  } catch {
+    // Widget data sharing not available
+  }
+}
