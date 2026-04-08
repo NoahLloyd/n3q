@@ -50,7 +50,8 @@
         {
           "calendarPermission": "Allow N3Q to add events to your calendar."
         }
-      ]
+      ],
+      "./plugins/withWidget.js"
     ],
     "updates": {
       "url": "https://u.expo.dev/cdb8a70f-0945-45dc-89d1-f358e5a80009"

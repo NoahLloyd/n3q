@@ -111,7 +111,7 @@ struct EventWidgetView: View {
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .foregroundColor(Color(red: 0.96, green: 0.65, blue: 0.14))
                 Spacer()
-                Link(destination: URL(string: "n3q://tabs/events")!) {
+                Link(destination: URL(string: "n3q://(tabs)/events")!) {
                     Text("All ▸")
                         .font(.system(size: 10, weight: .medium, design: .monospaced))
                         .foregroundColor(.gray)
@@ -126,7 +126,7 @@ struct EventWidgetView: View {
                 Spacer()
             } else {
                 ForEach(entry.events.prefix(family == .systemMedium ? 3 : 1)) { event in
-                    Link(destination: URL(string: "n3q://event/\(event.id)")!) {
+                    Link(destination: URL(string: "n3q://(tabs)/events/\(event.id)")!) {
                         HStack(spacing: 8) {
                             Circle()
                                 .fill(Color(red: 0.96, green: 0.65, blue: 0.14))
@@ -184,7 +184,7 @@ struct QuickActionWidgetView: View {
                 .foregroundColor(Color(red: 0.96, green: 0.65, blue: 0.14))
 
             HStack(spacing: 16) {
-                Link(destination: URL(string: "n3q://create/knowledge")!) {
+                Link(destination: URL(string: "n3q://(tabs)/feed/add")!) {
                     VStack(spacing: 4) {
                         Image(systemName: "book")
                             .font(.system(size: 20))
@@ -195,7 +195,7 @@ struct QuickActionWidgetView: View {
                     }
                 }
 
-                Link(destination: URL(string: "n3q://create/event")!) {
+                Link(destination: URL(string: "n3q://(tabs)/events/create")!) {
                     VStack(spacing: 4) {
                         Image(systemName: "calendar.badge.plus")
                             .font(.system(size: 20))
@@ -206,7 +206,7 @@ struct QuickActionWidgetView: View {
                     }
                 }
 
-                Link(destination: URL(string: "n3q://create/project")!) {
+                Link(destination: URL(string: "n3q://(tabs)/projects/create")!) {
                     VStack(spacing: 4) {
                         Image(systemName: "rocket")
                             .font(.system(size: 20))
@@ -260,7 +260,7 @@ struct ProjectWidgetView: View {
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .foregroundColor(Color(red: 0.96, green: 0.65, blue: 0.14))
                 Spacer()
-                Link(destination: URL(string: "n3q://tabs/projects")!) {
+                Link(destination: URL(string: "n3q://(tabs)/projects")!) {
                     Text("All ▸")
                         .font(.system(size: 10, weight: .medium, design: .monospaced))
                         .foregroundColor(.gray)
@@ -275,7 +275,7 @@ struct ProjectWidgetView: View {
                 Spacer()
             } else {
                 ForEach(entry.projects.prefix(family == .systemMedium ? 3 : 1)) { project in
-                    Link(destination: URL(string: "n3q://project/\(project.id)")!) {
+                    Link(destination: URL(string: "n3q://(tabs)/projects/\(project.id)")!) {
                         HStack(spacing: 8) {
                             RoundedRectangle(cornerRadius: 2)
                                 .fill(statusColor(project.status))
