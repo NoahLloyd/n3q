@@ -9,6 +9,7 @@ import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
 import { SkeletonList } from "@/src/components/Skeleton";
+
 import { EmptyState } from "@/src/components/EmptyState";
 import type { Poll } from "@n3q/shared";
 import { formatDistanceToNow } from "@n3q/shared";
@@ -49,7 +50,7 @@ export default function VotingScreen() {
   const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
   const [filter, setFilter] = useState<"active" | "closed">("active");
 
-  const { data: polls = [], isLoading, refetch } = useQuery({
+  const { data: polls = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ["polls"],
     queryFn: () => fetchPolls(supabase, userId!),
     enabled: !!userId,
@@ -139,7 +140,7 @@ export default function VotingScreen() {
         renderItem={renderPoll}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 12 }]}
         ListHeaderComponent={isLoading && filteredPolls.length === 0 ? <SkeletonList /> : null}

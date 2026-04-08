@@ -9,7 +9,9 @@ import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
 import { SkeletonList } from "@/src/components/Skeleton";
+
 import { EmptyState } from "@/src/components/EmptyState";
+import { updateWidgetProjects } from "@/src/lib/widget-data";
 import type { Project, ProjectStatus } from "@n3q/shared";
 import { formatDistanceToNow } from "@n3q/shared";
 
@@ -35,9 +37,20 @@ export default function ProjectsScreen() {
   const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
   const [filter, setFilter] = useState<ProjectStatus | "all">("all");
 
-  const { data: projects = [], isLoading, refetch } = useQuery({
+  const { data: projects = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ["projects", filter],
-    queryFn: () => fetchProjects(supabase, userId!, filter === "all" ? undefined : filter),
+    queryFn: async () => {
+      const data = await fetchProjects(supabase, userId!, filter === "all" ? undefined : filter);
+      // Update widget with active projects (not completed)
+      const activeProjects = data.filter((p) => p.status !== "completed");
+      updateWidgetProjects(activeProjects.map((p) => ({
+        id: p.id,
+        title: p.title,
+        status: p.status,
+        memberCount: p.member_count || 0,
+      })));
+      return data;
+    },
     enabled: !!userId,
   });
 
@@ -96,7 +109,7 @@ export default function ProjectsScreen() {
         renderItem={renderProject}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={[styles.list, { paddingBottom: tabBarHeight + 12 }]}
         ListHeaderComponent={isLoading && projects.length === 0 ? <SkeletonList /> : null}

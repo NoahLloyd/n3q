@@ -11,7 +11,7 @@
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#0a0a0a"
     },
     "ios": {
@@ -43,6 +43,12 @@
         "expo-camera",
         {
           "cameraPermission": "Allow N3Q to use your camera to scan QR codes for login."
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Allow N3Q to add events to your calendar."
         }
       ]
     ],

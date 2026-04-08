@@ -3,10 +3,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchEvent, rsvpEvent, cancelRsvp } from "@n3q/shared";
+import * as Calendar from "expo-calendar";
 import { supabase } from "@/src/lib/supabase/client";
 import { useAuth } from "@/src/lib/auth/context";
 import { colors } from "@/src/lib/theme";
+import { updateWidgetEvents, WidgetEvent } from "@/src/lib/widget-data";
 import * as Haptics from "expo-haptics";
+
+/** Returns the local timezone offset as "+HH:MM" or "-HH:MM" for ISO 8601 date strings. */
+function getLocalTZOffset(): string {
+  const offset = new Date().getTimezoneOffset(); // minutes, positive = west of UTC
+  const sign = offset <= 0 ? "+" : "-";
+  const abs = Math.abs(offset);
+  const h = String(Math.floor(abs / 60)).padStart(2, "0");
+  const m = String(abs % 60).padStart(2, "0");
+  return `${sign}${h}:${m}`;
+}
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,12 +34,70 @@ export default function EventDetailScreen() {
     enabled: !!userId,
   });
 
+  async function promptAddToCalendar() {
+    if (!event) return;
+    Alert.alert("Add to calendar?", "Add this event to your calendar so you don't miss it.", [
+      { text: "Not now", style: "cancel" },
+      {
+        text: "Add",
+        onPress: async () => {
+          try {
+            const { status } = await Calendar.requestCalendarPermissionsAsync();
+            if (status !== "granted") {
+              Alert.alert("Permission needed", "Allow calendar access in Settings to add events.");
+              return;
+            }
+
+            const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+            const defaultCal = calendars.find((c) => c.allowsModifications) || calendars[0];
+            if (!defaultCal) return;
+
+            // event_time is "HH:MM:SS", event_date is "YYYY-MM-DD"
+            // Append timezone offset to avoid inconsistent cross-engine parsing
+            const tz = getLocalTZOffset();
+            const startDate = event.event_time
+              ? new Date(`${event.event_date}T${event.event_time}${tz}`)
+              : new Date(`${event.event_date}T00:00:00${tz}`);
+
+            const endDate = event.event_end_time
+              ? new Date(`${event.event_date}T${event.event_end_time}${tz}`)
+              : new Date(startDate.getTime() + 60 * 60 * 1000); // default 1 hour
+
+            await Calendar.createEventAsync(defaultCal.id, {
+              title: event.title,
+              startDate,
+              endDate,
+              location: event.location || undefined,
+              notes: event.description || undefined,
+              allDay: !event.event_time,
+            });
+
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          } catch (err) {
+            Alert.alert("Calendar error", err instanceof Error ? err.message : "Could not add event to calendar.");
+          }
+        },
+      },
+    ]);
+  }
+
   const rsvpMutation = useMutation({
     mutationFn: () => rsvpEvent(supabase, id, userId!),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       queryClient.invalidateQueries({ queryKey: ["event", id] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      // Update widget with current event data
+      if (event) {
+        updateWidgetEvents([{
+          id: event.id,
+          title: event.title,
+          date: event.event_date,
+          time: event.event_time?.slice(0, 5) || null,
+          location: event.location,
+        }]);
+      }
+      promptAddToCalendar();
     },
     onError: (err: Error) => Alert.alert("Error", err.message),
   });

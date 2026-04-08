@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { colors } from "@/src/lib/theme";
 import { SkeletonMemberList } from "@/src/components/Skeleton";
+
 import { EmptyState } from "@/src/components/EmptyState";
 import type { Profile } from "@n3q/shared";
 
@@ -15,7 +16,7 @@ export default function DirectoryScreen() {
   const headerHeight = 44 + insets.top;
   const tabBarHeight = 60 + Math.max(insets.bottom - 12, 4);
 
-  const { data: members = [], isLoading, refetch } = useQuery({
+  const { data: members = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ["directory"],
     queryFn: async (): Promise<Profile[]> => {
       const res = await fetch(`${API_URL}/api/members/list`);
@@ -62,7 +63,7 @@ export default function DirectoryScreen() {
         renderItem={renderMember}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.amber} />
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={colors.amber} />
         }
         contentContainerStyle={[styles.list, { paddingTop: headerHeight + 12, paddingBottom: tabBarHeight + 12 }]}
         ListHeaderComponent={isLoading && members.length === 0 ? <SkeletonMemberList /> : null}
