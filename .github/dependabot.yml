@@ -13,11 +13,6 @@ updates:
         update-types:
           - "minor"
           - "patch"
-      react:
-        patterns:
-          - "react"
-          - "react-dom"
-          - "@types/react*"
       supabase:
         patterns:
           - "@supabase/*"
@@ -27,6 +22,12 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      # React must match react-native-renderer version exactly.
+      # RN 0.81.5 ships renderer@19.1.0 — bumping react breaks the mobile app.
+      # Remove this ignore when upgrading to RN 0.82+
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "@types/react"
 
   - package-ecosystem: "github-actions"
     directory: "/"
