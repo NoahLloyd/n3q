@@ -42,6 +42,18 @@ Google Play requires a one-time $25 registration fee.
   - Add `SUPABASE_ACCESS_TOKEN` secret to GitHub repo
   - Add `SUPABASE_PROJECT_ID` secret (value: `kwjoxtcubwekahthwgsk`)
 
+## Widgets (requires manual Xcode setup)
+
+Widget SwiftUI code and data bridge are ready. The Expo config plugin for auto-adding the Widget Extension target is unreliable. Add manually in Xcode:
+
+1. Open `apps/mobile/ios/N3Q.xcworkspace` in Xcode
+2. File → New → Target → Widget Extension → name: `N3QWidget`, uncheck "Include Configuration App Intent"
+3. Replace generated `N3QWidget.swift` with contents of `targets/widget/N3QWidget.swift`
+4. Add App Group `group.com.n3q.app` to **both** the N3Q target and NQWidget target (Signing & Capabilities → + Capability → App Groups)
+5. Build and run — widgets appear in the iOS home screen widget picker
+
+**Note:** These manual Xcode changes are lost when `expo prebuild` regenerates the `ios/` directory. For persistent widget support, either fix the config plugin or migrate to a continuous native setup.
+
 ## To discuss
 - [ ] Should we give backers of N3Q access to the web app and mobile app? If so, what level of access? Read-only (public pages) or full member access? Requires a backer verification flow or a separate role.
 
