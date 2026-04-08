@@ -24,6 +24,32 @@ export async function POST(request: Request) {
     );
   }
 
+  // Demo login for app store reviewers — code "000000"
+  const DEMO_USER_ID = process.env.DEMO_USER_ID;
+  if (token === "000000" && DEMO_USER_ID) {
+    const { data: demoProfile } = await serviceClient
+      .from("profiles")
+      .select("*")
+      .eq("id", DEMO_USER_ID)
+      .maybeSingle();
+
+    if (!demoProfile) {
+      return NextResponse.json({ error: "Demo account not configured" }, { status: 500 });
+    }
+
+    const accessToken = signJwt({ sub: demoProfile.id, role: "authenticated", aud: "authenticated" }, 60 * 60);
+    const refreshTokenRaw = randomUUID();
+    const refreshTokenHash = createHash("sha256").update(refreshTokenRaw).digest("hex");
+
+    await serviceClient.from("mobile_refresh_tokens").insert({
+      user_id: demoProfile.id,
+      token_hash: refreshTokenHash,
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    }).catch(() => {}); // ignore if table doesn't exist yet
+
+    return NextResponse.json({ access_token: accessToken, refresh_token: refreshTokenRaw, profile: demoProfile });
+  }
+
   // Look up the token
   const { data: authToken, error: lookupError } = await serviceClient
     .from("mobile_auth_tokens")
