@@ -51,7 +51,65 @@
           "calendarPermission": "Allow N3Q to add events to your calendar."
         }
       ],
-      "./plugins/withWidget"
+      "./plugins/withWidget",
+      [
+        "react-native-android-widget",
+        {
+          "fonts": ["./assets/fonts/DepartureMono-Regular.otf"],
+          "widgets": [
+            {
+              "name": "EventsWidget",
+              "label": "N3Q Events",
+              "description": "Upcoming events from the community.",
+              "minWidth": "256dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "ProjectsWidget",
+              "label": "N3Q Projects",
+              "description": "Active projects and their status.",
+              "minWidth": "256dp",
+              "minHeight": "120dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "vertical",
+              "updatePeriodMillis": 3600000
+            },
+            {
+              "name": "QuickActionsWidget",
+              "label": "N3Q Quick Actions",
+              "description": "Post, create an event, or start a project.",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2
+            },
+            {
+              "name": "MemberCardWidget",
+              "label": "Member Card",
+              "description": "Your N3Q trading card on your home screen.",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "updatePeriodMillis": 86400000
+            },
+            {
+              "name": "BrandWidget",
+              "label": "N3Q",
+              "description": "A lab for builders, backed by unicorn founders.",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2
+            }
+          ]
+        }
+      ]
     ],
     "updates": {
       "url": "https://u.expo.dev/cdb8a70f-0945-45dc-89d1-f358e5a80009"
