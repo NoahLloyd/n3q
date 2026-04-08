@@ -5,14 +5,6 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      expo:
-        patterns:
-          - "expo*"
-          - "@expo/*"
-          - "react-native*"
-        update-types:
-          - "minor"
-          - "patch"
       supabase:
         patterns:
           - "@supabase/*"
@@ -24,10 +16,17 @@ updates:
         update-types: ["version-update:semver-major"]
       # React must match react-native-renderer version exactly.
       # RN 0.81.5 ships renderer@19.1.0 — bumping react breaks the mobile app.
-      # Remove this ignore when upgrading to RN 0.82+
+      # Remove these ignores when upgrading Expo SDK.
       - dependency-name: "react"
       - dependency-name: "react-dom"
       - dependency-name: "@types/react"
+      # Expo/RN packages are tightly coupled to the Expo SDK version.
+      # They must be upgraded together via `expo install --fix`, not individually.
+      # Remove these ignores when upgrading to the next Expo SDK.
+      - dependency-name: "expo*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
