@@ -21,6 +21,7 @@ jobs:
 
       - name: Link project
         run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+        working-directory: apps/web
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
