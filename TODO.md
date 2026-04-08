@@ -42,18 +42,9 @@ Google Play requires a one-time $25 registration fee.
   - Add `SUPABASE_ACCESS_TOKEN` secret to GitHub repo
   - Add `SUPABASE_PROJECT_ID` secret (value: `kwjoxtcubwekahthwgsk`)
 
-## Widgets (manual Xcode setup required)
+## Widgets
 
-Widget SwiftUI code (`targets/widget/N3QWidget.swift`) and data bridge (`src/lib/widget-data.ts`) are ready. The Expo config plugin approach (`plugins/withWidget.js`) corrupts the pbxproj — Expo's xcode npm package can't serialize manually injected pbxproj objects correctly. The plugin is disabled.
-
-**To add widgets, set up manually in Xcode:**
-1. Open `apps/mobile/ios/N3Q.xcworkspace` in Xcode
-2. File → New → Target → Widget Extension → name: `N3QWidget`, uncheck "Include Configuration App Intent"
-3. Replace generated `N3QWidget.swift` with contents of `targets/widget/N3QWidget.swift`
-4. Add App Group `group.com.n3q.app` to **both** the N3Q target and N3QWidget target (Signing & Capabilities → + Capability → App Groups)
-5. Build and run — widgets appear in the iOS home screen widget picker
-
-**Note:** Manual Xcode changes are lost when `expo prebuild` regenerates `ios/`. For persistent widget support, investigate `@bacons/apple-targets` or a post-prebuild Ruby script using the `xcodeproj` gem.
+Widget extension is automatically added by the Expo config plugin (`plugins/withWidget.js`) during `expo prebuild`. Three widgets are included: Events Calendar, Quick Actions, and Projects. Data flows from RN → App Group UserDefaults → SwiftUI widget via `react-native-widgetkit`.
 
 ## To discuss
 - [ ] Should we give backers of N3Q access to the web app and mobile app? If so, what level of access? Read-only (public pages) or full member access? Requires a backer verification flow or a separate role.
@@ -90,3 +81,4 @@ Widget SwiftUI code (`targets/widget/N3QWidget.swift`) and data bridge (`src/lib
 - [x] Shared navigation components (PixelArrow, BackButton, ModalHeader, PlusButton)
 - [x] Developer docs (CLAUDE.md, CONTRIBUTING.md, RELEASES.md, DESIGN.md, README.md)
 - [x] Add `EXPO_TOKEN` secret to GitHub repo → Settings → Secrets → Actions (token: generated from @n3q robot user `github-actions` on expo.dev)
+- [x] iOS widgets via Expo config plugin (events, quick actions, projects)

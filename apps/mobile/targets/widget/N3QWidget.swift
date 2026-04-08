@@ -302,6 +302,258 @@ struct ProjectWidgetView: View {
     }
 }
 
+// MARK: - Shared Colors
+
+let amber = Color(red: 0.83, green: 0.66, blue: 0.29) // #d4a84b
+let amberDim = Color(red: 0.78, green: 0.61, blue: 0.22) // #c89b37
+let gold50 = Color(red: 0.71, green: 0.51, blue: 0.20).opacity(0.5) // rgba(180,130,50,0.5)
+let gold25 = Color(red: 0.71, green: 0.51, blue: 0.20).opacity(0.25)
+let cardBg = Color(red: 0.10, green: 0.09, blue: 0.06) // #1a1610
+let cardBgDark = Color(red: 0.06, green: 0.05, blue: 0.04) // #0f0d0a
+let parchmentBg = Color(red: 0.17, green: 0.14, blue: 0.09) // #2c2418
+
+// MARK: - Member Card Widget
+
+struct WidgetProfile: Codable {
+    let displayName: String
+    let initials: String
+    let avatarUrl: String?
+    let dayCount: Int
+}
+
+func loadProfile() -> WidgetProfile? {
+    guard let userDefaults = UserDefaults(suiteName: "group.com.n3q.app"),
+          let data = userDefaults.string(forKey: "widget_profile"),
+          let jsonData = data.data(using: .utf8) else { return nil }
+    return try? JSONDecoder().decode(WidgetProfile.self, from: jsonData)
+}
+
+struct MemberCardEntry: TimelineEntry {
+    let date: Date
+    let profile: WidgetProfile?
+}
+
+struct MemberCardProvider: TimelineProvider {
+    func placeholder(in context: Context) -> MemberCardEntry {
+        MemberCardEntry(date: Date(), profile: WidgetProfile(
+            displayName: "Builder", initials: "B", avatarUrl: nil, dayCount: 42
+        ))
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (MemberCardEntry) -> Void) {
+        completion(MemberCardEntry(date: Date(), profile: loadProfile()))
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<MemberCardEntry>) -> Void) {
+        let entry = MemberCardEntry(date: Date(), profile: loadProfile())
+        // Refresh at midnight to update day count
+        let tomorrow = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: 1, to: Date())!)
+        completion(Timeline(entries: [entry], policy: .after(tomorrow)))
+    }
+}
+
+struct MemberCardWidgetView: View {
+    let entry: MemberCardEntry
+
+    var body: some View {
+        if let profile = entry.profile {
+            Link(destination: URL(string: "n3q://profile")!) {
+                ZStack {
+                    // Card body gradient
+                    LinearGradient(
+                        colors: [cardBg, cardBgDark, cardBg],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+
+                    // Inner decorative border
+                    RoundedRectangle(cornerRadius: 0)
+                        .strokeBorder(gold25, lineWidth: 0.5)
+                        .padding(8)
+
+                    // Corner diamonds
+                    GeometryReader { geo in
+                        let inset: CGFloat = 5
+                        let size: CGFloat = 5
+                        ForEach(0..<4, id: \.self) { i in
+                            Rectangle()
+                                .fill(Color(red: 0.78, green: 0.61, blue: 0.22).opacity(0.6))
+                                .frame(width: size, height: size)
+                                .rotationEffect(.degrees(45))
+                                .position(
+                                    x: i % 2 == 0 ? inset : geo.size.width - inset,
+                                    y: i < 2 ? inset : geo.size.height - inset
+                                )
+                        }
+                    }
+
+                    VStack(spacing: 6) {
+                        // Avatar
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 2)
+                                .strokeBorder(gold50, lineWidth: 1)
+                                .frame(width: 52, height: 52)
+
+                            if let urlStr = profile.avatarUrl, let url = URL(string: urlStr) {
+                                // Widget can't load remote images directly; show initials
+                                // Remote image loading requires IntentConfiguration + network extension
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 1)
+                                        .fill(cardBgDark)
+                                        .frame(width: 48, height: 48)
+                                    Text(profile.initials)
+                                        .font(.system(size: 22, weight: .bold, design: .monospaced))
+                                        .foregroundColor(amber)
+                                }
+                            } else {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 1)
+                                        .fill(cardBgDark)
+                                        .frame(width: 48, height: 48)
+                                    Text(profile.initials)
+                                        .font(.system(size: 22, weight: .bold, design: .monospaced))
+                                        .foregroundColor(amber)
+                                }
+                            }
+                        }
+
+                        // Name
+                        Text(profile.displayName.uppercased())
+                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                            .foregroundColor(amber)
+                            .lineLimit(1)
+                            .tracking(1)
+
+                        // Divider with builder label
+                        HStack(spacing: 6) {
+                            Rectangle()
+                                .fill(gold25)
+                                .frame(height: 0.5)
+                            Text("BUILDER")
+                                .font(.system(size: 7, weight: .medium, design: .monospaced))
+                                .foregroundColor(amberDim.opacity(0.6))
+                                .tracking(2)
+                            Rectangle()
+                                .fill(gold25)
+                                .frame(height: 0.5)
+                        }
+                        .padding(.horizontal, 12)
+
+                        // Day count
+                        Text("DAY \(profile.dayCount)")
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .foregroundColor(amber)
+                            .tracking(3)
+                    }
+                    .padding(.vertical, 8)
+                }
+            }
+            .containerBackground(for: .widget) {
+                Color(red: 0.07, green: 0.06, blue: 0.04)
+            }
+        } else {
+            // Not logged in
+            Link(destination: URL(string: "n3q://")!) {
+                VStack(spacing: 8) {
+                    Text("N3Q")
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundColor(amber)
+                    Text("Open app to\nset up card")
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .containerBackground(for: .widget) {
+                Color(red: 0.04, green: 0.04, blue: 0.04)
+            }
+        }
+    }
+}
+
+// MARK: - Brand Widget
+
+struct BrandEntry: TimelineEntry {
+    let date: Date
+}
+
+struct BrandProvider: TimelineProvider {
+    func placeholder(in context: Context) -> BrandEntry { BrandEntry(date: Date()) }
+    func getSnapshot(in context: Context, completion: @escaping (BrandEntry) -> Void) { completion(BrandEntry(date: Date())) }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<BrandEntry>) -> Void) {
+        completion(Timeline(entries: [BrandEntry(date: Date())], policy: .never))
+    }
+}
+
+struct BrandWidgetView: View {
+    let entry: BrandEntry
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        Link(destination: URL(string: "n3q://")!) {
+            ZStack {
+                // Dark card background with subtle gradient
+                LinearGradient(
+                    colors: [cardBg, cardBgDark, cardBg],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+
+                // Inner decorative border
+                RoundedRectangle(cornerRadius: 0)
+                    .strokeBorder(gold25, lineWidth: 0.5)
+                    .padding(8)
+
+                // Corner diamonds
+                GeometryReader { geo in
+                    let inset: CGFloat = 5
+                    let size: CGFloat = 5
+                    ForEach(0..<4, id: \.self) { i in
+                        Rectangle()
+                            .fill(Color(red: 0.78, green: 0.61, blue: 0.22).opacity(0.6))
+                            .frame(width: size, height: size)
+                            .rotationEffect(.degrees(45))
+                            .position(
+                                x: i % 2 == 0 ? inset : geo.size.width - inset,
+                                y: i < 2 ? inset : geo.size.height - inset
+                            )
+                    }
+                }
+
+                VStack(spacing: family == .systemMedium ? 10 : 8) {
+                    // Logo text
+                    Text("N3Q")
+                        .font(.system(size: family == .systemMedium ? 28 : 22, weight: .bold, design: .monospaced))
+                        .foregroundColor(amber)
+                        .tracking(4)
+
+                    // Divider
+                    HStack(spacing: 8) {
+                        Rectangle().fill(gold25).frame(height: 0.5)
+                        Rectangle()
+                            .fill(Color(red: 0.78, green: 0.61, blue: 0.22).opacity(0.6))
+                            .frame(width: 4, height: 4)
+                            .rotationEffect(.degrees(45))
+                        Rectangle().fill(gold25).frame(height: 0.5)
+                    }
+                    .padding(.horizontal, family == .systemMedium ? 40 : 16)
+
+                    // Tagline
+                    Text("A lab for builders, backed\nby unicorn founders")
+                        .font(.system(size: family == .systemMedium ? 11 : 9, design: .monospaced))
+                        .foregroundColor(amberDim.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(2)
+                        .tracking(0.5)
+                }
+            }
+        }
+        .containerBackground(for: .widget) {
+            Color(red: 0.07, green: 0.06, blue: 0.04)
+        }
+    }
+}
+
 // MARK: - Widget Bundle
 
 @main
@@ -310,6 +562,8 @@ struct N3QWidgets: WidgetBundle {
         N3QEventWidget()
         N3QQuickActionWidget()
         N3QProjectWidget()
+        N3QMemberCardWidget()
+        N3QBrandWidget()
     }
 }
 
@@ -345,6 +599,30 @@ struct N3QProjectWidget: Widget {
         }
         .configurationDisplayName("N3Q Projects")
         .description("Active projects and their status.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+struct N3QMemberCardWidget: Widget {
+    let kind = "N3QMemberCardWidget"
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: MemberCardProvider()) { entry in
+            MemberCardWidgetView(entry: entry)
+        }
+        .configurationDisplayName("Member Card")
+        .description("Your N3Q trading card on your home screen.")
+        .supportedFamilies([.systemSmall])
+    }
+}
+
+struct N3QBrandWidget: Widget {
+    let kind = "N3QBrandWidget"
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: BrandProvider()) { entry in
+            BrandWidgetView(entry: entry)
+        }
+        .configurationDisplayName("N3Q")
+        .description("A lab for builders, backed by unicorn founders.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
