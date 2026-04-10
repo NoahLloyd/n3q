@@ -2,6 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import * as SecureStore from "expo-secure-store";
 import type { Profile } from "@n3q/shared";
 import { supabase } from "../supabase/client";
+import { updateWidgetProfile, clearWidgetProfile } from "../widget-data";
+import { daysSince } from "../days";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -89,6 +91,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (data) {
       setProfile(data);
+      // Push profile to widget (iOS + Android)
+      const name = data.display_name || "Member";
+      const initials = name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+      updateWidgetProfile({
+        displayName: name,
+        initials,
+        avatarUrl: data.avatar_url || null,
+        dayCount: data.created_at ? daysSince(data.created_at) : 1,
+      });
     }
   }
 
@@ -166,6 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
     setUserId(null);
     setProfile(null);
+    clearWidgetProfile();
   }
 
   return (
