@@ -16,31 +16,34 @@ The Apple Developer Program enrollment requires a D-U-N-S number for the N3Q org
 7. **TestFlight**: Distribute to internal testers from App Store Connect
 8. **App Store release**: Submit for review once tested
 
-## Blocked (needs Google Play Developer account)
+## Google Play (account + app created, needs service account key)
 
-Google Play requires a one-time $25 registration fee.
+1. ~~**Register** at play.google.com/console~~ ✅
+2. ~~**Create app** → name: "N3Q", package: `com.n3q.app`~~ ✅
+3. **Create service account** for automated submissions:
+   - Google Cloud Console → IAM & Admin → Service Accounts → Create
+   - Grant "Service Account User" role
+   - Create JSON key → download
+   - In Google Play Console → Setup → API access → link the service account → grant "Release manager" permission
+   - Add JSON key contents as `GOOGLE_SERVICE_ACCOUNT_KEY` secret in GitHub repo
+4. **First build**: `eas build --profile production --platform android`
+5. **First submit**: `eas submit --platform android`
+6. **Internal testing track**: Distribute AAB for testing before public release
 
-1. **Register** at play.google.com/console
-2. **Create app** → name: "N3Q", package: `com.n3q.app`
-3. **First build**: `eas build --profile production --platform android`
-4. **First submit**: `eas submit --platform android`
-5. **Internal testing track**: Distribute APK/AAB for testing before public release
-
-## Blocked (needs Supabase migration)
-- [ ] Run `apps/web/supabase/migrations/add_mobile_auth.sql` migration
-- [ ] Run `apps/web/supabase/migrations/add_push_tokens.sql` migration
-- [ ] Test "Generate Login Code" flow end-to-end (web → mobile token exchange)
+## Remaining testing
+- [x] Run `apps/web/supabase/migrations/add_mobile_auth.sql` migration
+- [x] Run `apps/web/supabase/migrations/add_push_tokens.sql` migration
+- [x] Test "Generate Login Code" flow end-to-end (web → mobile token exchange)
 - [ ] Test push notifications on physical device
 
 ## Setup required (needs repo admin)
-- [ ] Link GitHub repo to Expo project → expo.dev → n3q → n3q → Settings → GitHub
-- [ ] Enable branch protection on `main`:
-  - Require 1 approval on PRs
-  - Do NOT require CI to pass (informational only)
+- [x] Link GitHub repo to Expo project
+- [x] Enable branch protection on `main`
 - [ ] Enable Supabase migrations (workflow at `.github/workflows/migrate.yml`, manual dispatch only):
   - Generate a Supabase access token at supabase.com/dashboard/account/tokens
   - Add `SUPABASE_ACCESS_TOKEN` secret to GitHub repo
   - Add `SUPABASE_PROJECT_ID` secret (value: `kwjoxtcubwekahthwgsk`)
+- [ ] Add `DEMO_USER_ID` env var to Vercel production (see Issue #34)
 
 ## Widgets (manual Xcode setup required)
 
@@ -59,8 +62,8 @@ Widget SwiftUI code (`targets/widget/N3QWidget.swift`) and data bridge (`src/lib
 - [ ] Should we give backers of N3Q access to the web app and mobile app? If so, what level of access? Read-only (public pages) or full member access? Requires a backer verification flow or a separate role.
 
 ## Merge checklist (before merging feature/mobile-app → main)
-- [ ] Supabase migrations applied (mobile_auth_tokens, mobile_refresh_tokens, push_tokens)
-- [ ] End-to-end login code flow tested
+- [x] Supabase migrations applied (mobile_auth_tokens, mobile_refresh_tokens, push_tokens)
+- [x] End-to-end login code flow tested
 - [ ] Push notifications tested on physical device
 - [ ] At least one production EAS Build completed successfully
 - [ ] App submitted to TestFlight and smoke-tested by a member
@@ -89,4 +92,7 @@ Widget SwiftUI code (`targets/widget/N3QWidget.swift`) and data bridge (`src/lib
 - [x] CD: EAS Update workflow (auto OTA on push to main)
 - [x] Shared navigation components (PixelArrow, BackButton, ModalHeader, PlusButton)
 - [x] Developer docs (CLAUDE.md, CONTRIBUTING.md, RELEASES.md, DESIGN.md, README.md)
+- [x] Demo login for app store reviewers (code "000000")
+- [x] Supabase migrations applied
+- [x] Login code flow tested end-to-end
 - [x] Add `EXPO_TOKEN` secret to GitHub repo → Settings → Secrets → Actions (token: generated from @n3q robot user `github-actions` on expo.dev)
